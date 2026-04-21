@@ -335,7 +335,7 @@ Flaw: Stubborn Refusal to Adapt (the one who trusts the old ways over the new)</
 <script>
     function startTracking() {
         const dot = document.getElementById('map-dot');
-        const map = document.getElementById('map-container');
+        const map = document.getElementById('1776756654263.png');
         const mapWidth = map.offsetWidth;
         const mapHeight = map.offsetHeight;
 
