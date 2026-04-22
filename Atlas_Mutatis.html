@@ -6,6 +6,18 @@
     <title>Atlas Mutatis | The Noctuluc Ethereal Dossier</title>
   
     <style>
+        .case-study {
+    /* Existing styles */
+    background-color: #001220;
+    
+    /* ADD THESE LINES */
+    background-image: url('your-map-image.png');
+    background-size: cover;          /* Makes the image fill the area */
+    background-position: center;     /* Keeps the map centered */
+    background-repeat: no-repeat;    /* Prevents the map from tiling */
+    background-blend-mode: multiply; /* Optional: Blends image with your dark blue color */
+        }
+        
         /* FONDA'S ORIGINAL CSS (MATCHED TO EXISTING PALETTE) */
         body { font-family: 'Courier New', Courier, monospace; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; background: #000a12; color: #a0f0ff; text-transform: uppercase; }
         header { border-bottom: 2px solid #004d7c; padding-bottom: 20px; margin-bottom: 30px; text-align: center;}
