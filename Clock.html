@@ -1,27 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Pet-Link Bracelet Interface</title>
+    <title>Pet-Link Bracelet</title>
     <style>
-        /* Layout: Robot on top, Clock below */
-        body { font-family: sans-serif; text-align: center; padding: 20px; }
+        body { font-family: sans-serif; text-align: center; padding: 20px; background: #f0f0f0; }
         
-        #robot-container { height: 150px; margin-bottom: 20px; }
-        #hand-video, #tail-video { display: none; width: 100px; margin: 0 auto; }
+        /* The Robot Area */
+        #robot-container { height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #head { font-size: 50px; }
+        #hand-video, #tail-video { display: none; width: 120px; border: 2px solid #333; border-radius: 10px; }
 
-        /* Clock/Bracelet CSS */
-        #clock { position: relative; width: 300px; height: 300px; border-radius: 50%; border: 2px solid black; margin: 0 auto; }
-        .number, .led { position: absolute; transform: translate(-50%, -50%); }
-        .led { width: 12px; height: 12px; border-radius: 50%; background: #ccc; }
-        .hand { position: absolute; width: 2px; background-color: black; transform-origin: bottom center; }
-        .center { position: absolute; width: 10px; height: 10px; background-color: black; border-radius: 50%; top: 145px; left: 145px; }
+        /* The Bracelet Clock */
+        #clock { position: relative; width: 300px; height: 300px; border-radius: 50%; border: 4px solid #333; margin: 30px auto; background: white; }
+        .led { width: 14px; height: 14px; border-radius: 50%; background: #ccc; position: absolute; transform: translate(-50%, -50%); }
     </style>
 </head>
 <body>
 
     <div id="robot-container">
-        <div id="head">O</div>
+        <div id="head">🐶</div>
         <video id="hand-video" muted playsinline>
             <source src="video_1776962312152.mp4" type="video/mp4">
         </video>
@@ -30,22 +27,16 @@
         </video>
     </div>
 
-    <div id="clock">
-        <div id="hourHand" class="hand"></div>
-        <div id="minuteHand" class="hand"></div>
-        <div id="secondHand" class="hand"></div>
-        <div class="center"></div>
-    </div>
+    <div id="clock"></div>
 
-    <input type="text" id="messageInput" placeholder="Enter message">
-    <button onclick="displayMessage()">Send</button>
-    <button onclick="deleteMessage()">Delete</button>
+    <input type="text" id="msg" placeholder="Type message...">
+    <button onclick="startFullProcess()">SEND</button>
+    <button onclick="deleteProcess()">DELETE</button>
 
     <script>
         const clock = document.getElementById('clock');
-        const messageInput = document.getElementById('messageInput');
-
-        // Initialize LEDs
+        
+        // Initialize 12 LEDs
         for (let i = 1; i <= 12; i++) {
             const angle = (i - 3) * (Math.PI / 6);
             const led = document.createElement('div');
@@ -56,40 +47,43 @@
             clock.appendChild(led);
         }
 
-        // The Controller that handles Video + Lights
-        function triggerVideo(id) {
+        // Logic: Mapping characters to lights
+        function getLedData(char) {
+            if (char >= 'A' && char <= 'L') return { color: 'red', index: char.charCodeAt(0) - 64 };
+            if (char >= 'M' && char <= 'X') return { color: 'blue', index: char.charCodeAt(0) - 76 };
+            return { color: 'green', index: 12 };
+        }
+
+        // Action Trigger
+        function playVideo(id) {
             const vid = document.getElementById(id);
             vid.style.display = 'block';
             vid.currentTime = 0;
             vid.play();
-            setTimeout(() => { vid.style.display = 'none'; vid.pause(); }, 2000);
+            setTimeout(() => { vid.style.display = 'none'; vid.pause(); }, 3000);
         }
 
-        function displayCharacter(char) {
-            let color, ledIndex;
-            // ... (Your original mapping logic here) ...
-            if (char >= 'A' && char <= 'L') { color = 'red'; ledIndex = char.charCodeAt(0) - 64; }
-            else if (char >= 'M' && char <= 'X') { color = 'blue'; ledIndex = char.charCodeAt(0) - 76; }
-            else if (char >= 'Y' || (char >= '0' && char <= '9')) { color = 'green'; ledIndex = 12; }
-
-            const led = document.getElementById('led' + ledIndex);
-            if (led) {
-                led.style.backgroundColor = color;
-                triggerVideo('hand-video'); // Play typing animation
-                setTimeout(() => led.style.backgroundColor = '#ccc', 1000);
+        // The Async Sequence: Lights first, Video second
+        async function startFullProcess() {
+            const text = document.getElementById('msg').value.toUpperCase();
+            
+            for (let char of text) {
+                const data = getLedData(char);
+                const led = document.getElementById('led' + data.index);
+                
+                led.style.backgroundColor = data.color;
+                await new Promise(r => setTimeout(r, 1000)); // Wait 1s
+                led.style.backgroundColor = '#ccc';
             }
+            
+            // Once the loop is done, play the hand video
+            playVideo('hand-video');
         }
 
-        function displayMessage() {
-            const msg = messageInput.value.toUpperCase();
-            for (let i = 0; i < msg.length; i++) {
-                setTimeout(() => displayCharacter(msg[i]), i * 1500);
-            }
-        }
-
-        function deleteMessage() {
-            triggerVideo('tail-video'); // Play eating animation
-            alert("Message Eaten!");
+        function deleteProcess() {
+            // Clear lights and play tail video
+            document.querySelectorAll('.led').forEach(l => l.style.backgroundColor = '#ccc');
+            playVideo('tail-video');
         }
     </script>
 </body>
