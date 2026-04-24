@@ -83,7 +83,7 @@
     <div id="robot-body">
     <div id="head"></div>
     <video id="hand-video" width="100" muted>
-        <source src="hand-action.mp4" type="video/mp4">
+        <source src="video_1776962312152.mp4" type="video/mp4">
     </video>
     <video id="tail-video" width="100" muted>
         <source src="video_1776962329199~2.mp4" type="video/mp4">
