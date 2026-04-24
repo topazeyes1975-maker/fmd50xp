@@ -86,7 +86,7 @@
         <source src="hand-action.mp4" type="video/mp4">
     </video>
     <video id="tail-video" width="100" muted>
-        <source src="tail-action.mp4" type="video/mp4">
+        <source src="video_1776962329199~2.mp4" type="video/mp4">
     </video>
 </div>
 
