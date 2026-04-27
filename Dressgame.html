@@ -28,8 +28,46 @@
         <source src="Project_04-27_Full HD 1080p_MEDIUM_FR30_(1)~2.mp4" type="video/mp4">
     </video>
 </div>
+<div id="judgment-video">
+    <video id="vid" width="100%" height="100%">
+        <source src="your-video-file.mp4" type="video/mp4">
+    </video>
+    <button id="reset-btn" onclick="resetGame()" 
+            style="position: absolute; bottom: 20%; left: 50%; transform: translateX(-50%); 
+            padding: 15px 30px; font-size: 20px; display: none;">
+        RESTART THE ARCHIVE
+    </button>
+</div>
 
 <script>
+  // ... (keep your existing setup code)
+
+  const vid = document.getElementById('vid');
+  const resetBtn = document.getElementById('reset-btn');
+
+  // Trigger when video ends
+  vid.onended = function() {
+    resetBtn.style.display = 'block';
+  };
+
+  function resetGame() {
+    // Reset everything
+    count = 0;
+    counterText.innerText = "Taps: 0/56";
+    document.getElementById('judgment-video').style.display = 'none';
+    document.getElementById('dress').style.display = 'flex';
+    
+    // Clear the dots
+    let orbs = document.querySelectorAll('.orb');
+    orbs.forEach(orb => orb.className = 'orb');
+    
+    // Reset puppet position and image
+    puppet.style.left = '50%';
+    puppet.style.top = '50%';
+    puppet.src = puppetImages[0];
+  }
+
+  // ... (keep your existing addShard function
   // Add your 56 image filenames here
   const puppetImages = [
     "img1.png", "img2.png", "img3.png", "img4.png", "img5.png", "img6.png", "img7.png", "img8.png", 
