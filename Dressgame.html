@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { background: #111; color: white; text-align: center; font-family: sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; }
+  #action-zone { flex-grow: 1; position: relative; }
+  #puppet { position: absolute; width: 100px; cursor: pointer; transition: 0.1s; border-radius: 50%; }
+  #dress { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; padding: 20px; background: #000; border-top: 2px solid #333; }
+  .orb { width: 20px; height: 20px; border-radius: 50%; background: #333; }
+  .orb.charged { background: #00f; box-shadow: 0 0 10px #00f; }
+  #judgment-video { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; }
+</style>
+</head>
+<body>
+
+<h1>The Keeper of Shards</h1>
+<p id="counter">Taps: 0/56</p>
+
+<div id="action-zone">
+  <img id="puppet" src="image1.png" alt="Puppet" onclick="addShard()">
+</div>
+
+<div id="dress"></div>
+
+<div id="judgment-video">
+    <video id="vid" width="100%" height="100%">
+        <source src="your-video-file.mp4" type="video/mp4">
+    </video>
+</div>
+
+<script>
+  // Add your 56 image filenames here
+  const puppetImages = [
+    "img1.png", "img2.png", "img3.png", "img4.png", "img5.png", "img6.png", "img7.png", "img8.png", 
+    "img9.png", "img10.png", "img11.png", "img12.png", "img13.png", "img14.png", "img15.png", "img16.png",
+    "img17.png", "img18.png", "img19.png", "img20.png", "img21.png", "img22.png", "img23.png", "img24.png",
+    "img25.png", "img26.png", "img27.png", "img28.png", "img29.png", "img30.png", "img31.png", "img32.png",
+    "img33.png", "img34.png", "img35.png", "img36.png", "img37.png", "img38.png", "img39.png", "img40.png",
+    "img41.png", "img42.png", "img43.png", "img44.png", "img45.png", "img46.png", "img47.png", "img48.png",
+    "img49.png", "img50.png", "img51.png", "img52.png", "img53.png", "img54.png", "img55.png", "img56.png"
+  ];
+
+  let count = 0;
+  const dress = document.getElementById('dress');
+  const counterText = document.getElementById('counter');
+  const puppet = document.getElementById('puppet');
+
+  for(let i = 0; i < 56; i++) {
+    let orb = document.createElement('div');
+    orb.className = 'orb';
+    dress.appendChild(orb);
+  }
+
+  function addShard() {
+    if(count < 56) {
+      document.querySelectorAll('.orb')[count].className = 'orb charged';
+      
+      // Move puppet
+      let x = Math.random() * (window.innerWidth - 120);
+      let y = Math.random() * (window.innerHeight - 350);
+      puppet.style.left = x + 'px';
+      puppet.style.top = y + 'px';
+      
+      // Change image to the current tap count
+      puppet.src = puppetImages[count];
+      
+      count++;
+      counterText.innerText = "Taps: " + count + "/56";
+    } else {
+      document.getElementById('judgment-video').style.display = 'block';
+      document.getElementById('vid').play();
+    }
+  }
+</script>
+</body>
+</html>
+
