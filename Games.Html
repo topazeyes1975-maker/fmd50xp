@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Archive of Imagination | 3D Gallery</title>
+    <!-- This script allows the 3D models to load -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+    
+    <style>
+        body { background: #0a0a0a; color: #e0e0e0; font-family: 'Courier New', monospace; margin: 0; padding: 20px; }
+        
+        .main-container { max-width: 1200px; margin: 0 auto; }
+        
+        h1 { text-align: center; color: #00f0ff; text-transform: uppercase; letter-spacing: 3px; }
+
+        /* The Grid Layout */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 20px 0;
+        }
+
+        .model-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 15px;
+            padding: 15px;
+            transition: transform 0.3s, border-color 0.3s;
+            text-align: center;
+        }
+
+        .model-card:hover {
+            transform: translateY(-10px);
+            border-color: #00f0ff;
+        }
+
+        model-viewer {
+            width: 100%;
+            height: 300px;
+            background-color: #000;
+            border-radius: 10px;
+            --poster-color: transparent;
+        }
+
+        .model-info { margin-top: 15px; }
+        .model-title { font-weight: bold; color: #00f0ff; display: block; }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <h1>The Archive of Imagination</h1>
+    <p style="text-align: center;">A collection of my 3D creations, hosted and preserved by the Architect.</p>
+
+    <div class="gallery-grid">
+
+        <!-- MODEL 1: Copy this block every time you make a new one -->
+        <div class="model-card">
+            <model-viewer 
+                src="models/noctuluc_ethereal.glb" 
+                poster="images/loading_thumb.png"
+                alt="The Noctuluc Ethereal" 
+                auto-rotate camera-controls shadow-intensity="1">
+            </model-viewer>
+            <div class="model-info">
+                <span class="model-title">Noctuluc Ethereal</span>
+                <p>Species: Multi-Biological Merge</p>
+            </div>
+        </div>
+
+        <!-- MODEL 2: Repeat the block -->
+        <div class="model-card">
+            <model-viewer 
+                src="models/your_next_model.glb" 
+                alt="New Creation" 
+                auto-rotate camera-controls shadow-intensity="1">
+            </model-viewer>
+            <div class="model-info">
+                <span class="model-title">Model Name</span>
+                <p>Description of your mind's creation.</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>
