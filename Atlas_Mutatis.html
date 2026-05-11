@@ -40,6 +40,27 @@
         .file-nav { margin-bottom: 30px; border-bottom: 1px solid #a0f0ff; padding-bottom: 15px; font-weight: bold; }
         .file-nav a { color: #a0f0ff; text-decoration: none; margin-right: 15px; border: 1px solid #a0f0ff; padding: 2px 8px; }
         .file-nav a:hover { background-color: #a0f0ff; color: #000a12; }
+        /* Professional Briefing Font */
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+.briefing-text {
+    font-family: 'Share+Tech+Mono', monospace;
+    color: var(--primary);
+    text-transform: uppercase;
+    background: rgba(0, 240, 255, 0.05);
+    border-left: 3px solid var(--primary);
+    padding: 15px;
+    margin: 10px 0;
+    font-size: 0.9em;
+    letter-spacing: 1px;
+}
+
+/* Fix for the Desktop "Big" look */
+.main-container {
+    max-width: 1200px; /* Keeps the site from stretching too wide on work computers */
+    margin: 0 auto;
+    padding: 20px;
+}
         
         /* Status Alerts and Terminal Container */
         .classified-dossier { border: 2px solid #a0f0ff; padding: 25px; background: #000; box-shadow: 0 0 15px rgba(160, 240, 255, 0.3); position: relative; margin-bottom: 30px;}
