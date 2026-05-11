@@ -8,7 +8,7 @@
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
 
     <style>
-        /* 1. THE FOUNDATION: RESPONSIVE & DARK THEME */
+        /* 1. THE FOUNDATION */
         :root {
             --primary: #00f0ff;
             --accent: #ff007a;
@@ -23,6 +23,7 @@
             margin: 0; 
             padding: 10px; 
             line-height: 1.6;
+            overflow-x: hidden; /* Prevents the whole page from shaking */
         }
 
         .header-section { 
@@ -33,7 +34,7 @@
 
         h1 { color: var(--primary); text-transform: uppercase; letter-spacing: 2px; font-size: 1.8em; margin-bottom: 10px; }
 
-        /* 2. CLEANER EMOJI KEY (FIXED FOR SCREEN SQUEEZE) */
+        /* 2. EMOJI KEY BOX */
         .emoji-key-box {
             display: flex;
             flex-wrap: wrap;
@@ -50,7 +51,7 @@
         .key-item { border-right: 1px solid #333; padding-right: 8px; margin-right: 2px; white-space: nowrap; }
         .key-item:last-child { border: none; }
 
-        /* 3. AUTOMATIC RESPONSIVE GRID */
+        /* 3. RESPONSIVE GRID */
         .category-container { margin-bottom: 50px; }
         .category-title { 
             color: var(--accent); 
@@ -81,41 +82,48 @@
             background-color: #1a1a1a;
         }
 
-        /* 4. SWIPEABLE INTERACTION BAR WITH COUNTERS */
+        /* 4. THE FIX: SCROLLABLE INTERACTION BAR */
         .interaction-bar { 
             display: flex; 
             gap: 12px; 
             padding: 15px;
             border-top: 1px solid #222;
-            overflow-x: auto; 
+            
+            /* These lines enable the scrolling */
+            overflow-x: scroll !important; 
             white-space: nowrap;
             -webkit-overflow-scrolling: touch;
+            scroll-snap-type: x proximity;
         }
+        /* Hide the ugly scrollbar but keep the scrolling action */
         .interaction-bar::-webkit-scrollbar { display: none; }
 
         .emoji-btn { 
             background: #222; 
             border: 1px solid #333; 
             color: #eee; 
-            padding: 8px 14px; 
+            padding: 10px 16px; 
             border-radius: 25px; 
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 6px;
-            flex-shrink: 0;
+            gap: 8px;
+            
+            /* This is the key: it prevents the buttons from shrinking */
+            flex: 0 0 auto; 
+            min-width: 70px; 
+            justify-content: center;
         }
         .emoji-btn:active { background: var(--primary); color: #000; }
         .count-num { font-weight: bold; color: var(--primary); pointer-events: none; }
 
-        /* 5. COMMENT SECTION */
+        /* 5. COMMENT AREA */
         .comment-area { 
             padding: 15px; 
             border-top: 1px solid #222; 
             background: #0d0d0d;
         }
 
-        /* DESKTOP FIXES */
         @media (min-width: 768px) {
             body { padding: 30px 60px; }
             h1 { font-size: 2.8em; }
@@ -182,6 +190,7 @@
             <div class="interaction-bar">
                 <button class="emoji-btn" onclick="addCount(this)">❤️ <span class="count-num">0</span></button>
                 <button class="emoji-btn" onclick="addCount(this)">👍 <span class="count-num">0</span></button>
+                <button class="emoji-btn" onclick="addCount(this)">🧠 <span class="count-num">0</span></button>
             </div>
 
             <div class="comment-area">
@@ -208,13 +217,11 @@
 <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
 
 <script>
-    // Logic for Button Counters
     function addCount(btn) {
         let counter = btn.querySelector('.count-num');
         let current = parseInt(counter.innerText);
         counter.innerText = current + 1;
         
-        // Visual Feedback
         btn.style.borderColor = "#00f0ff";
         setTimeout(() => { btn.style.borderColor = "#333"; }, 200);
     }
