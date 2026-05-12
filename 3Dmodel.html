@@ -168,7 +168,14 @@
 
         @media (min-width: 768px) {
             h1 { font-size: 3em; }
-        }
+        }/* Targets the inner comment boxes to make them visible and blue */
+#cusdis_thread iframe {
+    filter: invert(1) hue-rotate(180deg) brightness(1.2) saturate(2);
+    /* Invert(1) turns black text white/light */
+    /* hue-rotate(180deg) shifts that light color toward your Cyan/Blue */
+    /* brightness and saturate make it pop against the dark background */
+}
+        
     </style>
 </head>
 <body>
