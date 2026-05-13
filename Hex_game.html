@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hex Game with Images</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px;
+    background-color: #f0f0f0;
+}
+
+h1 {
+    color: #333;
+}
+
+canvas {
+    border: 2px solid #333;
+    background-color: #fff;
+    margin-bottom: 20px;
+}
+
+#controls {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+#currentTurn {
+    font-weight: bold;
+    color: #007bff;
+}
+
+</style>
+<body>
+    <h1>Hex Game</h1>
+    <canvas id="hexGameCanvas" width="700" height="600"></canvas>
+    <div id="controls">
+        <button id="resetButton">Reset Game</button>
+        <p>Current Turn: <span id="currentTurn">Red</span></p>
+    </div>
+
+    <script src="script.js">
+  const canvas = document.getElementById('hexGameCanvas');
+const ctx = canvas.getContext('2d');
+const resetButton = document.getElementById('resetButton');
+const currentTurnSpan = document.getElementById('currentTurn');
+
+const boardSize = 11; // 11x11 Hex board
+const hexRadius = 25;
+const hexHeight = hexRadius * Math.sqrt(3);
+const hexWidth = hexRadius * 2;
+const hexSpacingX = hexWidth * 0.75;
+const hexSpacingY = hexHeight;
+
+// Adjust starting offset to center the board somewhat
+const offsetX = 50;
+const offsetY = 50;
+
+let board = []; // 2D array to represent the game state
+let currentPlayer = 'Red'; // 'Red' or 'Blue'
+
+// Image objects for the pieces
+const redPieceImage = new Image();
+redPieceImage.src = 'red_piece.png'; // Make sure you have this image in the same directory
+const bluePieceImage = new Image();
+bluePieceImage.src = 'blue_piece.png'; // Make sure you have this image in the same directory
+
+// --- Game Initialization ---
+
+function initializeGame() {
+    board = Array(boardSize).fill(null).map(() => Array(boardSize).fill(null));
+    currentPlayer = 'Red';
+    currentTurnSpan.textContent = currentPlayer;
+    drawBoard();
+}
+
+// --- Drawing Functions ---
+
+function getHexagonPoints(x, y, radius) {
+    const points = [];
+    for (let i = 0; i < 6; i++) {
+        const angle = Math.PI / 3 * i;
+        points.push({
+            x: x + radius * Math.cos(angle),
+            y: y + radius * Math.sin(angle)
+        });
+    }
+    return points;
+}
+
+function drawHex(q, r, fill = false, stroke = true, color = '#ccc') {
+    // Convert axial coordinates (q, r) to screen coordinates (x, y)
+    const x = offsetX + q * hexSpacingX + r * hexSpacingX / 2;
+    const y = offsetY + r * hexSpacingY;
+
+    const points = getHexagonPoints(x, y, hexRadius);
+
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(points[i].x, points[i].y);
+    }
+    ctx.closePath();
+
+    if (fill) {
+        ctx.fillStyle = color;
+        ctx.fill();
+    }
+    if (stroke) {
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    }
+
+    return { centerX: x, centerY: y }; // Return center for piece placement
+}
+
+function drawBoard() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+
+    for (let q = 0; q < boardSize; q++) {
+        for (let r = 0; r < boardSize; r++) {
+            const { centerX, centerY } = drawHex(q, r);
+
+            // Draw pieces if they exist on the board
+            const pieceType = board[q][r];
+            if (pieceType === 'Red' && redPieceImage.complete) {
+                const imgSize = hexRadius * 1.8; // Make image slightly smaller than hex
+                ctx.drawImage(redPieceImage, centerX - imgSize / 2, centerY - imgSize / 2, imgSize, imgSize);
+            } else if (pieceType === 'Blue' && bluePieceImage.complete) {
+                const imgSize = hexRadius * 1.8;
+                ctx.drawImage(bluePieceImage, centerX - imgSize / 2, centerY - imgSize / 2, imgSize, imgSize);
+            }
+        }
+    }
+
+    // Highlight the "Red" player's edges (top-left to bottom-right)
+    ctx.strokeStyle = 'red';
+    ctx.lineWidth = 5;
+    // Top-left edge (approximate, more complex for exact path)
+    ctx.beginPath();
+    let startX = offsetX + 0 * hexSpacingX + 0 * hexSpacingX / 2 - hexRadius; // Start of first hex top-left
+    let startY = offsetY + 0 * hexSpacingY;
+    let endX = offsetX + (boardSize -1) * hexSpacingX + (boardSize - 1) * hexSpacingX / 2 + hexRadius; // End of last hex bottom-right
+    let endY = offsetY + (boardSize - 1) * hexSpacingY + hexHeight/2;
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(offsetX + (boardSize -1) * hexSpacingX + (boardSize - 1) * hexSpacingX / 2 + hexRadius/2, offsetY + 0 * hexSpacingY - hexHeight/2);
+    ctx.stroke();
+
+    // Bottom-right edge
+    ctx.beginPath();
+    startX = offsetX + 0 * hexSpacingX + 0 * hexSpacingX / 2 + hexRadius/2;
+    startY = offsetY + (boardSize - 1) * hexSpacingY + hexHeight/2;
+    endX = offsetX + (boardSize - 1) * hexSpacingX + (boardSize - 1) * hexSpacingX / 2 + hexRadius/2;
+    endY = offsetY + (boardSize - 1) * hexSpacingY + hexHeight/2;
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(endX, endY);
+    ctx.stroke();
+
+    // Highlight the "Blue" player's edges (top-right to bottom-left)
+    ctx.strokeStyle = 'blue';
+    ctx.lineWidth = 5;
+    // Top-right edge
+    ctx.beginPath();
+    startX = offsetX + (boardSize - 1) * hexSpacingX + 0 * hexSpacingX / 2 + hexRadius;
+    startY = offsetY + 0 * hexSpacingY;
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(offsetX + 0 * hexSpacingX + (boardSize - 1) * hexSpacingX / 2 - hexRadius/2, offsetY + (boardSize - 1) * hexSpacingY - hexHeight/2);
+    ctx.stroke();
+
+
+    // Bottom-left edge
+    ctx.beginPath();
+    startX = offsetX + 0 * hexSpacingX + (boardSize -1) * hexSpacingX / 2;
+    startY = offsetY + (boardSize - 1) * hexSpacingY + hexHeight/2;
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(offsetX + 0 * hexSpacingX + (boardSize - 1) * hexSpacingX / 2 - hexRadius, offsetY + (boardSize - 1) * hexSpacingY + hexHeight/2);
+    ctx.stroke();
+
+}
+
+
+// --- Event Handling ---
+
+canvas.addEventListener('click', (event) => {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+
+    // Find which hex was clicked
+    for (let q = 0; q < boardSize; q++) {
+        for (let r = 0; r < boardSize; r++) {
+            const hexX = offsetX + q * hexSpacingX + r * hexSpacingX / 2;
+            const hexY = offsetY + r * hexSpacingY;
+
+            // Simple distance check to see if click is inside hex (circular approximation)
+            const distance = Math.sqrt(Math.pow(mouseX - hexX, 2) + Math.pow(mouseY - hexY, 2));
+
+            if (distance < hexRadius && board[q][r] === null) {
+                board[q][r] = currentPlayer;
+                drawBoard();
+                // In a real game, you'd then check for win conditions and switch turns
+                currentPlayer = currentPlayer === 'Red' ? 'Blue' : 'Red';
+                currentTurnSpan.textContent = currentPlayer;
+                // You'd also add win condition check here
+                return; // Stop after placing one piece
+            }
+        }
+    }
+});
+
+resetButton.addEventListener('click', initializeGame);
+
+// Load images before drawing the initial board
+Promise.all([
+    new Promise(resolve => redPieceImage.onload = resolve),
+    new Promise(resolve => bluePieceImage.onload = resolve)
+]).then(() => {
+    initializeGame();
+});
+
+// Fallback for immediate drawing if images are cached
+if (redPieceImage.complete && bluePieceImage.complete) {
+    initializeGame();
+}
+
+  </script>
+</body>
+</html>
+
