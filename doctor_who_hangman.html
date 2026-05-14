@@ -98,7 +98,7 @@
 
     <div id="game-view">
         <!-- Once you have your Angel GLB or PNG, update this SRC -->
-        <img id="angel-image" src="https://via.placeholder.com/300x400/222/555?text=DON'T+BLINK" alt="Weeping Angel">
+        <img id="angel-image" src="1778725744187.png" alt="Weeping Angel">
     </div>
 
     <div id="word-container">_ _ _ _ _</div>
@@ -108,55 +108,77 @@
     <button class="reset-btn" onclick="start()">RE-SYNC TIMELINE</button>
 
     <script>
-        const words = ["GALLIFREY", "WEEPING", "STATUE", "QUANTUM", "BLINK", "STONE", "TIMELORD"];
-        let targetWord = "";
-        let mistakes = 0;
-        let guessed = [];
+    const words = ["GALLIFREY", "WEEPING", "STATUE", "QUANTUM", "BLINK", "STONE", "TIMELORD"];
+    
+    // 1. List your 6 images here in order from "Far Away" to "Attack"
+    const angelImages = [
+        "1778725744187.png", // 0 mistakes (Far away)
+        "1778725543182.png", // 1 mistake
+        "1778725159799.png", // 2 mistakes
+        "1778725109212.png", // 3 mistakes
+        "1778724987591.png", // 4 mistakes
+        "1778724937602.png"  // 5 mistakes (In your face!)
+    ];
 
-        function start() {
-            targetWord = words[Math.floor(Math.random() * words.length)];
-            guessed = [];
-            mistakes = 0;
-            document.body.className = "stage-0";
-            render();
-            makeKeys();
-        }
+    let targetWord = "";
+    let mistakes = 0;
+    let guessed = [];
 
-        function makeKeys() {
-            const kb = document.getElementById('keyboard');
-            kb.innerHTML = '';
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('').forEach(l => {
-                const b = document.createElement('button');
-                b.innerText = l;
-                b.onclick = () => guess(l, b);
-                kb.appendChild(b);
-            });
-        }
+    function start() {
+        targetWord = words[Math.floor(Math.random() * words.length)];
+        guessed = [];
+        mistakes = 0;
+        updateAngelImage(); // Reset image to index 0
+        render();
+        makeKeys();
+    }
 
-        function guess(letter, btn) {
-            btn.disabled = true;
-            if(targetWord.includes(letter)) {
-                guessed.push(letter);
-            } else {
-                mistakes++;
-                document.body.className = `stage-${mistakes}`;
+    // 2. This function swaps the "src" of your image tag
+    function updateAngelImage() {
+        const imgElement = document.getElementById('angel-image');
+        // This looks at your mistakes and picks the right image from the list
+        imgElement.src = angelImages[mistakes]; 
+    }
+
+    function makeKeys() {
+        const kb = document.getElementById('keyboard');
+        kb.innerHTML = '';
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('').forEach(l => {
+            const b = document.createElement('button');
+            b.innerText = l;
+            b.onclick = () => guess(l, b);
+            kb.appendChild(b);
+        });
+    }
+
+    function guess(letter, btn) {
+        btn.disabled = true;
+        if(targetWord.includes(letter)) {
+            guessed.push(letter);
+        } else {
+            mistakes++;
+            // 3. Every time a mistake happens, swap the image!
+            if (mistakes < angelImages.length) {
+                updateAngelImage();
             }
-            render();
         }
+        render();
+    }
 
-        function render() {
-            const display = targetWord.split('').map(l => guessed.includes(l) ? l : "_").join(' ');
-            document.getElementById('word-container').innerText = display;
+    function render() {
+        const display = targetWord.split('').map(l => guessed.includes(l) ? l : "_").join(' ');
+        document.getElementById('word-container').innerText = display;
 
-            if(!display.includes("_")) {
-                setTimeout(() => { alert("You survived."); start(); }, 200);
-            } else if (mistakes >= 5) {
-                setTimeout(() => { alert("YOU BLINKED."); start(); }, 200);
-            }
+        if(!display.includes("_")) {
+            setTimeout(() => { alert("You survived."); start(); }, 200);
+        } else if (mistakes >= 5) {
+            setTimeout(() => { alert("YOU BLINKED."); start(); }, 200);
         }
+    }
 
-        start();
-    </script>
+    start();
+</script>
+
 </body>
 </html>
 
