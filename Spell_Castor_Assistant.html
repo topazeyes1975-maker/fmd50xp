@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>The Internal Ark: DNA Forge</title>
     <style>
-        /* Universal Mobile Setup */
+        /* UI/UX Optimization for Mobile */
         * { box-sizing: border-box; touch-action: none; }
 
         body {
@@ -50,9 +50,14 @@
             border-radius: 50% 50% 40% 40%;
             position: relative;
             box-shadow: inset 0 -20px 30px rgba(0,0,0,0.8), 0 10px 20px rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: visible;
         }
 
-        #potion {
+        /* The bubbling potion surface */
+        #potion-surface {
             position: absolute;
             top: 15%;
             left: 10%;
@@ -62,9 +67,18 @@
             border-radius: 50%;
             filter: blur(4px);
             transition: all 0.5s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            z-index: 1;
+        }
+
+        /* The Video Container for your 3D Creatures */
+        #creatureVideo {
+            width: 160px;
+            height: 160px;
+            z-index: 10;
+            display: none;
+            object-fit: contain;
+            border-radius: 50%;
+            pointer-events: none;
         }
 
         .ingredient-shelf {
@@ -92,7 +106,7 @@
             user-select: none;
         }
 
-        /* Explosion Shake */
+        /* Animation for the Experiment Failure */
         @keyframes shake {
             0% { transform: translate(1px, 1px) rotate(0deg); }
             20% { transform: translate(-3px, 0px) rotate(1deg); }
@@ -122,8 +136,10 @@
     <div id="log">Awaiting DNA Samples...</div>
 
     <div id="cauldron-area">
-        <div id="cauldron" id="main-pot">
-            <div id="potion"></div>
+        <div id="cauldron">
+            <div id="potion-surface"></div>
+            <!-- Video tag for your 3D creations with audio enabled -->
+            <video id="creatureVideo" loop playsinline></video>
         </div>
     </div>
 
@@ -137,23 +153,24 @@
     <button class="reset-btn" onclick="resetPot()">PURGE CAULDRON</button>
 
     <script>
-        const potion = document.getElementById('potion');
+        const potion = document.getElementById('potion-surface');
+        const video = document.getElementById('creatureVideo');
         const log = document.getElementById('log');
         const cauldron = document.getElementById('cauldron');
         const items = document.querySelectorAll('.item');
 
-        // REPLACE FILENAMES: Update these with your GitHub image names!
+        // RE-SYNC DATA: Add your creature video filenames here
         const animalRecipes = {
-            "Butterfly Wing,Fox Tail": { name: "Vulpes-Fly", img: "vulpes_fly.png" },
-            "Caterpillar,Star Dust": { name: "Stellapod", img: "stellapod.png" }
+            "Butterfly Wing,Fox Tail": { name: "Vulpes-Fly", file: "vulpes_fly.mp4" },
+            "Caterpillar,Star Dust": { name: "Stellapod", file: "stellapod.mp4" }
         };
 
         let currentIngredients = [];
 
+        // Mobile Touch Logic for Drag and Drop
         items.forEach(item => {
             item.addEventListener('touchstart', (e) => {
                 const touch = e.touches[0];
-                const startPos = { x: item.offsetLeft, y: item.offsetTop };
                 item.style.position = 'fixed';
                 item.style.zIndex = '1000';
                 
@@ -184,7 +201,7 @@
         });
 
         function addIngredient(name, color) {
-            if (currentIngredients.includes(name)) return; // No duplicates
+            if (currentIngredients.includes(name)) return;
             currentIngredients.push(name);
             potion.style.background = color;
             
@@ -193,11 +210,15 @@
             if (animalRecipes[currentCombo]) {
                 const creature = animalRecipes[currentCombo];
                 log.innerText = "FORGE SUCCESS: " + creature.name;
-                log.style.color = "#00d4ff";
-                potion.style.backgroundImage = `url('${creature.img}')`;
-                potion.style.backgroundSize = "contain";
-                potion.style.backgroundRepeat = "no-repeat";
-                potion.style.filter = "none";
+                log.style.color = "#00d4ff"; // Signature blue
+                
+                // Show Video and enable audio
+                video.src = creature.file;
+                video.style.display = 'block';
+                video.muted = false; 
+                video.play();
+                
+                potion.style.opacity = '0'; // Hide potion to show creature
             } 
             else if (currentIngredients.length >= 2) {
                 triggerExplosion();
@@ -223,9 +244,10 @@
 
         function resetPot() {
             currentIngredients = [];
+            video.style.display = 'none';
+            video.src = "";
+            potion.style.opacity = '1';
             potion.style.background = "#22c55e";
-            potion.style.backgroundImage = "none";
-            potion.style.filter = "blur(4px)";
             log.innerText = "Cauldron Cleansed.";
             log.style.color = "#888";
         }
