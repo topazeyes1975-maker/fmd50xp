@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fhonda's Ogham Master Translator</title>
     <p>This tool connects Modern English, Traditional Irish, and Ancient Ogham through a custom-built logic:
         ​The Dictionary Layer: When you type an English word, the program first checks a built-in Irish dictionary. If a match is found (like "love" becoming "grá"), it automatically translates it into the Irish language to honor the original Celtic soul of the script.
@@ -21,7 +21,20 @@
     text-align: left;      /* Keeps the text aligned to the side */
     margin: 20px;          /* Adds breathing room around the paragraph */
   }
-        body { background: #1a1a1a; color: #d4af37; font-family: 'Segoe UI', serif; text-align: center; padding: 20px; }
+        html, body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden; /* Stops that annoying side-to-side wiggle */
+    width: 100%;
+}
+.your-main-container-class {
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+        
         .container { max-width: 600px; margin: auto; border: 1px solid #333; padding: 20px; border-radius: 15px; background: #222; }
         input { padding: 15px; width: 85%; border-radius: 5px; border: 2px solid #d4af37; background: #111; color: white; font-size: 1.2rem; margin-bottom: 10px; }
         canvas { background: #222; border: 1px solid #333; box-shadow: 0 0 20px rgba(212, 175, 55, 0.1); margin-top: 20px; }
