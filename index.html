@@ -7,7 +7,7 @@
     <style>
         body {
             background-color: #0d0d0d;
-            color: #d4af37; /* Gold for a legendary feel */
+            color: #d4af37;
             font-family: 'Courier New', Courier, monospace;
             display: flex;
             flex-direction: column;
@@ -17,7 +17,36 @@
             min-height: 100vh;
         }
 
-        /* The Wanted Poster Frame */
+        /* NAVIGATION MENU STYLING */
+        nav {
+            width: 100%;
+            background: #111;
+            border-bottom: 1px solid #333;
+            padding: 10px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 0;
+            padding: 0;
+        }
+        nav li { margin: 5px 15px; }
+        nav a {
+            color: #a855f7;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+        nav a:hover { color: #fff; text-shadow: 0 0 8px #a855f7; }
+
+        /* THE WANTED POSTER */
         .poster-frame {
             border: 10px double #444;
             padding: 20px;
@@ -26,36 +55,32 @@
             width: 90%;
             text-align: center;
             box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
-            margin-bottom: 80px; /* Space for the ticker */
+            margin: 40px 0 100px 0; /* Space for ticker */
         }
 
-        h1 { font-size: 3rem; margin: 10px 0; letter-spacing: 5px; }
-        .alias { font-size: 1.2rem; color: #a855f7; margin-bottom: 20px; }
+        h1 { font-size: 3rem; margin: 10px 0; letter-spacing: 5px; color: #d4af37; }
+        .alias { font-size: 1.1rem; color: #a855f7; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
 
         .photo-area {
             width: 100%;
             aspect-ratio: 1/1;
-            background: #333;
+            background: #222;
             border: 4px solid #d4af37;
             margin: 20px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             overflow: hidden;
         }
-        
-        .photo-area img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%) sepia(50%); }
+        .photo-area img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%) sepia(30%); }
 
-        .bio-info { text-align: left; line-height: 1.5; font-size: 1rem; color: #bbb; }
-        .label { font-weight: bold; color: #d4af37; }
+        .bio-info { text-align: left; line-height: 1.6; font-size: 1rem; color: #bbb; }
+        .label { font-weight: bold; color: #d4af37; margin-right: 10px; }
 
-        /* THE TIMES SQUARE TICKER */
+        /* NEWS TICKER */
         .ticker-wrap {
             width: 100%;
             overflow: hidden;
             background: #000;
             border-top: 2px solid #a855f7;
-            padding: 10px 0;
+            padding: 12px 0;
             position: fixed;
             bottom: 0;
             left: 0;
@@ -67,48 +92,53 @@
             animation: scroll 25s linear infinite;
             color: #00d4ff;
             font-weight: bold;
+            font-family: 'Courier New', monospace;
         }
         @keyframes scroll {
             0% { transform: translateX(100%); }
             100% { transform: translateX(-100%); }
         }
         .ticker span { margin-right: 60px; }
-
-        .nav-links { margin-top: 20px; display: flex; justify-content: space-around; }
-        .nav-links a { color: #a855f7; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
+
+    <!-- YOUR NAVIGATION -->
+    <nav>
+        <ul>
+            <li><a href="index.html">HOME</a></li>
+            <li><a href="Atlas_Mutatis.html">Atlas Mutatis</a></li>
+            <li><a href="Project.html">Physical Project</a></li>
+            <li><a href="Games.html">Games</a></li>
+            <li><a href="3Dmodel.html">3D Model</a></li>
+            <li><a href="contact.html">CONTACT</a></li>
+        </ul>
+    </nav>
 
     <div class="poster-frame">
         <h1>WANTED</h1>
         <div class="alias">AI DIRECTOR & CREATIVE VISIONARY</div>
         
         <div class="photo-area">
-            <!-- Replace with your picture URL -->
-            <img src="your-photo.jpg" alt="Fonda Dutton">
+            <!-- Replace this src with your actual photo file name -->
+            <img src="fonda_profile.jpg" alt="Fonda Dutton">
         </div>
 
         <div class="bio-info">
-            <p><span class="label">NAME:</span> Fonda Dutton</p>
-            <p><span class="label">SPECIALTY:</span> 3D Artifacts & AI Direction</p>
-            <p><span class="label">MISSION:</span> Building the Internal Ark</p>
-            <p><span class="label">REWARD:</span> Creative Inspiration & Digital Mastery</p>
-        </div>
-
-        <div class="nav-links">
-            <a href="games.html">THE FORGE</a>
-            <a href="contact.html">THE GATEWAY</a>
+            <p><span class="label">IDENTIFIED AS:</span> Fonda Dutton</p>
+            <p><span class="label">OCCUPATION:</span> Web Developer & Songwriter</p>
+            <p><span class="label">LAST SEEN:</span> Building the Internal Ark</p>
+            <p><span class="label">REWARD:</span> Insights into the 'Uneek' Self</p>
         </div>
     </div>
 
-    <!-- NEWS TICKER -->
+    <!-- TIMES SQUARE NEWS TICKER -->
     <div class="ticker-wrap">
         <div class="ticker">
-            <span>● LATEST NEWS: DNA FORGE IS NOW LIVE</span>
-            <span>● PROJECT UPDATE: STELLAPOD RESCUE IN PRE-PRODUCTION</span>
-            <span>● STATUS: NIGHT SHIFT CREATIVITY ACTIVE</span>
-            <span>● ARCHIVES: NEW POEMS ADDED TO DIGITAL DIARY</span>
+            <span>● BREAKING: DNA FORGE LIVE IN THE GAMES ROOM</span>
+            <span>● STATUS: NIGHT SHIFT OPERATIONAL</span>
+            <span>● NEW LOG: STELLAPOD RESCUE PRE-PRODUCTION</span>
+            <span>● UPDATE: ATLAS MUTATI LORE EXPANDED</span>
         </div>
     </div>
 
