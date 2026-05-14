@@ -5,41 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact the Creator</title>
     <style>
-        body {
-            background-color: blue;
-            color: cycus;
-            font-family: 'Garamond', serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            text-align: center;
-        }
-        .container {
-            border: 1px solid light blue;
-            padding: 40px;
-            border-radius: 15px;
-            background: #111;
-            max-width: 400px;
-            width: 90%;
-        }
-        h1 { color: teal; letter-spacing: 3px; }
-        p { line-height: 1.6; font-size: 1.1rem; }
-        .contact-link {
-            display: block;
-            margin: 20px 0;
-            padding: 15px;
-            border: 1px solid light blue;
-            color: blue;
-            text-decoration: none;
-            border-radius: 8px;
-            transition: 0.3s;
-        }
-        .contact-link:hover { background: blue; color: white; }
-        .back-btn { margin-top: 20px; color: white; text-decoration: none; font-size: 0.9rem; }
-    </style>
+    body {
+        background-color: #0d0d0d; /* Dark black background */
+        color: #a0f0ff; /* Soft cyan text */
+        font-family: 'Courier New', Courier, monospace;
+        margin: 0;
+        padding: 0;
+        text-align: center;
+        text-transform: uppercase;
+    }
+
+    /* FIXING THE TOP & BOTTOM BLUE BLOCKS */
+    nav, footer, .blue-section { 
+        background-color: #000a12 !important; /* Deep Navy, matching your Ark pages */
+        border-bottom: 2px solid #004d7c;
+        padding: 20px 0;
+    }
+
+    h1 { 
+        color: #00f2ff; 
+        text-shadow: 0 0 15px rgba(0, 242, 255, 0.4); 
+        margin-top: 50px;
+        letter-spacing: 3px;
+    }
+
+    /* MAKING LINKS READABLE */
+    a { 
+        color: #00f2ff; 
+        text-decoration: none; 
+        display: block; 
+        margin: 20px 0;
+        font-weight: bold;
+    }
+
+    a:hover { 
+        color: #fff; 
+        text-shadow: 0 0 10px #00f2ff; 
+    }
+
+    .sub-text {
+        color: #555; /* Dimmer text for "Correspondence received" */
+        text-transform: none;
+        font-style: italic;
+    }
+</style>
+
 </head>
 <body>
 
