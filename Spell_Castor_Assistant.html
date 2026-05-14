@@ -13,24 +13,49 @@
         }
         h2 { font-size: 3.5vh; margin: 0; letter-spacing: 2px; color: #a855f7; text-align: center; }
         #log { font-size: 2.2vh; color: #888; text-align: center; min-height: 5vh; margin-top: 10px; }
+        
         #cauldron-area {
             position: relative; width: 100%; height: 35vh;
             display: flex; justify-content: center; align-items: flex-end; padding-bottom: 20px;
         }
+        
         #cauldron {
-            width: 220px; height: 180px; background: #1a1a1a; border: 8px solid #333;
+            width: 240px; height: 200px; background: #1a1a1a; border: 8px solid #333;
             border-radius: 50% 50% 40% 40%; position: relative;
             box-shadow: inset 0 -20px 30px rgba(0,0,0,0.8), 0 10px 20px rgba(0,0,0,0.5);
             display: flex; justify-content: center; align-items: center;
+            overflow: visible; /* Let bubbles float out */
         }
+
         #potion-surface {
-            position: absolute; top: 15%; left: 10%; right: 10%; bottom: 20%;
-            background: #22c55e; border-radius: 50%; filter: blur(4px); transition: all 0.5s ease; z-index: 1;
+            position: absolute; top: 10%; left: 5%; right: 5%; bottom: 15%;
+            background: radial-gradient(circle, #22c55e, #14532d);
+            border-radius: 50%; filter: blur(6px); transition: all 0.5s ease; z-index: 1;
         }
+
         #creatureVideo {
-            width: 150px; height: 150px; z-index: 10; display: none;
+            width: 170px; height: 170px; z-index: 5; display: none;
             object-fit: contain; border-radius: 50%;
         }
+
+        /* Bubble Atmosphere */
+        .bubble {
+            position: absolute;
+            background: rgba(34, 197, 94, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            bottom: 20%;
+            z-index: 10; /* Float in front of video */
+            animation: rise 3s infinite ease-in;
+            pointer-events: none;
+        }
+
+        @keyframes rise {
+            0% { transform: translateY(0) scale(1); opacity: 0; }
+            20% { opacity: 0.8; }
+            100% { transform: translateY(-120px) scale(1.5); opacity: 0; }
+        }
+
         .ingredient-shelf {
             display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
             padding: 15px; background: #111; border: 1px solid #333; border-radius: 12px;
@@ -41,19 +66,14 @@
             display: flex; justify-content: center; align-items: center; font-size: 3.5vh;
             cursor: pointer; transition: transform 0.2s;
         }
-        .item:active { transform: scale(0.9) translateY(-10px); }
+        .item:active { transform: scale(0.9); }
         .reset-btn {
             width: 100%; max-width: 450px; padding: 12px; background: #1a1a1a;
             border: 1px solid #a855f7; color: #a855f7; border-radius: 6px; font-size: 2vh;
         }
-        @keyframes shake {
-            0% { transform: translate(1px, 1px); }
-            50% { transform: translate(-3px, -2px); }
-            100% { transform: translate(0px, 0px); }
-        }
     </style>
 </head>
-<body>
+<body onload="startBubbles()">
 
     <h2>THE INTERNAL ARK</h2>
     <div id="log">Tap Ingredients to Forge...</div>
@@ -94,51 +114,45 @@
 
         let currentIngredients = [];
 
+        function startBubbles() {
+            setInterval(() => {
+                const b = document.createElement('div');
+                b.className = 'bubble';
+                const size = Math.random() * 15 + 5 + 'px';
+                b.style.width = size;
+                b.style.height = size;
+                b.style.left = Math.random() * 60 + 20 + '%';
+                b.style.animationDuration = Math.random() * 2 + 2 + 's';
+                cauldron.appendChild(b);
+                setTimeout(() => b.remove(), 4000);
+            }, 400);
+        }
+
         function addIngredient(name, color) {
             if (currentIngredients.includes(name)) return;
             currentIngredients.push(name);
-            
-            // Visual feedback
             potion.style.background = color;
             log.innerText = "DNA Link: " + currentIngredients.join(" + ");
             
             let currentCombo = currentIngredients.slice().sort().join(',');
-
             if (animalRecipes[currentCombo]) {
                 const creature = animalRecipes[currentCombo];
                 log.innerText = "FORGE SUCCESS: " + creature.name;
                 log.style.color = "#00d4ff";
-                
                 video.src = creature.file;
                 video.style.display = 'block';
-                video.muted = false; 
-                video.play().catch(err => {
-                    console.log("Auto-play blocked, wait for user touch");
-                });
-                potion.style.opacity = '0';
+                video.play();
+                potion.style.opacity = '0.3'; // Keep a little green glow
             } 
             else if (currentIngredients.length >= 3) {
-                triggerExplosion();
-            }
-        }
-
-        function triggerExplosion() {
-            log.innerText = "STABILITY LOST: DNA MISMATCH!";
-            log.style.color = "#ff4444";
-            potion.style.background = "radial-gradient(circle, #fff, #ff4444, #000)";
-            cauldron.style.animation = "shake 0.3s infinite";
-
-            setTimeout(() => {
-                alert("CRITICAL FAILURE: The DNA combination was unstable.");
-                cauldron.style.animation = ""; 
+                alert("CRITICAL FAILURE: DNA MISMATCH!");
                 resetPot();
-            }, 600);
+            }
         }
 
         function resetPot() {
             currentIngredients = [];
             video.style.display = 'none';
-            video.pause();
             video.src = "";
             potion.style.opacity = '1';
             potion.style.background = "#22c55e";
