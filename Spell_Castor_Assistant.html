@@ -5,127 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>The Internal Ark: DNA Forge</title>
     <style>
-        /* UI/UX Optimization for Mobile */
-        * { box-sizing: border-box; touch-action: none; -webkit-user-select: none; }
-
+        * { box-sizing: border-box; -webkit-user-select: none; touch-action: manipulation; }
         body {
-            background-color: #0a0a0c;
-            color: #d1d1d1;
-            font-family: 'Garamond', serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            height: 100vh;
-            margin: 0;
-            padding: 15px;
-            overflow: hidden;
+            background-color: #0a0a0c; color: #d1d1d1; font-family: 'Garamond', serif;
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+            height: 100vh; margin: 0; padding: 15px; overflow: hidden;
         }
-
         h2 { font-size: 3.5vh; margin: 0; letter-spacing: 2px; color: #a855f7; text-align: center; }
-
-        #log {
-            font-size: 2.2vh;
-            color: #888;
-            text-align: center;
-            height: 5vh;
-            margin-top: 10px;
-        }
-
+        #log { font-size: 2.2vh; color: #888; text-align: center; min-height: 5vh; margin-top: 10px; }
         #cauldron-area {
-            position: relative;
-            width: 100%;
-            height: 40vh;
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            padding-bottom: 20px;
+            position: relative; width: 100%; height: 35vh;
+            display: flex; justify-content: center; align-items: flex-end; padding-bottom: 20px;
         }
-
         #cauldron {
-            width: 220px;
-            height: 200px;
-            background: #1a1a1a;
-            border: 8px solid #333;
-            border-radius: 50% 50% 40% 40%;
-            position: relative;
+            width: 220px; height: 180px; background: #1a1a1a; border: 8px solid #333;
+            border-radius: 50% 50% 40% 40%; position: relative;
             box-shadow: inset 0 -20px 30px rgba(0,0,0,0.8), 0 10px 20px rgba(0,0,0,0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            display: flex; justify-content: center; align-items: center;
         }
-
         #potion-surface {
-            position: absolute;
-            top: 15%;
-            left: 10%;
-            right: 10%;
-            bottom: 20%;
-            background: #22c55e;
-            border-radius: 50%;
-            filter: blur(4px);
-            transition: all 0.5s ease;
-            z-index: 1;
+            position: absolute; top: 15%; left: 10%; right: 10%; bottom: 20%;
+            background: #22c55e; border-radius: 50%; filter: blur(4px); transition: all 0.5s ease; z-index: 1;
         }
-
         #creatureVideo {
-            width: 160px;
-            height: 160px;
-            z-index: 10;
-            display: none;
-            object-fit: contain;
-            border-radius: 50%;
-            pointer-events: none;
+            width: 150px; height: 150px; z-index: 10; display: none;
+            object-fit: contain; border-radius: 50%;
         }
-
         .ingredient-shelf {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            padding: 15px;
-            background: #111;
-            border: 1px solid #333;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 450px;
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+            padding: 15px; background: #111; border: 1px solid #333; border-radius: 12px;
+            width: 100%; max-width: 450px;
         }
-
         .item {
-            aspect-ratio: 1/1;
-            background: #222;
-            border: 1px solid #444;
-            border-radius: 8px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 3.5vh;
-            cursor: grab;
+            aspect-ratio: 1/1; background: #222; border: 1px solid #444; border-radius: 8px;
+            display: flex; justify-content: center; align-items: center; font-size: 3.5vh;
+            cursor: pointer; transition: transform 0.2s;
         }
-
+        .item:active { transform: scale(0.9) translateY(-10px); }
+        .reset-btn {
+            width: 100%; max-width: 450px; padding: 12px; background: #1a1a1a;
+            border: 1px solid #a855f7; color: #a855f7; border-radius: 6px; font-size: 2vh;
+        }
         @keyframes shake {
             0% { transform: translate(1px, 1px); }
             50% { transform: translate(-3px, -2px); }
             100% { transform: translate(0px, 0px); }
-        }
-
-        .reset-btn {
-            width: 100%;
-            max-width: 450px;
-            padding: 12px;
-            background: #1a1a1a;
-            border: 1px solid #a855f7;
-            color: #a855f7;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            font-size: 2vh;
         }
     </style>
 </head>
 <body>
 
     <h2>THE INTERNAL ARK</h2>
-    
-    <div id="log">Awaiting DNA Samples...</div>
+    <div id="log">Tap Ingredients to Forge...</div>
 
     <div id="cauldron-area">
         <div id="cauldron">
@@ -135,15 +66,15 @@
     </div>
 
     <div class="ingredient-shelf">
-        <div class="item" data-color="#468e3c" data-name="pepper">🌶️</div>
-        <div class="item" data-color="#47f397" data-name="cinnamon">🪵</div>
-        <div class="item" data-color="#ef4844" data-name="book">📖</div>
-        <div class="item" data-color="#ef4464" data-name="meteorite">☄️</div>
-        <div class="item" data-color="#ef4445" data-name="lion mane">🦁</div>
-        <div class="item" data-color="#ef4443" data-name="Fire">🔥</div>
-        <div class="item" data-color="#3b82f6" data-name="Butterfly Wing">🐉</div>
-        <div class="item" data-color="#eab308" data-name="Star Dust">✨</div>
-        <div class="item" data-color="#22c55e" data-name="human heart">❤️</div>
+        <div class="item" onclick="addIngredient('pepper', '#468e3c')">🌶️</div>
+        <div class="item" onclick="addIngredient('cinnamon', '#47f397')">🪵</div>
+        <div class="item" onclick="addIngredient('book', '#ef4844')">📖</div>
+        <div class="item" onclick="addIngredient('meteorite', '#ef4464')">☄️</div>
+        <div class="item" onclick="addIngredient('lion mane', '#ef4445')">🦁</div>
+        <div class="item" onclick="addIngredient('Fire', '#ef4443')">🔥</div>
+        <div class="item" onclick="addIngredient('Butterfly Wing', '#3b82f6')">🐉</div>
+        <div class="item" onclick="addIngredient('Star Dust', '#eab308')">✨</div>
+        <div class="item" onclick="addIngredient('human heart', '#22c55e')">❤️</div>
     </div>
 
     <button class="reset-btn" onclick="resetPot()">PURGE CAULDRON</button>
@@ -153,7 +84,6 @@
         const video = document.getElementById('creatureVideo');
         const log = document.getElementById('log');
         const cauldron = document.getElementById('cauldron');
-        const items = document.querySelectorAll('.item');
 
         const animalRecipes = {
             "book,lion mane,meteorite": { name: "Crystal Lion Earapea", file: "water-pixa-e89099009877-0-0159b684d2b9.mp4" },
@@ -164,63 +94,31 @@
 
         let currentIngredients = [];
 
-        items.forEach(item => {
-            item.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                const touch = e.touches[0];
-                item.style.position = 'fixed';
-                item.style.zIndex = '1000';
-                
-                function moveAt(pageX, pageY) {
-                    item.style.left = pageX - item.offsetWidth / 2 + 'px';
-                    item.style.top = pageY - item.offsetHeight / 2 + 'px';
-                }
-
-                function onTouchMove(event) {
-                    event.preventDefault();
-                    moveAt(event.touches[0].pageX, event.touches[0].pageY);
-                }
-
-                document.addEventListener('touchmove', onTouchMove, { passive: false });
-
-                item.ontouchend = function() {
-                    document.removeEventListener('touchmove', onTouchMove);
-                    const cRect = cauldron.getBoundingClientRect();
-                    const iRect = item.getBoundingClientRect();
-
-                    if (iRect.left < cRect.right && iRect.right > cRect.left &&
-                        iRect.top < cRect.bottom && iRect.bottom > cRect.top) {
-                        addIngredient(item.dataset.name, item.dataset.color);
-                    }
-                    item.style.position = 'static';
-                };
-            });
-        });
-
         function addIngredient(name, color) {
             if (currentIngredients.includes(name)) return;
             currentIngredients.push(name);
-            potion.style.background = color;
             
-            // This sorts ingredients alphabetically so order doesn't matter
+            // Visual feedback
+            potion.style.background = color;
+            log.innerText = "DNA Link: " + currentIngredients.join(" + ");
+            
             let currentCombo = currentIngredients.slice().sort().join(',');
 
             if (animalRecipes[currentCombo]) {
                 const creature = animalRecipes[currentCombo];
                 log.innerText = "FORGE SUCCESS: " + creature.name;
                 log.style.color = "#00d4ff";
+                
                 video.src = creature.file;
                 video.style.display = 'block';
                 video.muted = false; 
-                video.play();
+                video.play().catch(err => {
+                    console.log("Auto-play blocked, wait for user touch");
+                });
                 potion.style.opacity = '0';
             } 
-            else if (currentIngredients.length >= 3) { // Trigger failure after 3 ingredients
+            else if (currentIngredients.length >= 3) {
                 triggerExplosion();
-            } 
-            else {
-                log.innerText = "DNA Link: " + currentIngredients.join(" + ");
-                log.style.color = "#888";
             }
         }
 
@@ -240,6 +138,7 @@
         function resetPot() {
             currentIngredients = [];
             video.style.display = 'none';
+            video.pause();
             video.src = "";
             potion.style.opacity = '1';
             potion.style.background = "#22c55e";
