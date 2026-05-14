@@ -2,425 +2,364 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Bullseye Health Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Namespaced Firebase SDKs for better compatibility in single-file environments -->
+    <!-- Namespaced Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f7f9fc; }
-
-        .bullseye-container {
-            position: relative;
-            width: 100%;
-            max-width: 500px;
-            aspect-ratio: 1 / 1;
-            margin: 0 auto;
-            border-radius: 50%;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f0f4f8; 
+            color: #1a202c;
+            touch-action: manipulation;
         }
 
-        .center-ring {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 55%;
-            height: 55%;
+        /* Responsive Bullseye */
+        .bullseye-outer {
+            position: relative;
+            width: 95vw;
+            max-width: 450px;
+            aspect-ratio: 1 / 1;
+            margin: 20px auto;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .center-hub {
+            position: relative;
+            width: 50%;
+            height: 50%;
             border-radius: 50%;
             background: linear-gradient(135deg, #10b981, #059669);
             color: white;
+            z-index: 10;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 1.5rem;
             text-align: center;
-            box-shadow: 0 0 0 10px #d1fae5;
-            overflow-y: auto;
+            padding: 10px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2), 0 0 0 8px #d1fae5;
         }
         
-        .day-segment {
+        .day-bubble {
             position: absolute;
-            width: 60px;
-            height: 60px;
-            background-color: white;
+            width: 48px;
+            height: 48px;
+            background: white;
             border-radius: 50%;
+            border: 2px solid #e2e8f0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            transition: transform 0.2s, border-color 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            z-index: 5;
             cursor: pointer;
-            transition: all 0.2s;
-            border: 2px solid #e5e7eb;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            padding: 2px;
-            overflow: hidden;
         }
 
-        .day-segment:hover {
-            transform: scale(1.1) translate(-50%, -50%);
-            border-color: #3b82f6;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-            z-index: 20;
-        }
-        
-        .dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            margin: 0.5px;
-            display: inline-block;
-        }
-        .dot-container {
+        .day-bubble:active { transform: scale(0.9) translate(-50%, -50%); }
+
+        .dot-grid {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            margin-top: 1px;
-            max-height: 20px;
-            overflow: hidden;
+            gap: 1px;
+            width: 100%;
+            padding: 0 4px;
         }
 
-        #prev-month, #next-month {
+        .mini-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+        }
+
+        .nav-btn {
             position: absolute;
-            z-index: 10;
             top: 50%;
             transform: translateY(-50%);
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background-color: #3b82f6;
+            width: 40px;
+            height: 40px;
+            background: #3b82f6;
             color: white;
-            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.5);
-            transition: background-color 0.2s;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        #prev-month { left: -24px; }
-        #next-month { right: -24px; }
 
-        .modal-overlay {
-            background-color: rgba(0, 0, 0, 0.6);
+        .modal-bg {
+            background: rgba(15, 23, 42, 0.75);
             backdrop-filter: blur(4px);
         }
-        .scroll-y-auto {
-             max-height: calc(100vh - 40px);
-             overflow-y: auto;
+
+        /* Prevents text selection while tapping buttons */
+        .no-select {
+            -webkit-user-select: none;
+            user-select: none;
         }
     </style>
+</head>
+<body class="no-select">
+
+    <div class="max-w-md mx-auto p-4">
+        <h1 class="text-3xl font-black text-center text-slate-800 my-4">Bullseye Tracker</h1>
+
+        <div class="bullseye-outer" id="bullseye">
+            <!-- Nav Arrows -->
+            <button id="prev" class="nav-btn -left-2" onclick="changeMonth(-1)">←</button>
+            <button id="next" class="nav-btn -right-2" onclick="changeMonth(1)">→</button>
+
+            <!-- Center Ring -->
+            <div class="center-hub">
+                <div id="display-month" class="text-xl font-black leading-tight">...</div>
+                <div class="h-px w-12 bg-white/30 my-2"></div>
+                <div id="summary" class="text-[10px] w-full overflow-hidden leading-tight opacity-90">
+                    Totals display here
+                </div>
+            </div>
+
+            <!-- Days container -->
+            <div id="days-layer" class="absolute inset-0"></div>
+        </div>
+
+        <div id="sync-status" class="text-center text-xs text-slate-400 mt-2">Connecting...</div>
+    </div>
+
+    <!-- Log Modal -->
+    <div id="modal" class="fixed inset-0 z-50 hidden modal-bg flex items-end sm:items-center justify-center">
+        <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden p-6 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="modal-date" class="text-xl font-bold text-slate-800">Log Day</h2>
+                <button onclick="closeModal()" class="text-slate-400 text-3xl">&times;</button>
+            </div>
+
+            <div id="category-list" class="space-y-3 mb-8">
+                <!-- Categories go here -->
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="closeModal()" class="py-3 bg-slate-100 rounded-xl font-bold text-slate-600">Cancel</button>
+                <button onclick="saveAndClose()" class="py-3 bg-emerald-500 rounded-xl font-bold text-white shadow-lg shadow-emerald-200">Save</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        let app, db, auth;
-        let userId = null;
-        let unsubscribe = null;
-
-        // Categories split into Meat and Fish
+        // CONFIG & STATE
         const TRACKING_ITEMS = [
-            { id: 'meat', label: 'Meat 🥩', color: '#b91c1c' },
+            { id: 'meat', label: 'Meat 🥩', color: '#ef4444' },
             { id: 'fish', label: 'Fish 🐟', color: '#06b6d4' },
-            { id: 'vegetables', label: 'Veggies 🥦', color: '#16a34a' },
-            { id: 'fruits', label: 'Fruits 🍓', color: '#f97316' },
-            { id: 'grains', label: 'Grains 🍞', color: '#a16207' },
+            { id: 'veggies', label: 'Veggies 🥦', color: '#22c55e' },
+            { id: 'fruit', label: 'Fruit 🍓', color: '#f59e0b' },
             { id: 'dairy', label: 'Dairy 🥛', color: '#3b82f6' },
-            { id: 'water', label: 'Water 💧', color: '#0ea5e9' },
-            { id: 'caffeine', label: 'Caffeine ☕', color: '#44403c' },
-            { id: 'sugar', label: 'Sugar 🍬', color: '#f43f5e' },
-            { id: 'pee', label: 'Pee 🚽', color: '#eab308' },
-            { id: 'poop', label: 'Poop 💩', color: '#7c2d12' }
+            { id: 'water', label: 'Water 💧', color: '#60a5fa' },
+            { id: 'sugar', label: 'Sugar 🍬', color: '#ec4899' },
+            { id: 'poop', label: 'Poop 💩', color: '#78350f' }
         ];
 
-        const MOOD_EMOJIS = ['😄', '😐', '😞'];
-        const STRESS_EMOJIS = ['🧘', '😰', '🤯'];
-        const PAIN_EMOJIS = ['🟢 (None)', '🟡 (Mild)', '🔴 (High)'];
+        let state = {
+            currentMonth: new Date().getMonth(),
+            currentYear: new Date().getFullYear(),
+            data: {},
+            activeDate: null
+        };
 
-        let currentMonth = new Date().getMonth();
-        let currentYear = new Date().getFullYear();
-        let currentData = {};
-        let isAuthReady = false;
+        // FIREBASE SETUP
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'standalone';
+        let db = null;
+        let userId = 'local-user';
 
-        function formatDateId(date) { return date.toISOString().split('T')[0]; }
-        function parseDateId(dateId) {
-            const parts = dateId.split('-');
-            return new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
-        }
-        function getCollectionPath() {
-            if (!userId) return null;
-            return `artifacts/${appId}/users/${userId}/tracking_entries`;
-        }
-
-        async function initFirebase() {
+        function initApp() {
             try {
-                app = firebase.initializeApp(firebaseConfig);
-                auth = firebase.auth();
-                db = firebase.firestore();
-
-                auth.onAuthStateChanged(async (user) => {
-                    if (user) {
-                        userId = user.uid;
-                    } else {
-                        if (initialAuthToken) {
-                            try {
-                                await auth.signInWithCustomToken(initialAuthToken);
-                            } catch (e) {
-                                await auth.signInAnonymously();
-                            }
+                if (typeof __firebase_config !== 'undefined') {
+                    const config = JSON.parse(__firebase_config);
+                    firebase.initializeApp(config);
+                    db = firebase.firestore();
+                    
+                    firebase.auth().onAuthStateChanged(async user => {
+                        if (user) {
+                            userId = user.uid;
                         } else {
-                            await auth.signInAnonymously();
+                            if (typeof __initial_auth_token !== 'undefined') {
+                                await firebase.auth().signInWithCustomToken(__initial_auth_token);
+                            } else {
+                                await firebase.auth().signInAnonymously();
+                            }
+                            userId = firebase.auth().currentUser.uid;
                         }
-                        userId = auth.currentUser.uid;
-                    }
-                    isAuthReady = true;
-                    renderCalendar(currentMonth, currentYear);
-                });
-            } catch (error) {
-                document.getElementById('loading-state').innerHTML = `<p class="text-red-500 font-bold">Error: ${error.message}</p>`;
-            }
-        }
-
-        function setupDataListener() {
-            if (unsubscribe) unsubscribe();
-            if (!isAuthReady || !userId) return;
-
-            const path = getCollectionPath();
-            const startOfMonth = new Date(currentYear, currentMonth, 1);
-            const endOfMonth = new Date(currentYear, currentMonth + 1, 0);
-            
-            const q = db.collection(path)
-                .where('dateId', '>=', formatDateId(startOfMonth))
-                .where('dateId', '<=', formatDateId(endOfMonth));
-
-            document.getElementById('loading-state').classList.remove('hidden');
-
-            unsubscribe = q.onSnapshot((snapshot) => {
-                currentData = {};
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    // Migrate old 'protein' data to 'meat'
-                    if (data.items && data.items.protein !== undefined) {
-                        data.items.meat = (data.items.meat || 0) + (data.items.protein || 0);
-                        delete data.items.protein;
-                    }
-                    currentData[doc.id] = data;
-                });
-                renderCalendarDays();
-                renderMonthlySummary();
-                document.getElementById('loading-state').classList.add('hidden');
-            });
-        }
-
-        async function saveEntry(dateId, data) {
-            const path = getCollectionPath();
-            if (!path) return;
-            const entryRef = db.collection(path).doc(dateId);
-            const safeData = {
-                ...data,
-                userId: userId,
-                dateId: dateId,
-                items: Object.fromEntries(
-                    Object.entries(data.items).map(([key, value]) => [key, Math.max(0, parseInt(value) || 0)])
-                )
-            };
-            try {
-                await entryRef.set(safeData, { merge: true });
-            } catch (error) {
-                console.error("Save error:", error);
-            }
-        }
-
-        function renderDotDisplay(data) {
-            if (!data || !data.items) return '';
-            let html = '<div class="dot-container">';
-            TRACKING_ITEMS.forEach(item => {
-                const count = data.items[item.id] || 0;
-                for (let i = 0; i < Math.min(count, 6); i++) {
-                    html += `<span class="dot" style="background-color: ${item.color};"></span>`;
+                        document.getElementById('sync-status').innerText = "Cloud Sync Active";
+                        loadData();
+                    });
+                } else {
+                    throw new Error("No config");
                 }
-            });
-            html += '</div>';
-            return html;
-        }
-
-        function renderEmojiDisplay(data) {
-            if (!data) return '';
-            const mood = data.mood ? data.mood.split(' ')[0] : '';
-            const stress = data.stress ? data.stress.split(' ')[0] : '';
-            const pain = data.pain ? data.pain.split(' ')[0] : '';
-            return `<div class="flex text-xs space-x-1">${mood}${stress}${pain}</div>`;
-        }
-
-        function renderCalendarDays() {
-            const daysContainer = document.getElementById('days-ring');
-            daysContainer.innerHTML = '';
-            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            const R = 40;
-            const offsetAngle = -90 - (360 / daysInMonth) / 2;
-
-            for (let day = 1; day <= daysInMonth; day++) {
-                const date = new Date(currentYear, currentMonth, day);
-                const dateId = formatDateId(date);
-                const data = currentData[dateId];
-                const angle = (day - 1) * (360 / daysInMonth) + offsetAngle;
-                const radians = angle * (Math.PI / 180);
-                const x = 50 + R * Math.cos(radians);
-                const y = 50 + R * Math.sin(radians);
-                
-                const html = `
-                    <div class="day-segment ${data ? 'border-indigo-400 bg-indigo-50/50' : 'border-gray-200'}" 
-                         data-date-id="${dateId}"
-                         style="left: ${x}%; top: ${y}%; transform: translate(-50%, -50%);">
-                        <span class="text-sm font-bold text-gray-800">${day}</span>
-                        ${renderDotDisplay(data)}
-                        ${renderEmojiDisplay(data)}
-                    </div>
-                `;
-                daysContainer.innerHTML += html;
+            } catch (e) {
+                document.getElementById('sync-status').innerText = "Offline Mode (Local)";
+                loadData();
             }
-            daysContainer.querySelectorAll('.day-segment').forEach(cell => {
-                cell.onclick = () => openModal(cell.dataset.dateId);
-            });
         }
 
-        function renderCalendar(month, year) {
-            currentMonth = month;
-            currentYear = year;
-            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-            document.getElementById('current-month-year').textContent = `${monthNames[currentMonth]} ${currentYear}`;
-            setupDataListener();
+        function loadData() {
+            if (!db) {
+                // Local Storage Fallback if outside Gemini
+                const local = localStorage.getItem(`bullseye_${appId}`);
+                state.data = local ? JSON.parse(local) : {};
+                render();
+                return;
+            }
+
+            const start = `${state.currentYear}-${String(state.currentMonth + 1).padStart(2, '0')}-01`;
+            const end = `${state.currentYear}-${String(state.currentMonth + 1).padStart(2, '0')}-31`;
+
+            db.collection(`artifacts/${appId}/users/${userId}/entries`)
+                .where('date', '>=', start)
+                .where('date', '<=', end)
+                .onSnapshot(snap => {
+                    snap.forEach(doc => { state.data[doc.id] = doc.data(); });
+                    render();
+                });
         }
 
-        function renderMonthlySummary() {
-            const summaryTotals = TRACKING_ITEMS.reduce((acc, item) => ({...acc, [item.id]: 0}), {});
-            Object.values(currentData).forEach(entry => {
-                if (entry.items) {
-                    Object.keys(entry.items).forEach(itemId => {
-                        if (summaryTotals[itemId] !== undefined) summaryTotals[itemId] += entry.items[itemId] || 0;
+        // RENDERING
+        function render() {
+            const container = document.getElementById('days-layer');
+            container.innerHTML = '';
+            
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            document.getElementById('display-month').innerText = `${monthNames[state.currentMonth]} ${state.currentYear}`;
+
+            const daysInMonth = new Date(state.currentYear, state.currentMonth + 1, 0).getDate();
+            const radius = 40; // Percentage of container width
+            
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dateStr = `${state.currentYear}-${String(state.currentMonth + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                const dayData = state.data[dateStr] || { counts: {} };
+                
+                // MATH: Position bubbles in a circle
+                const angle = ((i - 1) / daysInMonth) * 360 - 90;
+                const rad = angle * (Math.PI / 180);
+                const x = 50 + radius * Math.cos(rad);
+                const y = 50 + radius * Math.sin(rad);
+
+                const bubble = document.createElement('div');
+                bubble.className = `day-bubble ${dayData.id ? 'border-emerald-400' : ''}`;
+                bubble.style.left = `${x}%`;
+                bubble.style.top = `${y}%`;
+                bubble.style.transform = 'translate(-50%, -50%)';
+                bubble.innerHTML = `<span>${i}</span><div class="dot-grid"></div>`;
+                
+                const dotGrid = bubble.querySelector('.dot-grid');
+                TRACKING_ITEMS.forEach(item => {
+                    const count = dayData.counts?.[item.id] || 0;
+                    for(let c=0; c < Math.min(count, 4); c++) {
+                        const dot = document.createElement('div');
+                        dot.className = 'mini-dot';
+                        dot.style.backgroundColor = item.color;
+                        dotGrid.appendChild(dot);
+                    }
+                });
+
+                bubble.onclick = () => openModal(dateStr);
+                container.appendChild(bubble);
+            }
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const totals = {};
+            Object.values(state.data).forEach(entry => {
+                if (entry.counts) {
+                    Object.entries(entry.counts).forEach(([id, val]) => {
+                        totals[id] = (totals[id] || 0) + val;
                     });
                 }
             });
-
-            const summaryContainer = document.getElementById('monthly-summary');
-            summaryContainer.innerHTML = '';
-            TRACKING_ITEMS.forEach(item => {
-                const total = summaryTotals[item.id];
-                if (total > 0) {
-                    summaryContainer.innerHTML += `
-                        <div class="flex items-center justify-between text-xs w-full mb-1">
-                            <span class="font-light text-gray-100">${item.label}</span>
-                            <span class="font-extrabold text-white">${total}</span>
-                        </div>
-                    `;
-                }
-            });
+            
+            const sumStr = TRACKING_ITEMS
+                .filter(item => totals[item.id])
+                .map(item => `${item.label.split(' ')[0]}: ${totals[item.id]}`)
+                .join(' • ');
+            
+            document.getElementById('summary').innerText = sumStr || "Tap a day to start logging";
         }
 
-        let activeDateId = null;
-        function openModal(dateId) {
-            activeDateId = dateId;
-            const entry = currentData[dateId] || { items: {} };
-            document.getElementById('modal-title').textContent = `Log for ${parseDateId(dateId).toLocaleDateString()}`;
+        // MODAL ACTIONS
+        function openModal(dateStr) {
+            state.activeDate = dateStr;
+            const entry = state.data[dateStr] || { counts: {} };
+            document.getElementById('modal-date').innerText = new Date(dateStr).toLocaleDateString(undefined, { month: 'long', day: 'numeric' });
             
-            const itemsContainer = document.getElementById('modal-items');
-            itemsContainer.innerHTML = '';
+            const list = document.getElementById('category-list');
+            list.innerHTML = '';
+            
             TRACKING_ITEMS.forEach(item => {
-                const count = entry.items[item.id] || 0;
-                itemsContainer.innerHTML += `
-                    <div class="flex justify-between items-center py-2 border-b">
-                        <span class="font-medium">${item.label}</span>
-                        <div class="flex items-center space-x-3">
-                            <button onclick="updateModalCount('${item.id}', -1)" class="w-8 h-8 bg-red-500 text-white rounded-full">-</button>
-                            <span id="count-${item.id}" class="w-6 text-center font-bold">${count}</span>
-                            <button onclick="updateModalCount('${item.id}', 1)" class="w-8 h-8 bg-green-500 text-white rounded-full">+</button>
+                const count = entry.counts?.[item.id] || 0;
+                list.innerHTML += `
+                    <div class="flex items-center justify-between p-3 bg-slate-50 rounded-2xl">
+                        <span class="font-bold text-slate-700">${item.label}</span>
+                        <div class="flex items-center space-x-4">
+                            <button onclick="adj('${item.id}', -1)" class="w-10 h-10 bg-white shadow rounded-full text-xl font-bold">-</button>
+                            <span id="mod-${item.id}" class="text-xl font-black w-6 text-center">${count}</span>
+                            <button onclick="adj('${item.id}', 1)" class="w-10 h-10 bg-white shadow rounded-full text-xl font-bold">+</button>
                         </div>
                     </div>
                 `;
             });
-
-            document.getElementById('modal-mood').innerHTML = renderEmojiSelectors('mood', MOOD_EMOJIS, entry.mood);
-            document.getElementById('modal-stress').innerHTML = renderEmojiSelectors('stress', STRESS_EMOJIS, entry.stress);
-            document.getElementById('modal-pain').innerHTML = renderEmojiSelectors('pain', PAIN_EMOJIS, entry.pain);
-            document.getElementById('entry-modal').classList.remove('hidden');
+            
+            document.getElementById('modal').classList.remove('hidden');
         }
 
-        function updateModalCount(itemId, delta) {
-            const el = document.getElementById(`count-${itemId}`);
-            let val = parseInt(el.textContent) + delta;
-            el.textContent = Math.max(0, val);
-        }
+        window.adj = (id, delta) => {
+            const el = document.getElementById(`mod-${id}`);
+            el.innerText = Math.max(0, parseInt(el.innerText) + delta);
+        };
 
-        function renderEmojiSelectors(type, emojis, currentValue) {
-            let html = `<div class="mb-4"><label class="block text-sm font-bold mb-1 text-gray-700 capitalize">${type}</label><div class="flex space-x-2 emoji-sel" data-type="${type}">`;
-            emojis.forEach(emoji => {
-                const isSel = currentValue === emoji;
-                html += `<button onclick="selectEmoji(this)" data-val="${emoji}" class="p-2 text-2xl border-2 rounded-lg ${isSel ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}">${emoji.split(' ')[0]}</button>`;
+        async function saveAndClose() {
+            const counts = {};
+            TRACKING_ITEMS.forEach(item => {
+                counts[item.id] = parseInt(document.getElementById(`mod-${item.id}`).innerText);
             });
-            return html + '</div></div>';
-        }
 
-        function selectEmoji(btn) {
-            btn.parentNode.querySelectorAll('button').forEach(b => b.classList.remove('border-blue-500', 'bg-blue-50'));
-            btn.classList.add('border-blue-500', 'bg-blue-50');
-        }
+            const entry = { date: state.activeDate, counts, updatedAt: Date.now() };
+            state.data[state.activeDate] = entry;
 
-        function saveFromModal() {
-            const items = {};
-            TRACKING_ITEMS.forEach(i => items[i.id] = parseInt(document.getElementById(`count-${i.id}`).textContent));
-            const mood = document.querySelector('.emoji-sel[data-type="mood"] .border-blue-500')?.dataset.val || '';
-            const stress = document.querySelector('.emoji-sel[data-type="stress"] .border-blue-500')?.dataset.val || '';
-            const pain = document.querySelector('.emoji-sel[data-type="pain"] .border-blue-500')?.dataset.val || '';
-            saveEntry(activeDateId, { items, mood, stress, pain });
+            if (db) {
+                await db.collection(`artifacts/${appId}/users/${userId}/entries`).doc(state.activeDate).set(entry);
+            } else {
+                localStorage.setItem(`bullseye_${appId}`, JSON.stringify(state.data));
+            }
+            
+            render();
             closeModal();
         }
 
-        function closeModal() { document.getElementById('entry-modal').classList.add('hidden'); }
+        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+        function changeMonth(d) {
+            state.currentMonth += d;
+            if (state.currentMonth > 11) { state.currentMonth = 0; state.currentYear++; }
+            if (state.currentMonth < 0) { state.currentMonth = 11; state.currentYear--; }
+            render();
+            if (db) loadData();
+        }
 
-        window.onload = () => {
-            initFirebase();
-            document.getElementById('prev-month').onclick = () => renderCalendar(currentMonth - 1, currentYear);
-            document.getElementById('next-month').onclick = () => renderCalendar(currentMonth + 1, currentYear);
-        };
+        initApp();
     </script>
-</head>
-<body class="min-h-screen p-4 flex flex-col items-center">
-    <header class="mb-4">
-        <h1 class="text-3xl font-black text-gray-800">Bullseye Tracker</h1>
-    </header>
-
-    <div class="bullseye-container mt-8">
-        <div id="days-ring" class="w-full h-full"></div>
-        <div class="center-ring">
-            <h2 id="current-month-year" class="text-xl font-bold mb-2"></h2>
-            <div id="monthly-summary" class="w-full"></div>
-        </div>
-        <button id="prev-month" class="flex items-center justify-center font-bold">&larr;</button>
-        <button id="next-month" class="flex items-center justify-center font-bold">&rarr;</button>
-    </div>
-
-    <div id="loading-state" class="mt-4 text-gray-400">Loading your data...</div>
-
-    <div id="entry-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
-            <header class="p-4 border-b flex justify-between font-bold">
-                <span id="modal-title"></span>
-                <button onclick="closeModal()" class="text-gray-400">&times;</button>
-            </header>
-            <div class="p-6 scroll-y-auto" style="max-height: 70vh;">
-                <div id="modal-items" class="mb-6"></div>
-                <div id="modal-mood"></div>
-                <div id="modal-stress"></div>
-                <div id="modal-pain"></div>
-            </div>
-            <footer class="p-4 bg-gray-50 flex space-x-2">
-                <button onclick="closeModal()" class="flex-1 py-2 bg-gray-200 rounded-lg">Cancel</button>
-                <button onclick="saveFromModal()" class="flex-1 py-2 bg-indigo-600 text-white rounded-lg">Save</button>
-            </footer>
-        </div>
-    </div>
 </body>
 </html>
-
