@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Midnight Protocol: Lights Out</title>
+    <style>
+        * { box-sizing: border-box; touch-action: manipulation; }
+
+        body {
+            background-color: #0a0a0c;
+            color: #d1d1d1;
+            font-family: 'Garamond', serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        h2 { font-size: 3.5vh; margin: 0; letter-spacing: 3px; color: #00d4ff; text-align: center; }
+
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            gap: 8px;
+            width: 100%;
+            max-width: 400px;
+            height: 50vh; /* Fits center of screen */
+        }
+
+        .cell {
+            background-color: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .cell.on {
+            background-color: #00d4ff;
+            box-shadow: 0 0 15px #00d4ff, inset 0 0 5px white;
+            border-color: #fff;
+        }
+
+        #status {
+            font-size: 2.5vh;
+            color: #888;
+            height: 4vh;
+        }
+
+        .controls {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        button {
+            height: 6vh;
+            background: #222;
+            color: #fff;
+            border: 1px solid #444;
+            font-size: 2vh;
+            border-radius: 4px;
+            letter-spacing: 1px;
+        }
+
+        button:active { background: #333; }
+    </style>
+</head>
+<body>
+
+    <h2>MIDNIGHT PROTOCOL</h2>
+    
+    <div id="status">Syncing Neural Link...</div>
+
+    <div id="game-board" id="board"></div>
+
+    <div class="controls">
+        <button onclick="initGame()">RESET GRID</button>
+    </div>
+
+    <script>
+        const size = 5;
+        const boardElement = document.getElementById('game-board');
+        const statusElement = document.getElementById('status');
+        let grid = [];
+
+        function initGame() {
+            grid = [];
+            boardElement.innerHTML = '';
+            for (let r = 0; r < size; r++) {
+                grid[r] = [];
+                for (let c = 0; c < size; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+                    cell.onclick = () => toggle(r, c);
+                    boardElement.appendChild(cell);
+                    grid[r][c] = false;
+                }
+            }
+            
+            // Randomize board by simulating clicks (ensures it's solvable)
+            for (let i = 0; i < 15; i++) {
+                let r = Math.floor(Math.random() * size);
+                let c = Math.floor(Math.random() * size);
+                applyToggle(r, c);
+            }
+            updateDisplay();
+            statusElement.innerText = "Goal: Darken the Grid";
+        }
+
+        function toggle(r, c) {
+            applyToggle(r, c); // Center
+            applyToggle(r - 1, c); // Top
+            applyToggle(r + 1, c); // Bottom
+            applyToggle(r, c - 1); // Left
+            applyToggle(r, c + 1); // Right
+            updateDisplay();
+            checkWin();
+        }
+
+        function applyToggle(r, c) {
+            if (r >= 0 && r < size && c >= 0 && c < size) {
+                grid[r][c] = !grid[r][c];
+            }
+        }
+
+        function updateDisplay() {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                const r = cell.dataset.row;
+                const c = cell.dataset.col;
+                if (grid[r][c]) {
+                    cell.classList.add('on');
+                } else {
+                    cell.classList.remove('on');
+                }
+            });
+        }
+
+        function checkWin() {
+            const isWin = grid.flat().every(cell => cell === false);
+            if (isWin) {
+                statusElement.innerText = "SYSTEM SECURED.";
+                statusElement.style.color = "#00ffaa";
+            }
+        }
+
+        initGame();
+    </script>
+</body>
+</html>
+
