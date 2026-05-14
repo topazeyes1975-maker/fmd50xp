@@ -6,7 +6,7 @@
     <title>The Internal Ark: DNA Forge</title>
     <style>
         /* UI/UX Optimization for Mobile */
-        * { box-sizing: border-box; touch-action: none; }
+        * { box-sizing: border-box; touch-action: none; -webkit-user-select: none; }
 
         body {
             background-color: #0a0a0c;
@@ -53,10 +53,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: visible;
         }
 
-        /* The bubbling potion surface */
         #potion-surface {
             position: absolute;
             top: 15%;
@@ -70,7 +68,6 @@
             z-index: 1;
         }
 
-        /* The Video Container for your 3D Creatures */
         #creatureVideo {
             width: 160px;
             height: 160px;
@@ -103,17 +100,12 @@
             align-items: center;
             font-size: 3.5vh;
             cursor: grab;
-            user-select: none;
         }
 
-        /* Animation for the Experiment Failure */
         @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); }
-            40% { transform: translate(3px, 2px) rotate(-1deg); }
-            60% { transform: translate(-1px, -1px) rotate(1deg); }
-            80% { transform: translate(-3px, 1px) rotate(0deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
+            0% { transform: translate(1px, 1px); }
+            50% { transform: translate(-3px, -2px); }
+            100% { transform: translate(0px, 0px); }
         }
 
         .reset-btn {
@@ -138,7 +130,6 @@
     <div id="cauldron-area">
         <div id="cauldron">
             <div id="potion-surface"></div>
-            <!-- Video tag for your 3D creations with audio enabled -->
             <video id="creatureVideo" loop playsinline></video>
         </div>
     </div>
@@ -164,20 +155,18 @@
         const cauldron = document.getElementById('cauldron');
         const items = document.querySelectorAll('.item');
 
-        // RE-SYNC DATA: Add your creature video filenames here
         const animalRecipes = {
-            "lion mane, meteorite, book": { name: "Crystal Lion Earapea", file: "water-pixa-e89099009877-0-0159b684d2b9.mp4" },
-            "human heart,Star Dust, book": { name: "sentient", file: "water-pixa-419b8932e688-0-fdb0ea7380d8.mp4" }
-            "cinnamon, lion's mane, stardust": { name: "cinnamon chimera", file: "water-pixa-295bce50d9b0-0-6f5bb6446711 (4).mp4" }
-        "fire, pepper, dragon claw": { name: "pepper dragon", file: "Project_05-13_Full HD 1080p_MEDIUM_FR30.mp4" }
-        
+            "book,lion mane,meteorite": { name: "Crystal Lion Earapea", file: "water-pixa-e89099009877-0-0159b684d2b9.mp4" },
+            "Star Dust,book,human heart": { name: "Sentient", file: "water-pixa-419b8932e688-0-fdb0ea7380d8.mp4" },
+            "Star Dust,cinnamon,lion mane": { name: "Cinnamon Chimera", file: "water-pixa-295bce50d9b0-0-6f5bb6446711 (4).mp4" },
+            "Butterfly Wing,Fire,pepper": { name: "Pepper Dragon", file: "Project_05-13_Full HD 1080p_MEDIUM_FR30.mp4" }
         };
 
         let currentIngredients = [];
 
-        // Mobile Touch Logic for Drag and Drop
         items.forEach(item => {
             item.addEventListener('touchstart', (e) => {
+                e.preventDefault();
                 const touch = e.touches[0];
                 item.style.position = 'fixed';
                 item.style.zIndex = '1000';
@@ -188,10 +177,11 @@
                 }
 
                 function onTouchMove(event) {
+                    event.preventDefault();
                     moveAt(event.touches[0].pageX, event.touches[0].pageY);
                 }
 
-                document.addEventListener('touchmove', onTouchMove);
+                document.addEventListener('touchmove', onTouchMove, { passive: false });
 
                 item.ontouchend = function() {
                     document.removeEventListener('touchmove', onTouchMove);
@@ -202,7 +192,6 @@
                         iRect.top < cRect.bottom && iRect.bottom > cRect.top) {
                         addIngredient(item.dataset.name, item.dataset.color);
                     }
-                    
                     item.style.position = 'static';
                 };
             });
@@ -213,22 +202,20 @@
             currentIngredients.push(name);
             potion.style.background = color;
             
+            // This sorts ingredients alphabetically so order doesn't matter
             let currentCombo = currentIngredients.slice().sort().join(',');
 
             if (animalRecipes[currentCombo]) {
                 const creature = animalRecipes[currentCombo];
                 log.innerText = "FORGE SUCCESS: " + creature.name;
-                log.style.color = "#00d4ff"; // Signature blue
-                
-                // Show Video and enable audio
+                log.style.color = "#00d4ff";
                 video.src = creature.file;
                 video.style.display = 'block';
                 video.muted = false; 
                 video.play();
-                
-                potion.style.opacity = '0'; // Hide potion to show creature
+                potion.style.opacity = '0';
             } 
-            else if (currentIngredients.length >= 2) {
+            else if (currentIngredients.length >= 3) { // Trigger failure after 3 ingredients
                 triggerExplosion();
             } 
             else {
@@ -241,10 +228,10 @@
             log.innerText = "STABILITY LOST: DNA MISMATCH!";
             log.style.color = "#ff4444";
             potion.style.background = "radial-gradient(circle, #fff, #ff4444, #000)";
-            cauldron.style.animation = "shake 0.5s";
+            cauldron.style.animation = "shake 0.3s infinite";
 
             setTimeout(() => {
-                alert("CRITICAL FAILURE: The DNA combination was unstable. You failed to create a creature.");
+                alert("CRITICAL FAILURE: The DNA combination was unstable.");
                 cauldron.style.animation = ""; 
                 resetPot();
             }, 600);
