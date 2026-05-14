@@ -2,266 +2,233 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Herb Creature Summoner | Fonda's Digital Diary</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Internal Ark: DNA Forge</title>
     <style>
-        :root {
-            --accent-color: #f59e0b;
-            --smoke-color: rgba(220, 220, 220, 0.4);
-            font-family: 'Inter', sans-serif;
+        /* Universal Mobile Setup */
+        * { box-sizing: border-box; touch-action: none; }
+
+        body {
+            background-color: #0a0a0c;
+            color: #d1d1d1;
+            font-family: 'Garamond', serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 100vh;
+            margin: 0;
+            padding: 15px;
+            overflow: hidden;
         }
 
-        .spell-title { font-family: 'Playfair Display', serif; }
+        h2 { font-size: 3.5vh; margin: 0; letter-spacing: 2px; color: #a855f7; text-align: center; }
 
-        .cauldron-orb {
-            width: 300px;
-            height: 300px;
-            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        #log {
+            font-size: 2.2vh;
+            color: #888;
+            text-align: center;
+            height: 5vh;
+            margin-top: 10px;
+        }
+
+        #cauldron-area {
             position: relative;
-            overflow: hidden;
-            touch-action: none;
-            cursor: crosshair;
-            border-radius: 50%;
-            background: #0a0a0a;
-            border: 4px solid #222;
-        }
-        
-        .cauldron-active {
-            box-shadow: 0 0 60px var(--accent-color), inset 0 0 40px var(--accent-color);
-            border-color: var(--accent-color);
+            width: 100%;
+            height: 40vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 20px;
         }
 
-        .creature-portal {
+        #cauldron {
+            width: 220px;
+            height: 200px;
+            background: #1a1a1a;
+            border: 8px solid #333;
+            border-radius: 50% 50% 40% 40%;
+            position: relative;
+            box-shadow: inset 0 -20px 30px rgba(0,0,0,0.8), 0 10px 20px rgba(0,0,0,0.5);
+        }
+
+        #potion {
             position: absolute;
-            inset: 0;
+            top: 15%;
+            left: 10%;
+            right: 10%;
+            bottom: 20%;
+            background: #22c55e;
             border-radius: 50%;
-            overflow: hidden;
-            background: black;
-            display: none;
-            z-index: 100;
-            animation: emerge 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            filter: blur(4px);
+            transition: all 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        @keyframes emerge {
-            from { transform: scale(0.5); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+        .ingredient-shelf {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            padding: 15px;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 450px;
         }
 
-        .smoke-particle {
-            position: absolute;
-            background: var(--smoke-color);
-            border-radius: 50%;
-            pointer-events: none;
-            animation: smoke-puff 2s ease-out forwards;
-            z-index: 60;
+        .item {
+            aspect-ratio: 1/1;
+            background: #222;
+            border: 1px solid #444;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3.5vh;
+            cursor: grab;
+            user-select: none;
         }
 
-        @keyframes smoke-puff {
-            0% { opacity: 0; transform: translate(0, 0) scale(0.5); }
-            20% { opacity: 0.6; }
-            100% { opacity: 0; transform: translate(calc(var(--rx) * 1px), calc(var(--ry) * 1px)) scale(3); }
+        /* Explosion Shake */
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            40% { transform: translate(3px, 2px) rotate(-1deg); }
+            60% { transform: translate(-1px, -1px) rotate(1deg); }
+            80% { transform: translate(-3px, 1px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
         }
 
-        .cauldron-glow {
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle, var(--accent-color) 0%, transparent 70%);
-            opacity: 0.2;
-            pointer-events: none;
-            animation: pulse 3s infinite ease-in-out;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.1; transform: scale(0.9); }
-            50% { opacity: 0.3; transform: scale(1.1); }
+        .reset-btn {
+            width: 100%;
+            max-width: 450px;
+            padding: 12px;
+            background: #1a1a1a;
+            border: 1px solid #a855f7;
+            color: #a855f7;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 2vh;
         }
     </style>
 </head>
-<body class="bg-black text-gray-100 min-h-screen flex items-center justify-center p-4">
+<body>
 
-    <div class="w-full max-w-sm bg-zinc-900 p-8 rounded-[3rem] shadow-2xl border border-zinc-800 relative">
-        
-        <header class="text-center mb-8">
-            <h1 class="text-2xl spell-title font-bold text-amber-500">Creature Summoner</h1>
-            <p id="topStep" class="text-zinc-500 text-[10px] mt-1 uppercase tracking-[0.2em]">Phase I: Design with Herbs</p>
-        </header>
+    <h2>THE INTERNAL ARK</h2>
+    
+    <div id="log">Awaiting DNA Samples...</div>
 
-        <!-- UI for adding herbs -->
-        <div id="inputPanel" class="space-y-4 mb-8 transition-all duration-500">
-            <input type="text" id="herbInput" placeholder="Cinnamon, Chili, Salt, Dandelion..." 
-                   class="w-full p-4 rounded-2xl bg-zinc-800 border-2 border-zinc-700 text-sm focus:border-amber-500 outline-none transition-all text-center placeholder-zinc-600">
-            
-            <button onclick="prepareRitual()" 
-                    class="w-full p-4 rounded-2xl bg-amber-700 hover:bg-amber-600 font-bold text-sm shadow-xl transition-all uppercase tracking-widest">
-                Mix into the Vessel
-            </button>
-        </div>
-
-        <!-- The Cauldron / Video Portal -->
-        <div class="flex justify-center mb-8 h-80 relative">
-            <div id="orb" class="cauldron-orb flex items-center justify-center"
-                 onpointerdown="startStir(event)" onpointermove="doStir(event)" onpointerup="endStir()">
-                
-                <div id="glow" class="cauldron-glow hidden"></div>
-
-                <div id="creaturePortal" class="creature-portal">
-                    <video id="creatureVideo" class="w-full h-full object-cover" playsinline loop muted>
-                        <source id="videoSource" src="" type="video/mp4">
-                    </video>
-                </div>
-
-                <div id="orbLabel" class="text-zinc-800 text-[10px] font-bold text-center p-8 uppercase select-none tracking-widest leading-relaxed">
-                    Awaiting the<br>Ritual Essence
-                </div>
-            </div>
-            <div id="smokeContainer" class="absolute inset-0 pointer-events-none rounded-full overflow-hidden"></div>
-        </div>
-
-        <!-- Status & Results -->
-        <div class="bg-black/40 p-5 rounded-3xl border border-zinc-800">
-            <div id="ritualStatus" class="text-xs text-zinc-400 text-center italic leading-relaxed min-h-[40px]">
-                Mix herbs from your digital diary to manifest a guardian.
-            </div>
-            
-            <div id="gaugeContainer" class="w-full bg-zinc-950 h-1 mt-4 rounded-full overflow-hidden hidden">
-                <div id="gaugeFill" class="h-full bg-amber-500 w-0 transition-all duration-200"></div>
-            </div>
-
-            <button id="resetBtn" onclick="location.reload()" class="w-full mt-4 p-3 bg-zinc-800 rounded-xl text-[10px] uppercase tracking-widest hidden hover:bg-zinc-700 border border-zinc-700">
-                New Manifestation
-            </button>
+    <div id="cauldron-area">
+        <div id="cauldron" id="main-pot">
+            <div id="potion"></div>
         </div>
     </div>
 
-    <script>
-        /* FONDA'S CREATURE REGISTRY
-           This maps your images/videos to herb keywords.
-        */
-        const creatureRegistry = [
-            {
-                keywords: ['cinnamon', 'bark', 'lionsmane'],
-                name: "The Cinnamon Lion",
-                color: "#d97706",
-                video: "water-pixa-295bce50d9b0-0-6f5bb6446711 (4).mp4", // Path for GitHub
-                desc: "A majestic beast with a mane of swirling spice."
-            },
-            {
-                keywords: ['chili', 'pepper', 'dragon', 'fire'],
-                name: "The Chili Pepper Dragon",
-                color: "#dc2626",
-                video: "Project_05-13_Full HD 1080p_MEDIUM_FR30.mp4",
-                desc: "A guardian radiating the stinging heat of the pepper root."
-            },
-            {
-                keywords: ['crystal', 'glass', 'jewels'],
-                name: "The Crystal Lion",
-                color: "#d97706",
-                video: "", // Path for GitHub
-                desc: "A majestic beast with a mane and wings of crystal."
-            },
-            {
-                keywords: ['salt', 'sunflower', 'kansas', 'rock'],
-                name: "The Salt-Rock Sunflower",
-                color: "#fde047",
-                video: "videos/salt-sunflower.mp4",
-                desc: "A crystalline flyer reflecting the beauty of the prairie."
-            },
-            {
-                keywords: ['dandelion', 'centipede', 'mantis'],
-                name: "The Dandelion Sentinel",
-                color: "#65a30d",
-                video: "videos/dandelion-mantis.mp4",
-                desc: "A delicate yet dangerous spirit of the wild forest."
-            }
-        ];
+    <div class="ingredient-shelf">
+        <div class="item" data-color="#ef4444" data-name="Fox Tail">🦊</div>
+        <div class="item" data-color="#3b82f6" data-name="Butterfly Wing">🦋</div>
+        <div class="item" data-color="#eab308" data-name="Star Dust">✨</div>
+        <div class="item" data-color="#22c55e" data-name="Caterpillar">🐛</div>
+    </div>
 
-        // The "Sentient" (Fonda's Avatar) for unknown mixes
-        const defaultCreature = {
-            name: "The Sentient Creator",
-            color: "#8b5cf6",
-            video: "water-pixa-419b8932e688-0-fdb0ea7380d8.mp4",
-            desc: "The source of all writing and magic in this diary."
+    <button class="reset-btn" onclick="resetPot()">PURGE CAULDRON</button>
+
+    <script>
+        const potion = document.getElementById('potion');
+        const log = document.getElementById('log');
+        const cauldron = document.getElementById('cauldron');
+        const items = document.querySelectorAll('.item');
+
+        // REPLACE FILENAMES: Update these with your GitHub image names!
+        const animalRecipes = {
+            "Butterfly Wing,Fox Tail": { name: "Vulpes-Fly", img: "vulpes_fly.png" },
+            "Caterpillar,Star Dust": { name: "Stellapod", img: "stellapod.png" }
         };
 
-        let ritualState = 'input'; 
-        let energy = 0;
-        let activeTouch = false;
-        let activeCreature = null;
+        let currentIngredients = [];
 
-        function prepareRitual() {
-            const inputVal = document.getElementById('herbInput').value.toLowerCase();
-            if (!inputVal) return;
+        items.forEach(item => {
+            item.addEventListener('touchstart', (e) => {
+                const touch = e.touches[0];
+                const startPos = { x: item.offsetLeft, y: item.offsetTop };
+                item.style.position = 'fixed';
+                item.style.zIndex = '1000';
+                
+                function moveAt(pageX, pageY) {
+                    item.style.left = pageX - item.offsetWidth / 2 + 'px';
+                    item.style.top = pageY - item.offsetHeight / 2 + 'px';
+                }
 
-            activeCreature = creatureRegistry.find(c => c.keywords.some(k => inputVal.includes(k))) || defaultCreature;
-            document.documentElement.style.setProperty('--accent-color', activeCreature.color);
+                function onTouchMove(event) {
+                    moveAt(event.touches[0].pageX, event.touches[0].pageY);
+                }
 
-            ritualState = 'stirring';
-            document.getElementById('inputPanel').style.opacity = '0';
-            setTimeout(() => document.getElementById('inputPanel').classList.add('hidden'), 500);
+                document.addEventListener('touchmove', onTouchMove);
+
+                item.ontouchend = function() {
+                    document.removeEventListener('touchmove', onTouchMove);
+                    const cRect = cauldron.getBoundingClientRect();
+                    const iRect = item.getBoundingClientRect();
+
+                    if (iRect.left < cRect.right && iRect.right > cRect.left &&
+                        iRect.top < cRect.bottom && iRect.bottom > cRect.top) {
+                        addIngredient(item.dataset.name, item.dataset.color);
+                    }
+                    
+                    item.style.position = 'static';
+                };
+            });
+        });
+
+        function addIngredient(name, color) {
+            if (currentIngredients.includes(name)) return; // No duplicates
+            currentIngredients.push(name);
+            potion.style.background = color;
             
-            document.getElementById('topStep').textContent = "Phase II: Swirl to Manifest";
-            document.getElementById('orb').classList.add('cauldron-active');
-            document.getElementById('glow').classList.remove('hidden');
-            document.getElementById('orbLabel').innerHTML = `<span style="color: ${activeCreature.color}" class="animate-pulse">SWIRL NOW</span>`;
-            document.getElementById('ritualStatus').textContent = "The vessel is warm. Stir the essences into a single spirit...";
-            document.getElementById('gaugeContainer').classList.remove('hidden');
-        }
+            let currentCombo = currentIngredients.slice().sort().join(',');
 
-        function startStir(e) { if (ritualState === 'stirring') activeTouch = true; }
-        function endStir() { activeTouch = false; }
-
-        function doStir(e) {
-            if (!activeTouch || ritualState !== 'stirring') return;
-            
-            energy += 1.5;
-            document.getElementById('gaugeFill').style.width = energy + '%';
-            
-            const rect = document.getElementById('orb').getBoundingClientRect();
-            spawnSmoke(e.clientX - rect.left, e.clientY - rect.top);
-
-            if (energy >= 100) {
-                activeTouch = false;
-                summon();
+            if (animalRecipes[currentCombo]) {
+                const creature = animalRecipes[currentCombo];
+                log.innerText = "FORGE SUCCESS: " + creature.name;
+                log.style.color = "#00d4ff";
+                potion.style.backgroundImage = `url('${creature.img}')`;
+                potion.style.backgroundSize = "contain";
+                potion.style.backgroundRepeat = "no-repeat";
+                potion.style.filter = "none";
+            } 
+            else if (currentIngredients.length >= 2) {
+                triggerExplosion();
+            } 
+            else {
+                log.innerText = "DNA Link: " + currentIngredients.join(" + ");
+                log.style.color = "#888";
             }
         }
 
-        function spawnSmoke(x, y) {
-            const p = document.createElement('div');
-            p.className = 'smoke-particle';
-            const size = Math.random() * 25 + 15;
-            p.style.width = size + 'px'; p.style.height = size + 'px';
-            p.style.left = x + 'px'; p.style.top = y + 'px';
-            p.style.setProperty('--rx', (Math.random() - 0.5) * 300);
-            p.style.setProperty('--ry', (Math.random() - 0.5) * 300);
-            document.getElementById('smokeContainer').appendChild(p);
-            setTimeout(() => p.remove(), 2000);
+        function triggerExplosion() {
+            log.innerText = "STABILITY LOST: DNA MISMATCH!";
+            log.style.color = "#ff4444";
+            potion.style.background = "radial-gradient(circle, #fff, #ff4444, #000)";
+            cauldron.style.animation = "shake 0.5s";
+
+            setTimeout(() => {
+                alert("CRITICAL FAILURE: The DNA combination was unstable. You failed to create a creature.");
+                cauldron.style.animation = ""; 
+                resetPot();
+            }, 600);
         }
 
-        function summon() {
-            ritualState = 'summoned';
-            document.getElementById('orbLabel').style.display = 'none';
-            document.getElementById('gaugeContainer').classList.add('hidden');
-            
-            const portal = document.getElementById('creaturePortal');
-            const video = document.getElementById('creatureVideo');
-            const source = document.getElementById('videoSource');
-
-            source.src = activeCreature.video;
-            portal.style.display = 'block';
-            video.load();
-            video.play().catch(() => {});
-
-            document.getElementById('ritualStatus').innerHTML = `
-                <div style="color: ${activeCreature.color}" class="font-bold text-sm uppercase tracking-widest">${activeCreature.name}</div>
-                <div class="text-[10px] mt-1 text-zinc-400">${activeCreature.desc}</div>
-            `;
-            
-            document.getElementById('resetBtn').classList.remove('hidden');
-            document.getElementById('topStep').textContent = "Manifestation Complete";
+        function resetPot() {
+            currentIngredients = [];
+            potion.style.background = "#22c55e";
+            potion.style.backgroundImage = "none";
+            potion.style.filter = "blur(4px)";
+            log.innerText = "Cauldron Cleansed.";
+            log.style.color = "#888";
         }
     </script>
 </body>
 </html>
-
