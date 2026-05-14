@@ -9,47 +9,53 @@
             line-height: 1.6; 
             max-width: 900px; 
             margin: 0 auto; 
-            padding: 10px; /* Reduced padding for mobile */
+            padding: 10px; 
             background: #000a12; 
             color: #a0f0ff; 
             text-transform: uppercase; 
         }
         header { border-bottom: 2px solid #004d7c; padding-bottom: 20px; margin-bottom: 30px; text-align: center;}
         nav ul { list-style: none; padding: 0; }
-        nav ul li { display: inline-block; margin: 5px 10px; } /* inline-block handles wrapping better */
+        nav ul li { display: inline-block; margin: 5px 10px; } 
         nav a { color: #00f2ff; text-decoration: none; }
         h1, h2, h3 { color: #fff; text-shadow: 0 0 10px #004d7c; }
         
-        /* This centers the boxes and makes sure they can grow as tall as the game */
-.case-study { 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    padding: 10px;
-}
+        .case-study { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 10px;
+        }
 
-.project-box { 
-    background: #2c3e50; 
-    padding: 15px; 
-    border-radius: 15px; 
-    width: 95%; /* Takes up most of the phone screen width */
-    max-width: 450px; 
-    margin: 20px 0; 
-    box-shadow: 0 10px 20px rgba(0,0,0,0.3); 
-    text-align: center;
-    height: auto; /* CRITICAL: Allows the box to grow with the game */
-    overflow: visible; 
-}
+        .project-box { 
+            background: #2c3e50; 
+            padding: 15px; 
+            border-radius: 15px; 
+            width: 95%; 
+            max-width: 450px; 
+            margin: 20px 0; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3); 
+            text-align: center;
+            height: auto; 
+            overflow: visible; 
+        }
 
-/* This makes the game fill the box without squishing */
-iframe { 
-    width: 100%; 
-    border: 2px solid #ccc; 
-    border-radius: 10px; 
-    background: white;
-    display: block;
-}
+        /* This fixes the baseline squishing for all games */
+        iframe { 
+            width: 100%; 
+            height: 550px; 
+            min-height: 550px; 
+            border: 2px solid #ccc; 
+            border-radius: 10px; 
+            background: white;
+            display: block;
+        }
 
+        /* Special rule for the long Ogham Master Vine translator */
+        .long-content {
+            height: 1300px !important; 
+            min-height: 1300px !important;
+        }
 
         img, video { max-width: 100%; border-radius: 4px; border: 1px solid #444; }
     </style>
@@ -88,7 +94,8 @@ iframe {
 
     <div class="project-box">
         <h3>Ogham Translater</h3>
-        <iframe src="master_ogham (1).html"></iframe>
+        <!-- Added the 'long-content' class here -->
+        <iframe src="master_ogham (1).html" class="long-content"></iframe>
     </div>
 
     <div class="project-box">
