@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hex Protocol</title>
+    <title>Hex Protocol: Win Detection</title>
     <style>
         * { box-sizing: border-box; touch-action: manipulation; }
         body {
             background-color: #0a0a0c;
             color: #d1d1d1;
-            font-family: sans-serif;
+            font-family: 'Garamond', serif;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -62,7 +62,7 @@
     </div>
 
     <div id="controls">
-        <p>Active Turn: <span id="currentTurn" class="red-t">RED</span></p>
+        <p>Active Frequency: <span id="currentTurn" class="red-t">RED</span></p>
         <button onclick="initGame()">RESET SYSTEM</button>
     </div>
 
@@ -82,20 +82,20 @@
 
         let board = [];
         let currentPlayer = 'Red';
+        let gameActive = true;
 
-        // Images with full paths
         const redImg = new Image();
         redImg.src = '1778729047628.png';
         const blueImg = new Image();
         blueImg.src = '1778729094487.png';
 
-        // Redraw when images load
         redImg.onload = drawBoard;
         blueImg.onload = drawBoard;
 
         function initGame() {
             board = Array(boardSize).fill(null).map(() => Array(boardSize).fill(null));
             currentPlayer = 'Red';
+            gameActive = true;
             updateUI();
             drawBoard();
         }
@@ -107,12 +107,24 @@
 
         function drawBoard() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw Edges to show goals
+            ctx.lineWidth = 8;
+            // Red Goals (Top and Bottom edges)
+            ctx.strokeStyle = '#ff4444';
+            ctx.beginPath(); ctx.moveTo(0, 10); ctx.lineTo(canvas.width, 10); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0, canvas.height-10); ctx.lineTo(canvas.width, canvas.height-10); ctx.stroke();
+            
+            // Blue Goals (Left and Right edges)
+            ctx.strokeStyle = '#00d4ff';
+            ctx.beginPath(); ctx.moveTo(10, 0); ctx.lineTo(10, canvas.height); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(canvas.width-10, 0); ctx.lineTo(canvas.width-10, canvas.height); ctx.stroke();
+
             for (let q = 0; q < boardSize; q++) {
                 for (let r = 0; r < boardSize; r++) {
                     const x = startX + q * spacingX + r * spacingX / 2;
                     const y = startY + r * spacingY;
                     
-                    // Draw Hexagon
                     ctx.beginPath();
                     for (let i = 0; i < 6; i++) {
                         const angle = (Math.PI / 3) * i;
@@ -121,10 +133,10 @@
                         if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
                     }
                     ctx.closePath();
-                    ctx.strokeStyle = '#444';
+                    ctx.strokeStyle = '#333';
+                    ctx.lineWidth = 1;
                     ctx.stroke();
 
-                    // Draw Piece
                     const p = board[q][r];
                     if (p) {
                         const img = (p === 'Red') ? redImg : blueImg;
@@ -132,7 +144,6 @@
                         if (img.complete && img.naturalWidth !== 0) {
                             ctx.drawImage(img, x - size/2, y - size/2, size, size);
                         } else {
-                            // Color fallback so it's never "blank"
                             ctx.beginPath();
                             ctx.arc(x, y, hexRadius * 0.7, 0, Math.PI * 2);
                             ctx.fillStyle = (p === 'Red') ? '#ff4444' : '#00d4ff';
@@ -143,7 +154,44 @@
             }
         }
 
+        function checkWin(player) {
+            const visited = new Set();
+            const stack = [];
+
+            // Starting points for each player
+            for (let i = 0; i < boardSize; i++) {
+                if (player === 'Red' && board[i][0] === 'Red') stack.push({q: i, r: 0});
+                if (player === 'Blue' && board[0][i] === 'Blue') stack.push({q: 0, r: i});
+            }
+
+            while (stack.length > 0) {
+                const {q, r} = stack.pop();
+                const key = `${q},${r}`;
+                if (visited.has(key)) continue;
+                visited.add(key);
+
+                // Win check (reached the other side)
+                if (player === 'Red' && r === boardSize - 1) return true;
+                if (player === 'Blue' && q === boardSize - 1) return true;
+
+                // Check 6 neighbors
+                const neighbors = [
+                    {q: q+1, r: r}, {q: q-1, r: r},
+                    {q: q, r: r+1}, {q: q, r: r-1},
+                    {q: q-1, r: r+1}, {q: q+1, r: r-1}
+                ];
+
+                for (const n of neighbors) {
+                    if (n.q >= 0 && n.q < boardSize && n.r >= 0 && n.r < boardSize) {
+                        if (board[n.q][n.r] === player) stack.push(n);
+                    }
+                }
+            }
+            return false;
+        }
+
         canvas.addEventListener('click', (e) => {
+            if (!gameActive) return;
             const rect = canvas.getBoundingClientRect();
             const sx = canvas.width / rect.width;
             const sy = canvas.height / rect.height;
@@ -158,9 +206,18 @@
 
                     if (dist < hexRadius && !board[q][r]) {
                         board[q][r] = currentPlayer;
-                        currentPlayer = (currentPlayer === 'Red') ? 'Blue' : 'Red';
-                        updateUI();
                         drawBoard();
+                        
+                        if (checkWin(currentPlayer)) {
+                            gameActive = false;
+                            setTimeout(() => {
+                                alert(currentPlayer.toUpperCase() + " BRIDGE SECURED!");
+                                initGame();
+                            }, 100);
+                        } else {
+                            currentPlayer = (currentPlayer === 'Red') ? 'Blue' : 'Red';
+                            updateUI();
+                        }
                         return;
                     }
                 }
