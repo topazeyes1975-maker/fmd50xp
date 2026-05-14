@@ -5,100 +5,82 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FMD50XP | Classified File</title>
     <style>
-        body {
-            background-color: #0d0d0d;
-            color: #d4af37;
-            font-family: 'Courier New', Courier, monospace;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 0;
-            padding: 20px;
-            min-height: 100vh;
-        }
+<style>
+    body {
+        background-color: #000a12; /* Matches Atlas Mutatis background */
+        color: #a0f0ff; /* Matches that light cyan text */
+        font-family: 'Courier New', Courier, monospace;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0;
+        padding: 20px;
+        min-height: 100vh;
+        text-transform: uppercase;
+    }
 
-        /* NAVIGATION MENU STYLING */
-        nav {
-            width: 100%;
-            background: #111;
-            border-bottom: 1px solid #333;
-            padding: 10px 0;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-        nav ul {
-            list-style: none;
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin: 0;
-            padding: 0;
-        }
-        nav li { margin: 5px 15px; }
-        nav a {
-            color: #a855f7;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
-            transition: 0.3s;
-        }
-        nav a:hover { color: #fff; text-shadow: 0 0 8px #a855f7; }
+    /* THE WANTED POSTER - NOW IN CYBER BLUE */
+    .poster-frame {
+        border: 4px solid #004d7c; /* Blue border instead of gray */
+        padding: 20px;
+        background: #000;
+        max-width: 500px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
+        margin: 40px 0 100px 0;
+    }
 
-        /* THE WANTED POSTER */
-        .poster-frame {
-            border: 10px double #444;
-            padding: 20px;
-            background: #1a1a1a;
-            max-width: 500px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
-            margin: 40px 0 100px 0; /* Space for ticker */
-        }
+    h1 { font-size: 3rem; margin: 10px 0; letter-spacing: 5px; color: #fff; text-shadow: 0 0 10px #004d7c; }
+    .alias { font-size: 1.1rem; color: #00f2ff; margin-bottom: 20px; border-bottom: 1px solid #004d7c; padding-bottom: 10px; }
 
-        h1 { font-size: 3rem; margin: 10px 0; letter-spacing: 5px; color: #d4af37; }
-        .alias { font-size: 1.1rem; color: #a855f7; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+    .photo-area {
+        width: 100%;
+        aspect-ratio: 1/1;
+        background: #001f33;
+        border: 4px solid #00f2ff;
+        margin: 20px 0;
+        overflow: hidden;
+    }
+    /* Keeping the photo high-tech blue */
+    .photo-area img { width: 100%; height: 100%; object-fit: cover; filter: cyan(50%) brightness(80%); }
 
-        .photo-area {
-            width: 100%;
-            aspect-ratio: 1/1;
-            background: #222;
-            border: 4px solid #d4af37;
-            margin: 20px 0;
-            overflow: hidden;
-        }
-        .photo-area img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%) sepia(30%); }
+    .bio-info { text-align: left; line-height: 1.6; font-size: 1rem; color: #a0f0ff; }
+    .label { font-weight: bold; color: #00f2ff; margin-right: 10px; }
 
-        .bio-info { text-align: left; line-height: 1.6; font-size: 1rem; color: #bbb; }
-        .label { font-weight: bold; color: #d4af37; margin-right: 10px; }
+    /* TIMES SQUARE TICKER - UPDATED COLORS */
+    .ticker-wrap {
+        width: 100%;
+        overflow: hidden;
+        background: #000;
+        border-top: 2px solid #00f2ff;
+        padding: 12px 0;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        z-index: 100;
+    }
+    .ticker {
+        display: inline-block;
+        white-space: nowrap;
+        animation: scroll 25s linear infinite;
+        color: #fff; /* White text for high visibility */
+        font-weight: bold;
+    }
+    @keyframes scroll {
+        0% { transform: translateX(100%); }
+        100% { transform: translateX(-100%); }
+    }
+    .ticker span { margin-right: 60px; color: #00f2ff; } /* Cyan bullet points */
 
-        /* NEWS TICKER */
-        .ticker-wrap {
-            width: 100%;
-            overflow: hidden;
-            background: #000;
-            border-top: 2px solid #a855f7;
-            padding: 12px 0;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            z-index: 100;
-        }
-        .ticker {
-            display: inline-block;
-            white-space: nowrap;
-            animation: scroll 25s linear infinite;
-            color: #00d4ff;
-            font-weight: bold;
-            font-family: 'Courier New', monospace;
-        }
-        @keyframes scroll {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
-        .ticker span { margin-right: 60px; }
+    /* NAVIGATION */
+    nav { width: 100%; background: #000; border-bottom: 1px solid #004d7c; padding: 10px 0; position: sticky; top: 0; z-index: 1000; }
+    nav ul { list-style: none; padding: 0; display: flex; justify-content: center; flex-wrap: wrap; margin: 0; }
+    nav li { margin: 5px 15px; }
+    nav a { color: #a0f0ff; text-decoration: none; font-weight: bold; font-size: 0.9rem; }
+    nav a:hover { color: #fff; text-shadow: 0 0 10px #00f2ff; }
+</style>
+
     </style>
 </head>
 <body>
