@@ -40,21 +40,28 @@
             overflow: visible; 
         }
 
-        /* This fixes the baseline squishing for all games */
+        /* FIXED: Base height is now 600px and scrolling is enabled for PC */
         iframe { 
             width: 100%; 
-            height: 550px; 
-            min-height: 550px; 
-            border: 2px solid #ccc; 
+            height: 600px; 
+            min-height: 600px; 
+            border: 2px solid #00f2ff; /* Updated to Aqua to match your theme */
             border-radius: 10px; 
             background: white;
             display: block;
+            overflow-y: auto; /* Adds a scrollbar on computer if the game is too tall */
         }
 
         /* Special rule for the long Ogham Master Vine translator */
         .long-content {
             height: 1300px !important; 
             min-height: 1300px !important;
+        }
+
+        /* NEW: Use this for games that need to show the Reset button at the bottom */
+        .expanded-game {
+            height: 850px !important; 
+            min-height: 850px !important;
         }
 
         img, video { max-width: 100%; border-radius: 4px; border: 1px solid #444; }
@@ -94,7 +101,6 @@
 
     <div class="project-box">
         <h3>Ogham Translater</h3>
-        <!-- Added the 'long-content' class here -->
         <iframe src="master_ogham (1).html" class="long-content"></iframe>
     </div>
 
@@ -110,7 +116,7 @@
 
     <div class="project-box">
         <h3>Spell Caster Assistant</h3>
-        <iframe src="Spell_Castor_Assistant.html"></iframe>
+        <iframe src="Spell_Castor_Assistant.html" class="expanded-game"></iframe>
     </div>
 
     <div class="project-box">
@@ -122,11 +128,13 @@
         <h3> Lights Out Game</h3>
         <iframe src="Lights_out.html"></iframe>
     </div>
-<div class="project-box">
+
+    <div class="project-box">
         <h3>Coming Soon</h3>
         <iframe src=""></iframe>
-</div>
+    </div>
 </section>
 
 </body>
 </html>
+
