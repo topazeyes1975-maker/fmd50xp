@@ -4,6 +4,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>engineer_project_ongoing</title>
     <style>
+        model-viewer {
+    width: 100%;
+    height: 500px; /* Adjust this number to make it taller or shorter */
+    background-color: #000a12; /* Matches your new Sea/Aqua theme */
+    border: 2px solid #00f2ff; /* Adds that glowing aqua border */
+    border-radius: 8px;
+        }
+        
         body { font-family: 'Courier New', Courier, monospace; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; background: #000a12; color: #a0f0ff; text-transform: uppercase; }
         header { border-bottom: 2px solid #004d7c; padding-bottom: 20px; margin-bottom: 30px; text-align: center;}
         nav ul { list-style: none; padding: 0; }
@@ -60,12 +68,15 @@
         <iframe src="Clock.html" width="400" height="600" style="border: 2px solid #ccc; border-radius: 10px;"></iframe>
     </div>
 </div>
-
-<section class="case-study">
-    <h3>3D CHARACTER ARCHIVE: THE NOCTULUC ETHEREAL</h3>
-    <iframe title="The keeper of shards" width="100%" height="400" src="https://sketchfab.com/models/f85bd77907ea4094b1727aa6537b9663/embed"></iframe>
-</section>
-
+<div class="model-container">
+    <model-viewer 
+        src="https://sketchfab.com/models/f85bd77907ea4094b1727aa6537b9663/embed" 
+        ar 
+        camera-controls 
+        auto-rotate 
+        shadow-intensity="1">
+    </model-viewer>
+</div>
 <div class="project-box">
     <h3>The Keeper of Shards</h3>
     <p><strong>The Mechanic:</strong> "The Weight of Interaction"</p>
@@ -82,6 +93,10 @@
         <tr><td>Aardwolf</td><td>Predatory surgical precision</td></tr>
     </table>
 </section>
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js">
 
+    
+</script>
+    
 </body>
 </html>
