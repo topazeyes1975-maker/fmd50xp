@@ -2,35 +2,91 @@
 <html lang="en">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>engineer_project_ongoing</title>
+    <title>FMD50XP_Engineering_Manifest</title>
     <style>
-        model-viewer {
-    width: 100%;
-    height: 500px; /* Adjust this number to make it taller or shorter */
-    background-color: #000a12; /* Matches your new Sea/Aqua theme */
-    border: 2px solid #00f2ff; /* Adds that glowing aqua border */
-    border-radius: 8px;
+        body { 
+            font-family: 'Courier New', Courier, monospace; 
+            line-height: 1.6; 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            padding: 10px; 
+            background: #000a12; 
+            color: #a0f0ff; 
+            text-transform: uppercase; 
         }
-        
-        body { font-family: 'Courier New', Courier, monospace; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; background: #000a12; color: #a0f0ff; text-transform: uppercase; }
         header { border-bottom: 2px solid #004d7c; padding-bottom: 20px; margin-bottom: 30px; text-align: center;}
         nav ul { list-style: none; padding: 0; }
-        nav ul li { display: inline; margin: 0 10px; }
-        nav a { color: #00f2ff; text-decoration: none; }
+        nav ul li { display: inline-block; margin: 5px 10px; } 
+        nav a { color: #00f2ff; text-decoration: none; font-weight: bold; }
         h1, h2, h3 { color: #fff; text-shadow: 0 0 10px #004d7c; }
-        .case-study { background: #001220; padding: 20px; border-radius: 8px; border: 1px solid #004d7c; margin-bottom: 30px; }
-        .media-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; padding: 20px; }
-        .media-box { border: 1px solid #444; padding: 15px; background-color: #1a1a1a; border-radius: 8px; }
-        img, video { max-width: 100%; border-radius: 4px; border: 1px solid #444; }
-        .project-box { background: #2c3e50; padding: 20px; border-radius: 15px; width: fit-content; margin: 20px auto; box-shadow: 0 10px 20px rgba(0,0,0,0.3); text-align: center; }
-        .provenance { background: #001f33; padding: 20px; border-radius: 5px; border-left: 5px solid #00f2ff; margin: 20px 0; }
-        .data-table { width: 100%; border-collapse: collapse; margin-top: 20px; color: #a0f0ff; }
-        .data-table th, .data-table td { border: 1px solid #004d7c; padding: 10px; text-align: left; }
+        
+        .case-study { 
+            background: #001220; 
+            padding: 25px; 
+            border-radius: 8px; 
+            border: 1px solid #004d7c; 
+            margin-bottom: 40px; 
+        }
+
+        .wishlist-box {
+            background: rgba(0, 242, 255, 0.05);
+            border: 2px dashed #00f2ff;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .wishlist-btn {
+            background-color: #00f2ff;
+            color: #000;
+            padding: 12px 25px;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 5px;
+            display: inline-block;
+            margin: 15px 0;
+            letter-spacing: 1px;
+        }
+
+        .wishlist-btn:hover {
+            background-color: #fff;
+            box-shadow: 0 0 15px #00f2ff;
+        }
+
+        .registry-list {
+            font-size: 0.8rem;
+            color: #fff;
+            border-top: 1px solid #004d7c;
+            padding-top: 10px;
+            margin-top: 15px;
+        }
+
+        .media-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0; }
+        img { max-width: 100%; border-radius: 4px; border: 1px solid #004d7c; }
+        
+        iframe { 
+            width: 100%; 
+            height: 500px; 
+            border: 2px solid #004d7c; 
+            border-radius: 10px; 
+            background: #000;
+        }
+
+        .status-tag {
+            color: #ffcc00;
+            font-weight: bold;
+            border: 1px solid #ffcc00;
+            padding: 2px 8px;
+            font-size: 0.7rem;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
+
 <header>
-<nav>
+    <nav>
         <ul>
             <li><a href="index.html">HOME</a></li>
             <li><a href="Atlas_Mutatis.html">Atlas Mutatis</a></li>
@@ -39,49 +95,60 @@
             <li><a href="3Dmodel.html">3D Model</a></li>
             <li><a href="contact.html">CONTACT</a></li>
         </ul>
-  </nav>
-    <h1>Project Case File</h1>
-    <p><strong>FMD50XP / Fonda Dutton / Gemini AI</strong></p>
+    </nav>
+    <h1>Project Case Files</h1>
+    <p><strong>FMD50XP / Engineering & Animatronics Division</strong></p>
 </header>
 
 <section class="case-study">
-    <h2>The Evolution of the Pet-Link Bracelet</h2>
-    <p>The "Pet-Link" project began as a simple experiment: could I map the entire alphabet, along with the numbers 0–9, onto a clock face? By layering three concentric circles around the dial and assigning a specific color to each, I created a custom cipher—a secret language mapped to time.</p>
-    <p>Initially, I envisioned this as a web-based communication tool, but as the concept evolved, so did my ambition. I wanted something more tangible, something I could wear. I pivoted the design into a wearable "Pet-Link" bracelet.</p>
-    <p>Collaborating with AI, I transitioned from web-based logic to physical hardware. Today, the project is near completion. As I work through final hardware hurdles, the Pet-Link stands as a testament to the intersection of code, creativity, and the desire for a more connected, companion-driven digital experience.</p>
+    <h2>Project: The Pet-Link Bracelet <span class="status-tag">HARDWARE INTEGRATION</span></h2>
+    <p>The Pet-Link is a wearable interface translating digital communication into physical companion interaction. Utilizing a custom cipher mapped to a 3-layer concentric dial, the device notifies the wearer via mechanical haptics and "feeding" interactions.</p>
+    
+    <div class="media-grid">
+        <img src="FB_IMG_1777190090045.jpg" alt="Pet-Link Logic 1">
+        <img src="FB_IMG_1777190111539.jpg" alt="Pet-Link Logic 2">
+    </div>
+
+    <div class="wishlist-box">
+        <h3>BRACELET SUPPLY MANIFEST</h3>
+        <p>Support the final assembly of the Pet-Link haptic systems. Contributors will see their components featured in upcoming assembly logs.</p>
+        <a href="YOUR_BRACELET_AMAZON_LINK" class="wishlist-btn">VIEW BRACELET WISH LIST</a>
+        <div class="registry-list">
+            <h4>FORGE REGISTRY:</h4>
+            <p>[ DATA TRANSMISSION PENDING... ]</p>
+        </div>
+    </div>
 </section>
 
-<div class="provenance">
-    <h3>How the Pet-Link Bracelet Works</h3>
-    <p>The Pet-Link is a collaborative interface between user and companion. Upon receiving a message, the creature performs a unique "attention-grabbing" sequence: it taps its paw to gently pat the wrist, followed by a deliberate nod of its head, signaling me to look down and read the incoming information.</p>
-    <p>Once the message has been read, a simple delete command initiates the creature’s "feeding" routine, turning the act of clearing a notification into a rewarding, playful interaction.</p>
-</div>
-
-<div class="media-grid">
-    <div class="media-box">
-        <h3>Image of progression</h3>
-        <img src="FB_IMG_1777190090045.jpg" alt="Progression 1">
-        <img src="FB_IMG_1777190111539.jpg" alt="Progression 2">
-    </div>
-    <div class="project-box">
-        <h3>My Pet-Link Interface</h3>
-        <iframe src="Clock.html" width="400" height="600" style="border: 2px solid #ccc; border-radius: 10px;"></iframe>
-    </div>
-</div>
-
-<div class="project-box">
-    <h3>The Keeper of Shards</h3>
-    <p><strong>The Mechanic:</strong> "The Weight of Interaction"</p>
-    <p>An interactive, state-driven narrative experience where the user acts as an outside observer forcing a character to confront her own vulnerability. The 56 taps symbolize the gradual wearing down of a trauma-induced defense mechanism.
-        this is going to be a Comic-Con address when I get it done so so far I have the balls that I'm going to be using and the OLED to start it out it's going to have little bitty round OLED watch screen in the center of basically a 
-Christmas balls but that's not what it's going to look like it's going to look like this dress when I get it done unfortunately I have to buy all the parts and by the time I get it done it's going to be probably around approximately
-        $2,000 maybe because of all the stuff I have to buy to get it done I don't have the money right now so it's going to be a very long project unless you guys would like to help out if you guys would like to help out there is a link below to the Amazon wish list that you can purchase and buy if you like to help me out</p>
-    <iframe src="Dressgame.html" width="400" height="600" style="border: 2px solid #ccc; border-radius: 10px;"></iframe>
-</div>
-<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js">
-
+<section class="case-study">
+    <h2>Project: Keeper of Shards (Cryptocon Wearable) <span class="status-tag">DESIGN PHASE</span></h2>
+    <p>A high-fidelity wearable tech installation featuring custom-engineered housings and circular OLED displays. The build translates a digital narrative of vulnerability into a physical "shard-bearing" bodice with an estimated $2,000 technical budget.</p>
     
-</script>
+    <div class="wishlist-box">
+        <h3>DRESS COMPONENT MANIFEST</h3>
+        <p>Supplying a part directly accelerates the creation of this complex wearable. Detailed photos of component integration will be updated as hardware arrives.</p>
+        <a href="YOUR_DRESS_AMAZON_LINK" class="wishlist-btn">VIEW DRESS WISH LIST</a>
+        <div class="registry-list">
+            <h4>FORGE REGISTRY:</h4>
+            <p>[ DATA TRANSMISSION PENDING... ]</p>
+        </div>
+    </div>
+</section>
+
+<section class="case-study">
+    <h2>Project: Anima-Sync Animatronic <span class="status-tag">CHASSIS UPGRADE</span></h2>
+    <p>A dual-glove gesture-controlled animatronic powered by a triple-ESP32 synchronization system. Transitioning from prototype to a thin-profile metal frame, featuring a "Subconscious Idle" state for autonomous movement simulation.</p>
     
+    <div class="wishlist-box">
+        <h3>ANIMATRONIC HARDWARE MANIFEST</h3>
+        <p>Direct support for the ESP32-S3 controllers, metal chassis components, and programming interface. See your support come to life in the Anima-Sync field logs.</p>
+        <a href="YOUR_DOLL_AMAZON_LINK" class="wishlist-btn">VIEW DOLL WISH LIST</a>
+        <div class="registry-list">
+            <h4>FORGE REGISTRY:</h4>
+            <p>[ DATA TRANSMISSION PENDING... ]</p>
+        </div>
+    </div>
+</section>
+
 </body>
 </html>
