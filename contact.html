@@ -1,68 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact the Creator</title>
+    <title>FMD50XP | Establish Comms Link</title>
     <style>
-    body {
-        background-color: #0d0d0d; /* Dark black background */
-        color: #a0f0ff; /* Soft cyan text */
-        font-family: 'Courier New', Courier, monospace;
-        margin: 0;
-        padding: 0;
-        text-align: center;
-        text-transform: uppercase;
-    }
+        body { 
+            font-family: 'Courier New', Courier, monospace; 
+            line-height: 1.6; 
+            background: #000a12; 
+            color: #a0f0ff; 
+            margin: 0; 
+            padding: 0;
+            text-transform: uppercase;
+        }
+        /* RESTORED NAV STYLING */
+        nav { background: #000; border-bottom: 1px solid #004d7c; padding: 10px 0; }
+        nav ul { list-style: none; padding: 0; display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin: 0;}
+        nav a { color: #a0f0ff; text-decoration: none; font-weight: bold; }
+        nav a:hover { text-decoration: underline; color: #fff; }
 
-    /* FIXING THE TOP & BOTTOM BLUE BLOCKS */
-    nav, footer, .blue-section { 
-        background-color: #000a12 !important; /* Deep Navy, matching your Ark pages */
-        border-bottom: 2px solid #004d7c;
-        padding: 20px 0;
-    }
-
-    h1 { 
-        color: #00f2ff; 
-        text-shadow: 0 0 15px rgba(0, 242, 255, 0.4); 
-        margin-top: 50px;
-        letter-spacing: 3px;
-    }
-
-    /* MAKING LINKS READABLE */
-    a { 
-        color: #00f2ff; 
-        text-decoration: none; 
-        display: block; 
-        margin: 20px 0;
-        font-weight: bold;
-    }
-
-    a:hover { 
-        color: #fff; 
-        text-shadow: 0 0 10px #00f2ff; 
-    }
-
-    .sub-text {
-        color: #555; /* Dimmer text for "Correspondence received" */
-        text-transform: none;
-        font-style: italic;
-    }
-</style>
-
+        .form-container { max-width: 600px; margin: 40px auto; padding: 25px; background: #001220; border: 1px solid #004d7c; border-radius: 8px; width: 90%;}
+        h2 { text-align: center; color: #fff; margin-top: 0;}
+        input, textarea { width: 100%; padding: 10px; margin: 10px 0; background: #000; border: 1px solid #004d7c; color: #00f2ff; font-family: monospace; box-sizing: border-box;}
+        button { background: #00f2ff; color: #000; padding: 12px 20px; border: none; font-weight: bold; cursor: pointer; width: 100%; text-transform: uppercase;}
+        button:hover { background: #fff; box-shadow: 0 0 10px #00f2ff; }
+    </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>THE GATEWAY</h1>
-        <p>Your correspondence is received through the Ark.</p>
-        
-        <a href="mailto: firewaterfall@yahoo.com" class="contact-link">SEND A MESSAGE</a>
-        <a href="https://github.com/yourprofile" class="contact-link">VIEW THE ARCHIVES (GITHUB)</a>
-        
-        <a href="index.html" class="back-btn">← Return to the Forge</a>
-    </div>
+<nav>
+    <ul>
+        <li><a href="index.html">HOME</a></li>
+        <li><a href="Atlas_Mutatis.html">Atlas Mutatis</a></li>
+        <li><a href="Project.html">Physical Project</a></li>
+        <li><a href="Games.html">Games</a></li>
+        <li><a href="3Dmodel.html">3D Model</a></li>
+        <li><a href="contact.html">CONTACT</a></li>
+    </ul>
+</nav>
+
+<div class="form-container">
+    <h2>[ ESTABLISH COMMS LINK ]</h2>
+    <form action="#" method="POST">
+        <label>TRANSMISSION SOURCE (NAME):</label>
+        <input type="text" name="name" required placeholder="IDENTIFY SYGNAL...">
+
+        <label>RETURN FREQUENCY (EMAIL):</label>
+        <input type="email" name="email" required placeholder="COMMS NODE ID...">
+
+        <label>ENCRYPTED MESSAGE:</label>
+        <textarea name="message" rows="5" required placeholder="ENTER TEXT DATA TRANSMISSION..."></textarea>
+
+        <button type="submit">TRANSMIT PACKET</button>
+    </form>
+</div>
 
 </body>
 </html>
-
