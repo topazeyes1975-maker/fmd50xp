@@ -14,20 +14,19 @@
             text-transform: uppercase;
         }
         
-        /* RESTORED HEAD NAVIGATION */
         nav { background: #000; border-bottom: 1px solid #004d7c; padding: 10px 0; }
         nav ul { list-style: none; padding: 0; display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin: 0;}
         nav a { color: #a0f0ff; text-decoration: none; font-weight: bold; }
         nav a:hover { text-decoration: underline; color: #fff; }
         
-        .main-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .main-container { max-width: 1400px; margin: 0 auto; padding: 20px; }
         header { text-align: center; border-bottom: 2px solid #004d7c; padding-bottom: 20px; margin-bottom: 30px; }
         
-        /* THE SIDE-BY-SIDE FIXED MATRIX GRID */
+        /* SIDE-BY-SIDE GRID FOR LIVE WINDOWS */
         .games-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); 
-            gap: 20px; 
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); 
+            gap: 25px; 
             margin-top: 20px;
         }
 
@@ -35,30 +34,29 @@
             background: #001220; 
             border: 1px solid #004d7c; 
             border-radius: 8px; 
-            padding: 20px; 
+            padding: 15px; 
             box-shadow: 0 0 10px rgba(0,242,255,0.1);
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
         }
 
-        .status-online { color: #00f2ff; font-weight: bold; }
-        .status-dev { color: #ffcc00; font-weight: bold; }
-        .status-sys { color: #ff3366; font-weight: bold; }
+        .game-card h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            border-bottom: 1px dashed #004d7c;
+            padding-bottom: 5px;
+        }
 
-        .game-btn {
-            display: inline-block;
-            margin-top: 15px;
-            padding: 8px 15px;
-            background: #004d7c;
-            color: #fff;
-            text-decoration: none;
-            text-align: center;
-            font-weight: bold;
+        /* THE LIVE PLAYABLE WINDOW BOX (IFRAME) */
+        .game-window {
+            width: 100%;
+            height: 400px; /* Adjust height based on your game layouts */
+            background: #000;
+            border: 2px solid #004d7c;
             border-radius: 4px;
-            font-size: 0.8rem;
+            margin-top: 10px;
         }
-        .game-btn:hover { background: #00f2ff; color: #000; box-shadow: 0 0 8px #00f2ff; }
     </style>
 </head>
 <body>
@@ -77,90 +75,39 @@
 <div class="main-container">
     <header>
         <h1>SIMULATION MATRIX</h1>
-        <p>PROJECT CODENAMES, UTILITIES, & GAMING LOGS</p>
+        <p>PLAYABLE TERMINALS RUNNING LIVE ON SCREEN</p>
     </header>
 
     <div class="games-grid">
 
         <div class="game-card">
-            <div>
-                <h2>STELLAPOD RESCUE</h2>
-                <p>STATUS: <span class="status-dev">[DEVELOPMENT CORE ACTIVATED]</span></p>
-                <p>A mobile sanctuary puzzle loop. Rescue drifting caterpillar nodes, safely navigate them to environmental rooms, and unlock harmonic audio alignments to advance parameters.</p>
-            </div>
-            <a href="#" class="game-btn">INITIALIZE SIMULATION</a>
+            <h2>THE WITCHES CAULDRON</h2>
+            <iframe class="game-window" src="cauldron.html"></iframe>
         </div>
 
         <div class="game-card">
-            <div>
-                <h2>UNDERWATER STATION DILEMMAS</h2>
-                <p>STATUS: <span class="status-online">[LORE DATA CORE STABLE]</span></p>
-                <p>Survival engineering interface tracking the psychological breakdown of Triton Station architecture. Run simulations against containment breaches and automated systems failure matrices.</p>
-            </div>
-            <a href="#" class="game-btn">RUN TRITON LOGS</a>
+            <h2>OGHAM TRANSLATOR ARRAY</h2>
+            <iframe class="game-window" src="ogham.html"></iframe>
         </div>
 
         <div class="game-card">
-            <div>
-                <h2>OGHAM TRANSLATOR MATRIX</h2>
-                <p>STATUS: <span class="status-online">[UTILITY SUBSYSTEM ONLINE]</span></p>
-                <p>Translational array for reading and decoding ancient Celtic script parameters. Essential module for parsing text inputs into gateway structures and physical project triggers.</p>
-            </div>
-            <a href="#" class="game-btn">LOAD TRANSLATOR</a>
+            <h2>LIGHTS OUT MATRIX</h2>
+            <iframe class="game-window" src="lightsout.html"></iframe>
         </div>
 
         <div class="game-card">
-            <div>
-                <h2>THE WITCHES CAULDRON</h2>
-                <p>STATUS: <span class="status-dev">[MYTH LOGIC INJECTED]</span></p>
-                <p>A dark folklore alchemy engine. Synthesize elemental components to conjure customized magical beast variations and formulate localized casting spells.</p>
-            </div>
-            <a href="#" class="game-btn">STIR THE CAULDRON</a>
+            <h2>HEX NETWORK CORE</h2>
+            <iframe class="game-window" src="hex.html"></iframe>
         </div>
 
         <div class="game-card">
-            <div>
-                <h2>LIGHTS OUT MATRIX</h2>
-                <p>STATUS: <span class="status-online">[PUZZLE CORE STABLE]</span></p>
-                <p>Classic binary grid logic interface. Toggle nodes to systematically darken the schematic network array. Testing your structural pathways and system bypass speeds.</p>
-            </div>
-            <a href="#" class="game-btn">ENGAGE MATRIX</a>
+            <h2>BIOMETRIC RECON REGISTER</h2>
+            <iframe class="game-window" src="diet.html"></iframe>
         </div>
 
         <div class="game-card">
-            <div>
-                <h2>HEX CORE COMPILER</h2>
-                <p>STATUS: <span class="status-dev">[COORDINATE ENGINE ONLINE]</span></p>
-                <p>Hexagonal grid territorial calculation array. Strategic grid-locking simulation designed to chart multi-directional coordinate expansion across isolated vectors.</p>
-            </div>
-            <a href="#" class="game-btn">BOOT HEX COMMAND</a>
-        </div>
-
-        <div class="game-card">
-            <div>
-                <h2>BIOMETRIC RECON RECOGNITION</h2>
-                <p>STATUS: <span class="status-online">[DIET TRACKER MODULE]</span></p>
-                <p>Internal supply log program tracking micro and macro nutritional inputs. Keeps your health parameters optimized for extended operations and high-stress development cycles.</p>
-            </div>
-            <a href="#" class="game-btn">ACCESS REGISTER</a>
-        </div>
-
-        <div class="game-card">
-            <div>
-                <h2>CHRONOS CLOCK CORE</h2>
-                <p>STATUS: <span class="status-sys">[SYSTEM CLOCK RUNNING]</span></p>
-                <p>Real-time synchronizer framework running precision background code. Manages synchronization logic parameters between web displays and hardware units.</p>
-            </div>
-            <a href="#" class="game-btn">SYNC TIMESTAMPS</a>
-        </div>
-
-        <div class="game-card" style="border: 2px dashed #004d7c; background: rgba(0,0,0,0.4);">
-            <div>
-                <h2>[ TRANSMISSION INCOMING ]</h2>
-                <p>STATUS: <span style="color: #888;">[VECTOR HOLDING ROOM]</span></p>
-                <p>Development expansion sector allocated for future terminal arrays. Ready for manual link copy-pasting to initialize subsequent projects into the grid configuration.</p>
-            </div>
-            <a href="#" class="game-btn" style="background: #222; color: #555; cursor: not-allowed; pointer-events: none;">LINK UNASSIGNED</a>
+            <h2>CHRONOS CLOCK MATRIX</h2>
+            <iframe class="game-window" src="clock.html"></iframe>
         </div>
 
     </div>
