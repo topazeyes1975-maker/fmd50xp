@@ -6,102 +6,248 @@
     <title>The Internal Ark: DNA Forge</title>
     <style>
         * { box-sizing: border-box; -webkit-user-select: none; touch-action: manipulation; }
+        
         body {
-            background-color: #0a0a0c; color: #d1d1d1; font-family: 'Garamond', serif;
-            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-            height: 100vh; margin: 0; padding: 15px; overflow: hidden;
+            background-color: #050505; 
+            color: #d1d1d1; 
+            font-family: 'Garamond', serif;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: flex-start;
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 15px; 
+            overflow-x: hidden;
         }
-        h2 { font-size: 3.5vh; margin: 0; letter-spacing: 2px; color: #a855f7; text-align: center; }
-        #log { font-size: 2.2vh; color: #888; text-align: center; min-height: 5vh; margin-top: 10px; }
+
+        h2 { 
+            font-size: 1.8rem; 
+            margin: 0 0 5px 0; 
+            letter-spacing: 2px; 
+            color: #a855f7; 
+            text-align: center; 
+            text-transform: uppercase;
+        }
+
+        /* NEW: INSTRUCTION TERMINAL BLOCK */
+        .instruction-box {
+            width: 100%;
+            max-width: 380px;
+            background: rgba(20, 10, 30, 0.6);
+            border: 1px dashed #a855f7;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+            color: #d8b3ff;
+            text-align: center;
+            font-family: monospace;
+            text-transform: uppercase;
+        }
+
+        #log { 
+            font-size: 1.1rem; 
+            color: #888; 
+            text-align: center; 
+            min-height: 40px; 
+            margin-bottom: 5px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
         
         #cauldron-area {
-            position: relative; width: 100%; height: 35vh;
-            display: flex; justify-content: center; align-items: flex-end; padding-bottom: 20px;
+            position: relative; 
+            width: 100%; 
+            height: 240px;
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-end; 
+            padding-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         #cauldron {
-            width: 240px; height: 200px; background: #1a1a1a; border: 8px solid #333;
-            border-radius: 50% 50% 40% 40%; position: relative;
-            box-shadow: inset 0 -20px 30px rgba(0,0,0,0.8), 0 10px 20px rgba(0,0,0,0.5);
-            display: flex; justify-content: center; align-items: center;
-            overflow: visible; /* Let bubbles float out */
+            width: 240px; 
+            height: 200px; 
+            background: #111; 
+            border: 8px solid #252525;
+            border-radius: 50% 50% 40% 40%; 
+            position: relative;
+            box-shadow: inset 0 -20px 30px rgba(0,0,0,0.9), 0 10px 20px rgba(0,0,0,0.6);
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            overflow: visible; 
         }
 
         #potion-surface {
-            position: absolute; top: 10%; left: 5%; right: 5%; bottom: 15%;
+            position: absolute; 
+            top: 10%; 
+            left: 5%; 
+            right: 5%; 
+            bottom: 15%;
             background: radial-gradient(circle, #22c55e, #14532d);
-            border-radius: 50%; filter: blur(6px); transition: all 0.5s ease; z-index: 1;
+            border-radius: 50%; 
+            filter: blur(6px); 
+            transition: all 0.5s ease; 
+            z-index: 1;
+        }
+
+        /* FANCY BLENDING: SMOKY RADIAL MASK FOR THE CREATURE */
+        .video-container {
+            position: absolute;
+            width: 170px;
+            height: 170px;
+            top: 10%;
+            border-radius: 50%;
+            z-index: 5;
+            overflow: hidden;
+            display: none;
+        }
+
+        /* Overlapping smoky vignette layer to hide harsh video edge paths */
+        .video-container::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, transparent 40%, rgba(20, 40, 25, 0.7) 70%, #050505 95%);
+            pointer-events: none;
+            z-index: 6;
         }
 
         #creatureVideo {
-            width: 170px; height: 170px; z-index: 5; display: none;
-            object-fit: contain; border-radius: 50%;
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            filter: saturate(1.2) brightness(1.1);
         }
 
         /* Bubble Atmosphere */
         .bubble {
             position: absolute;
             background: rgba(34, 197, 94, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 50%;
             bottom: 20%;
-            z-index: 10; /* Float in front of video */
+            z-index: 10; 
             animation: rise 3s infinite ease-in;
             pointer-events: none;
+        }
+
+        /* NEW: STEAM RISING LAYER EFFECTS */
+        .steam-cloud {
+            position: absolute;
+            background: rgba(255,255,255,0.04);
+            filter: blur(12px);
+            border-radius: 40% 80%;
+            width: 60px; height: 40px;
+            bottom: 50%;
+            z-index: 8;
+            animation: drift 4s infinite linear;
+            pointer-events: none;
+            display: none;
         }
 
         @keyframes rise {
             0% { transform: translateY(0) scale(1); opacity: 0; }
             20% { opacity: 0.8; }
-            100% { transform: translateY(-120px) scale(1.5); opacity: 0; }
+            100% { transform: translateY(-130px) scale(1.6); opacity: 0; }
         }
 
+        @keyframes drift {
+            0% { transform: translateY(0) scale(0.8) translateX(0); opacity: 0; }
+            30% { opacity: 0.3; }
+            100% { transform: translateY(-100px) scale(2) translateX(-20px); opacity: 0; }
+        }
+
+        /* 9-SLOT GRID LAYOUT */
         .ingredient-shelf {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
-            padding: 15px; background: #111; border: 1px solid #333; border-radius: 12px;
-            width: 100%; max-width: 450px;
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 12px;
+            padding: 15px; 
+            background: #111; 
+            border: 1px solid #222; 
+            border-radius: 12px;
+            width: 100%; 
+            max-width: 380px;
+            margin-bottom: 15px;
         }
+
         .item {
-            aspect-ratio: 1/1; background: #222; border: 1px solid #444; border-radius: 8px;
-            display: flex; justify-content: center; align-items: center; font-size: 3.5vh;
-            cursor: pointer; transition: transform 0.2s;
+            aspect-ratio: 1/1; 
+            background: #1a1a1a; 
+            border: 1px solid #333; 
+            border-radius: 8px;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            font-size: 2rem;
+            cursor: pointer; 
+            transition: transform 0.1s, border-color 0.2s;
         }
-        .item:active { transform: scale(0.9); }
+        .item:active { transform: scale(0.92); border-color: #a855f7; }
+
         .reset-btn {
-            width: 100%; max-width: 450px; padding: 12px; background: #1a1a1a;
-            border: 1px solid #a855f7; color: #a855f7; border-radius: 6px; font-size: 2vh;
+            width: 100%; 
+            max-width: 380px; 
+            padding: 12px; 
+            background: #111;
+            border: 1px solid #a855f7; 
+            color: #a855f7; 
+            border-radius: 6px; 
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.2s;
         }
+        .reset-btn:hover { background: #1a0f26; color: #fff; box-shadow: 0 0 10px #a855f7; }
     </style>
 </head>
 <body onload="startBubbles()">
 
     <h2>THE INTERNAL ARK</h2>
-    <div id="log">Tap Ingredients to Forge...</div>
+    
+    <div class="instruction-box">
+        🔮 HOW TO FORGE: Combine exactly 3 DNA ingredients to synthesize a legendary creature. A wrong combo triggers a mismatch purge!
+    </div>
+
+    <div id="log">TAP INGREDIENTS TO FORGE...</div>
 
     <div id="cauldron-area">
         <div id="cauldron">
             <div id="potion-surface"></div>
-            <video id="creatureVideo" loop playsinline></video>
+            
+            <div id="steam" class="steam-cloud"></div>
+            
+            <div id="videoContainer" class="video-container">
+                <video id="creatureVideo" loop playsinline muted></video>
+            </div>
         </div>
     </div>
 
     <div class="ingredient-shelf">
-        <div class="item" onclick="addIngredient('pepper', '#468e3c')">🌶️</div>
-        <div class="item" onclick="addIngredient('cinnamon', '#47f397')">🪵</div>
-        <div class="item" onclick="addIngredient('book', '#ef4844')">📖</div>
-        <div class="item" onclick="addIngredient('meteorite', '#ef4464')">☄️</div>
-        <div class="item" onclick="addIngredient('lion mane', '#ef4445')">🦁</div>
-        <div class="item" onclick="addIngredient('Fire', '#ef4443')">🔥</div>
-        <div class="item" onclick="addIngredient('Butterfly Wing', '#3b82f6')">🐉</div>
+        <div class="item" onclick="addIngredient('pepper', '#ef4444')">🌶️</div>
+        <div class="item" onclick="addIngredient('cinnamon', '#b45309')">🪵</div>
+        <div class="item" onclick="addIngredient('book', '#3b82f6')">📖</div>
+        <div class="item" onclick="addIngredient('meteorite', '#6b7280')">☄️</div>
+        <div class="item" onclick="addIngredient('lion mane', '#f59e0b')">🦁</div>
+        <div class="item" onclick="addIngredient('Fire', '#f97316')">🔥</div>
+        <div class="item" onclick="addIngredient('Butterfly Wing', '#ec4899')">🐉</div>
         <div class="item" onclick="addIngredient('Star Dust', '#eab308')">✨</div>
-        <div class="item" onclick="addIngredient('human heart', '#22c55e')">❤️</div>
+        <div class="item" onclick="addIngredient('human heart', '#dc2626')">❤️</div>
     </div>
 
     <button class="reset-btn" onclick="resetPot()">PURGE CAULDRON</button>
 
     <script>
         const potion = document.getElementById('potion-surface');
+        const videoContainer = document.getElementById('videoContainer');
         const video = document.getElementById('creatureVideo');
+        const steam = document.getElementById('steam');
         const log = document.getElementById('log');
         const cauldron = document.getElementById('cauldron');
 
@@ -118,45 +264,53 @@
             setInterval(() => {
                 const b = document.createElement('div');
                 b.className = 'bubble';
-                const size = Math.random() * 15 + 5 + 'px';
+                const size = Math.random() * 12 + 6 + 'px';
                 b.style.width = size;
                 b.style.height = size;
-                b.style.left = Math.random() * 60 + 20 + '%';
-                b.style.animationDuration = Math.random() * 2 + 2 + 's';
+                b.style.left = Math.random() * 55 + 22 + '%';
+                b.style.animationDuration = Math.random() * 1.5 + 1.5 + 's';
                 cauldron.appendChild(b);
-                setTimeout(() => b.remove(), 4000);
-            }, 400);
+                setTimeout(() => b.remove(), 3000);
+            }, 350);
         }
 
         function addIngredient(name, color) {
             if (currentIngredients.includes(name)) return;
             currentIngredients.push(name);
             potion.style.background = color;
-            log.innerText = "DNA Link: " + currentIngredients.join(" + ");
+            log.innerText = "DNA LINK: " + currentIngredients.join(" + ");
             
             let currentCombo = currentIngredients.slice().sort().join(',');
             if (animalRecipes[currentCombo]) {
                 const creature = animalRecipes[currentCombo];
                 log.innerText = "FORGE SUCCESS: " + creature.name;
-                log.style.color = "#00d4ff";
+                log.style.color = "#00f0ff";
+                
+                // Show blended frame and ignite steam overlays
                 video.src = creature.file;
-                video.style.display = 'block';
-                video.play();
-                potion.style.opacity = '0.3'; // Keep a little green glow
+                videoContainer.style.display = 'block';
+                steam.style.display = 'block';
+                
+                video.play().catch(err => console.log("Playback interaction error:", err));
+                potion.style.opacity = '0.25'; 
             } 
             else if (currentIngredients.length >= 3) {
-                alert("CRITICAL FAILURE: DNA MISMATCH!");
-                resetPot();
+                log.innerText = "CRITICAL FAILURE: DNA MISMATCH!";
+                log.style.color = "#ff0055";
+                setTimeout(() => {
+                    resetPot();
+                }, 1500);
             }
         }
 
         function resetPot() {
             currentIngredients = [];
-            video.style.display = 'none';
+            videoContainer.style.display = 'none';
+            steam.style.display = 'none';
             video.src = "";
             potion.style.opacity = '1';
-            potion.style.background = "#22c55e";
-            log.innerText = "Cauldron Cleansed.";
+            potion.style.background = "radial-gradient(circle, #22c55e, #14532d)";
+            log.innerText = "CAULDRON CLEANSED.";
             log.style.color = "#888";
         }
     </script>
