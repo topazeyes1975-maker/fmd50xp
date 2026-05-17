@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Personality Roulette Engine</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background-color: #0f0f0f; color: #e0e0e0; margin: 0; }
+        .card { border: 1px solid #333; padding: 2rem; border-radius: 12px; width: 400px; text-align: center; background: #1a1a1a; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        button { padding: 12px 24px; margin-top: 25px; cursor: pointer; background: #8b0000; border: none; color: white; font-weight: bold; border-radius: 4px; font-size: 1rem; transition: 0.3s; }
+        button:hover { background: #ff0000; }
+        #output { margin-top: 20px; line-height: 1.6; font-size: 1.1rem; }
+        strong { color: #ff4500; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Personality Seed</h2>
+        <div id="output">Click the chamber to generate a unique soul...</div>
+        <button onclick="rollCharacter()">Spin Roulette</button>
+    </div>
+
+    <script>
+        const drives = [
+            "Revenge", "Hoarding Knowledge", "Boredom", "Irrational Optimism", "Desperate Greed", 
+            "Misplaced Loyalty", "Seeking Redemption", "Obsessive Perfectionism", "Fear of Being Forgotten", 
+            "Craving Chaos", "Desire for Absolute Control", "Spiritual Enlightenment", "Pure Survival", 
+            "Validation-Seeking", "Intellectual Superiority", "Hidden Altruism", "Resentment of Authority",
+            "Nostalgia for a Lost Era", "Addiction to Adrenaline", "Unwavering Duty"
+        ];
+
+        const masks = [
+            "Over-polite", "Aggressively Silent", "Uses Humor as a Weapon", "Strictly Transactional", 
+            "Eerily Calm", "Brutally Honest", "Nervous Twitching", "Performative Charm", "Cynical Deflection", 
+            "Coldly Analytical", "Over-Empathic", "Suspiciously Cheerful", "Melancholic Detachment", 
+            "Stoic Endurance", "Manic Energy", "Arrogant Dismissal", "Soft-spoken Mystery", 
+            "Constant Provocation", "Observant Wallflower", "Pseudo-Intellectual"
+        ];
+
+        const flaws = [
+            "Paranoia", "Inability to trust logic", "Extreme risk-taking", "Pathological Liar", 
+            "Physical Exhaustion", "Narcissism", "Cowardice", "Emotional Volatility", "Stubborn Refusal to Adapt", 
+            "Obsessive-Compulsive Tendencies", "Slightly Delusional", "Superstitious Fear", "Self-Sabotage", 
+            "Inhibited Empathy", "Addictive Personality", "Flashbacks to Trauma", "Hypochondria", 
+            "Naivety", "Short-term Memory Gaps", "Hidden Sadism"
+        ];
+
+        function rollCharacter() {
+            const drive = drives[Math.floor(Math.random() * drives.length)];
+            const mask = masks[Math.floor(Math.random() * masks.length)];
+            const flaw = flaws[Math.floor(Math.random() * flaws.length)];
+            
+            document.getElementById('output').innerHTML = 
+                `<strong>Drive:</strong> ${drive}<br>
+                 <strong>Mask:</strong> ${mask}<br>
+                 <strong>Flaw:</strong> ${flaw}`;
+        }
+    </script>
+</body>
+</html>
+
