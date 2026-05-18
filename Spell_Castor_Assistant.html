@@ -94,7 +94,7 @@
             z-index: 1;
         }
 
-        /* IN-GAME FAILURE BANNER (CONTAINED INSIDE THE CAULDRON SYSTEM) */
+        /* IN-GAME FAILURE BANNER */
         .failure-overlay {
             position: absolute;
             top: 35%;
@@ -112,7 +112,7 @@
             z-index: 20;
             box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
             letter-spacing: 1px;
-            display: none; /* Controlled via JavaScript */
+            display: none; 
             pointer-events: none;
             width: 90%;
             max-width: 210px;
@@ -230,7 +230,7 @@
         .reset-btn:hover { background: #1a0f26; color: #fff; box-shadow: 0 0 10px #a855f7; }
     </style>
 </head>
-<body onload="startBubbles()">
+<body onload="initPage()">
 
     <h2>THE INTERNAL ARK</h2>
     
@@ -249,7 +249,7 @@
             <div id="steam" class="steam-cloud"></div>
             
             <div id="videoContainer" class="video-container">
-                <video id="creatureVideo" loop playsinline muted></video>
+                <video id="creatureVideo" playsinline></video>
             </div>
         </div>
     </div>
@@ -286,6 +286,15 @@
 
         let currentIngredients = [];
 
+        function initPage() {
+            startBubbles();
+            
+            // NEW: Listen for the video ending, then automatically clear the cauldron and hide the video
+            video.addEventListener('ended', () => {
+                resetPot();
+            });
+        }
+
         function startBubbles() {
             setInterval(() => {
                 const b = document.createElement('div');
@@ -313,20 +322,26 @@
                 log.style.color = "#00f0ff";
                 
                 video.src = creature.file;
+                video.muted = false; 
+                video.volume = 1.0; 
+                
                 videoContainer.style.display = 'block';
                 steam.style.display = 'block';
-                failurePopup.style.display = 'none'; // Ensure error is hidden
+                failurePopup.style.display = 'none'; 
                 
-                video.play().catch(err => console.log("Playback interaction error:", err));
+                video.play().catch(err => {
+                    console.log("Audio restriction bypass triggered:", err);
+                    video.muted = true;
+                    video.play();
+                });
                 potion.style.opacity = '0.25'; 
             } 
             else if (currentIngredients.length >= 3) {
                 log.innerText = "FAILED: SPELL GONE WRONG!";
                 log.style.color = "#ff0055";
                 
-                // Show the clean in-game failure banner inside the cauldron frame
                 failurePopup.style.display = 'block';
-                potion.style.background = '#3a0505'; // Change potion to a murky red-black failure color
+                potion.style.background = '#3a0505'; 
                 
                 setTimeout(() => {
                     resetPot();
@@ -338,11 +353,15 @@
             currentIngredients = [];
             videoContainer.style.display = 'none';
             steam.style.display = 'none';
-            failurePopup.style.display = 'none'; // Hide the contained alert box
+            failurePopup.style.display = 'none'; 
+            
+            video.pause();
+            video.muted = true; 
             video.src = "";
+            
             potion.style.opacity = '1';
             potion.style.background = "radial-gradient(circle, #22c55e, #14532d)";
-            log.innerText = "CAULDRON CLEANSED.";
+            log.innerText = "TAP INGREDIENTS TO FORGE...";
             log.style.color = "#888";
         }
     </script>
