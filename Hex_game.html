@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hex Protocol: Win Detection</title>
     <style>
-        * { box-sizing: border-box; touch-action: manipulation; }
+        * { box-sizing: border-box; touch-action: manipulation; -webkit-user-select: none; }
         body {
             background-color: #0a0a0c;
             color: #d1d1d1;
@@ -20,6 +20,7 @@
             overflow: hidden;
         }
         h2 { font-size: 3vh; margin: 5px 0; color: #00d4ff; letter-spacing: 2px; }
+        
         #canvas-container {
             width: 100%;
             height: 60vh;
@@ -29,8 +30,36 @@
             background: #111;
             border: 1px solid #333;
             border-radius: 8px;
+            position: relative; /* Anchor the win banner relative to this box */
         }
         canvas { max-width: 100%; max-height: 100%; }
+        
+        /* SLEEK IN-GAME WIN BANNER OVERLAY */
+        .win-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(10, 10, 15, 0.95);
+            padding: 20px 35px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+            z-index: 50;
+            letter-spacing: 2px;
+            display: none; /* Controlled via script */
+            pointer-events: none;
+            width: 85%;
+            max-width: 400px;
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
+            text-transform: uppercase;
+        }
+        
+        .win-overlay.red-win { border: 2px solid #ff4444; color: #ff4444; box-shadow: 0 0 30px rgba(255, 68, 68, 0.3); }
+        .win-overlay.blue-win { border: 2px solid #00d4ff; color: #00d4ff; box-shadow: 0 0 30px rgba(0, 212, 255, 0.3); }
+
         #controls {
             width: 100%;
             display: flex;
@@ -47,7 +76,14 @@
             border: 1px solid #00d4ff;
             border-radius: 5px;
             width: 90%;
+            cursor: pointer;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: bold;
+            transition: all 0.2s;
         }
+        button:hover { background-color: #111; box-shadow: 0 0 10px #00d4ff; }
+        
         #currentTurn { font-weight: bold; font-size: 2.5vh; }
         .red-t { color: #ff4444; }
         .blue-t { color: #00d4ff; }
@@ -58,6 +94,8 @@
     <h2>HEX PROTOCOL</h2>
 
     <div id="canvas-container">
+        <div id="winNotification" class="win-overlay"></div>
+        
         <canvas id="hexCanvas" width="700" height="600"></canvas>
     </div>
 
@@ -70,6 +108,7 @@
         const canvas = document.getElementById('hexCanvas');
         const ctx = canvas.getContext('2d');
         const turnText = document.getElementById('currentTurn');
+        const winNotification = document.getElementById('winNotification');
 
         const boardSize = 11;
         const hexRadius = 24;
@@ -96,6 +135,8 @@
             board = Array(boardSize).fill(null).map(() => Array(boardSize).fill(null));
             currentPlayer = 'Red';
             gameActive = true;
+            winNotification.style.display = 'none'; // Hide overlay on reset
+            winNotification.className = 'win-overlay'; // Clean visual classes
             updateUI();
             drawBoard();
         }
@@ -108,7 +149,6 @@
         function drawBoard() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Draw Edges to show goals
             ctx.lineWidth = 8;
             // Red Goals (Top and Bottom edges)
             ctx.strokeStyle = '#ff4444';
@@ -158,7 +198,6 @@
             const visited = new Set();
             const stack = [];
 
-            // Starting points for each player
             for (let i = 0; i < boardSize; i++) {
                 if (player === 'Red' && board[i][0] === 'Red') stack.push({q: i, r: 0});
                 if (player === 'Blue' && board[0][i] === 'Blue') stack.push({q: 0, r: i});
@@ -170,11 +209,9 @@
                 if (visited.has(key)) continue;
                 visited.add(key);
 
-                // Win check (reached the other side)
                 if (player === 'Red' && r === boardSize - 1) return true;
                 if (player === 'Blue' && q === boardSize - 1) return true;
 
-                // Check 6 neighbors
                 const neighbors = [
                     {q: q+1, r: r}, {q: q-1, r: r},
                     {q: q, r: r+1}, {q: q, r: r-1},
@@ -210,10 +247,16 @@
                         
                         if (checkWin(currentPlayer)) {
                             gameActive = false;
+                            
+                            // DISPLAY THE IMMERSIVE THEMED OVERLAY INSTEAD OF SYSTEM ALERT
+                            winNotification.innerText = currentPlayer.toUpperCase() + " BRIDGE SECURED!";
+                            winNotification.className += (currentPlayer === 'Red') ? ' red-win' : ' blue-win';
+                            winNotification.style.display = 'block';
+                            
+                            // Give players 3 seconds to admire their victory pathway, then auto-reset
                             setTimeout(() => {
-                                alert(currentPlayer.toUpperCase() + " BRIDGE SECURED!");
                                 initGame();
-                            }, 100);
+                            }, 3000);
                         } else {
                             currentPlayer = (currentPlayer === 'Red') ? 'Blue' : 'Red';
                             updateUI();
