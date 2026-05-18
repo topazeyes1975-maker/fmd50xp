@@ -277,19 +277,18 @@
         const cauldron = document.getElementById('cauldron');
         const failurePopup = document.getElementById('failurePopup');
 
+        // FIXED DICTIONARY ALPHABETIZATION KEY FOR THE DRAGON COMBINATION
         const animalRecipes = {
             "book,lion mane,meteorite": { name: "Crystal Lion Earapea", file: "water-pixa-e89099009877-0-0159b684d2b9.mp4" },
             "book,human heart,Star Dust": { name: "Sentient", file: "water-pixa-419b8932e688-0-fdb0ea7380d8.mp4" },
             "cinnamon,lion mane,Star Dust": { name: "Cinnamon Chimera", file: "water-pixa-295bce50d9b0-0-6f5bb6446711 (4).mp4" },
-            "dragon,Fire,pepper": { name: "Pepper Dragon", file: "Project_05-13_Full HD 1080p_MEDIUM_FR30.mp4" }
+            "Fire,dragon,pepper": { name: "Pepper Dragon", file: "Project_05-13_Full HD 1080p_MEDIUM_FR30.mp4" }
         };
 
         let currentIngredients = [];
 
         function initPage() {
             startBubbles();
-            
-            // NEW: Listen for the video ending, then automatically clear the cauldron and hide the video
             video.addEventListener('ended', () => {
                 resetPot();
             });
