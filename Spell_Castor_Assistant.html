@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The Internal Ark: DNA Forge</title>
+    <title>The Internal Ark: Cauldron Forge</title>
     <style>
         * { box-sizing: border-box; -webkit-user-select: none; touch-action: manipulation; }
         
@@ -30,7 +30,7 @@
             text-transform: uppercase;
         }
 
-        /* NEW: INSTRUCTION TERMINAL BLOCK */
+        /* INSTRUCTION TERMINAL BLOCK */
         .instruction-box {
             width: 100%;
             max-width: 380px;
@@ -94,6 +94,30 @@
             z-index: 1;
         }
 
+        /* IN-GAME FAILURE BANNER (CONTAINED INSIDE THE CAULDRON SYSTEM) */
+        .failure-overlay {
+            position: absolute;
+            top: 35%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(40, 5, 15, 0.9);
+            border: 2px solid #ef4444;
+            color: #ef4444;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-align: center;
+            z-index: 20;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+            letter-spacing: 1px;
+            display: none; /* Controlled via JavaScript */
+            pointer-events: none;
+            width: 90%;
+            max-width: 210px;
+        }
+
         /* FANCY BLENDING: SMOKY RADIAL MASK FOR THE CREATURE */
         .video-container {
             position: absolute;
@@ -106,7 +130,6 @@
             display: none;
         }
 
-        /* Overlapping smoky vignette layer to hide harsh video edge paths */
         .video-container::after {
             content: '';
             position: absolute;
@@ -135,7 +158,7 @@
             pointer-events: none;
         }
 
-        /* NEW: STEAM RISING LAYER EFFECTS */
+        /* STEAM RISING LAYER EFFECTS */
         .steam-cloud {
             position: absolute;
             background: rgba(255,255,255,0.04);
@@ -212,7 +235,7 @@
     <h2>THE INTERNAL ARK</h2>
     
     <div class="instruction-box">
-        🔮 HOW TO FORGE: Combine exactly 3 DNA ingredients to synthesize a legendary creature. A wrong combo triggers a mismatch purge!
+        🔮 HOW TO FORGE: COMBINE EXACTLY 3 SPELL INGREDIENTS TO SYNTHESIZE A LEGENDARY CREATURE. A WRONG COMBO TRIGGERS A FAULTY REACTION PURGE!
     </div>
 
     <div id="log">TAP INGREDIENTS TO FORGE...</div>
@@ -220,6 +243,8 @@
     <div id="cauldron-area">
         <div id="cauldron">
             <div id="potion-surface"></div>
+            
+            <div id="failurePopup" class="failure-overlay">FAILED: SPELL GONE WRONG!</div>
             
             <div id="steam" class="steam-cloud"></div>
             
@@ -250,11 +275,12 @@
         const steam = document.getElementById('steam');
         const log = document.getElementById('log');
         const cauldron = document.getElementById('cauldron');
+        const failurePopup = document.getElementById('failurePopup');
 
         const animalRecipes = {
             "book,lion mane,meteorite": { name: "Crystal Lion Earapea", file: "water-pixa-e89099009877-0-0159b684d2b9.mp4" },
-            "Star Dust,book,human heart": { name: "Sentient", file: "water-pixa-419b8932e688-0-fdb0ea7380d8.mp4" },
-            "Star Dust,cinnamon,lion mane": { name: "Cinnamon Chimera", file: "water-pixa-295bce50d9b0-0-6f5bb6446711 (4).mp4" },
+            "book,human heart,Star Dust": { name: "Sentient", file: "water-pixa-419b8932e688-0-fdb0ea7380d8.mp4" },
+            "cinnamon,lion mane,Star Dust": { name: "Cinnamon Chimera", file: "water-pixa-295bce50d9b0-0-6f5bb6446711 (4).mp4" },
             "Butterfly Wing,Fire,pepper": { name: "Pepper Dragon", file: "Project_05-13_Full HD 1080p_MEDIUM_FR30.mp4" }
         };
 
@@ -278,7 +304,7 @@
             if (currentIngredients.includes(name)) return;
             currentIngredients.push(name);
             potion.style.background = color;
-            log.innerText = "DNA LINK: " + currentIngredients.join(" + ");
+            log.innerText = "INGREDIENTS: " + currentIngredients.join(" + ");
             
             let currentCombo = currentIngredients.slice().sort().join(',');
             if (animalRecipes[currentCombo]) {
@@ -286,20 +312,25 @@
                 log.innerText = "FORGE SUCCESS: " + creature.name;
                 log.style.color = "#00f0ff";
                 
-                // Show blended frame and ignite steam overlays
                 video.src = creature.file;
                 videoContainer.style.display = 'block';
                 steam.style.display = 'block';
+                failurePopup.style.display = 'none'; // Ensure error is hidden
                 
                 video.play().catch(err => console.log("Playback interaction error:", err));
                 potion.style.opacity = '0.25'; 
             } 
             else if (currentIngredients.length >= 3) {
-                log.innerText = "CRITICAL FAILURE: DNA MISMATCH!";
+                log.innerText = "FAILED: SPELL GONE WRONG!";
                 log.style.color = "#ff0055";
+                
+                // Show the clean in-game failure banner inside the cauldron frame
+                failurePopup.style.display = 'block';
+                potion.style.background = '#3a0505'; // Change potion to a murky red-black failure color
+                
                 setTimeout(() => {
                     resetPot();
-                }, 1500);
+                }, 1800);
             }
         }
 
@@ -307,6 +338,7 @@
             currentIngredients = [];
             videoContainer.style.display = 'none';
             steam.style.display = 'none';
+            failurePopup.style.display = 'none'; // Hide the contained alert box
             video.src = "";
             potion.style.opacity = '1';
             potion.style.background = "radial-gradient(circle, #22c55e, #14532d)";
