@@ -14,12 +14,6 @@
             color: #a0f0ff; 
             text-transform: uppercase; 
         }
-        .sketchfab-embed-wrapper {
-    position: relative;
-    width: 100%;
-    max-width: 800px; /* Limits how wide it gets on desktop */
-    margin: 0 auto; /* Centers it on the page */
-        }
         
         header { border-bottom: 2px solid #004d7c; padding-bottom: 20px; margin-bottom: 30px; text-align: center;}
         nav ul { list-style: none; padding: 0; }
@@ -34,6 +28,65 @@
             margin-bottom: 40px; 
         }
 
+        /* FLEX CONTAINERS FOR BALANCED LAYOUT */
+        .project-main-content {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .project-text {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .project-media {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .sketchfab-embed-wrapper {
+            position: relative;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .sketchfab-embed-wrapper iframe {
+            width: 100%;
+            height: 350px; /* Set a clean uniform height for embeds inside boxes */
+        }
+
+        /* UNIFORM PROGRESS PHOTO GALLERY */
+        .progress-gallery {
+            margin: 25px 0;
+            padding-top: 15px;
+            border-top: 1px dashed #004d7c;
+        }
+
+        .gallery-title {
+            font-size: 0.9rem;
+            color: #00f2ff;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .gallery-grid {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .gallery-grid img { 
+            width: 150px;          /* Forces identical width */
+            height: 150px;         /* Forces identical height */
+            object-fit: cover;     /* Crops phone photos cleanly into perfect squares */
+            border-radius: 6px; 
+            border: 1px solid #004d7c; 
+            margin: 0;
+            box-shadow: 0 4px 10px rgba(0, 242, 255, 0.1);
+        }
+
         /* WISHLIST & REGISTRY STYLING */
         .wishlist-box {
             background: rgba(0, 242, 255, 0.05);
@@ -42,6 +95,7 @@
             border-radius: 10px;
             text-align: center;
             margin-top: 20px;
+            clear: both;
         }
 
         .wishlist-btn {
@@ -96,8 +150,6 @@
             font-size: 0.7rem;
             vertical-align: middle;
         }
-
-        img { max-width: 100%; border-radius: 4px; border: 1px solid #004d7c; margin: 10px 0; }
     </style>
 </head>
 <body>
@@ -116,19 +168,42 @@
     <h1>Engineering Manifest</h1>
     <p><strong>FMD50XP / Project Forge</strong></p>
 </header>
-<div class="sketchfab-embed-wrapper">
-    <iframe title="Meshy_AI_Dino_Ring_Light_0516125858_texture" 
-frameborder="0" allowfullscreen mozallowfullscreen="true" webkitallowfullscreen="true" allow="autoplay;
-        fullscreen; xr-spatial-tracking" xr-spatial-tracking execution-while-out-of-viewport execution-while-not-rendered web-share
-        src="https://sketchfab.com/models/377986eda71940839236a81f2da09bf6/embed"> 
-    </iframe> <p style="font-size: 13px; font-weight: normal; margin: 5px; color: #4A4A4A;"> 
-        <a href="https://sketchfab.com/3d-models/meshy-ai-dino-ring-light-0516125858-texture-377986eda71940839236a81f2da09bf6?utm_medium=embed&utm_campaign=share-popup&utm_content=377986eda71940839236a81f2da09bf6" 
-target="_blank" rel="nofollow" style="font-weight: bold; color: #1CAAD9;"> Meshy_AI_Dino_Ring_Light_0516125858_texture 
-        </a> by <a href="https://sketchfab.com/fonlumei?utm_medium=embed&utm_campaign=share-popup&utm_content=377986eda71940839236a81f2da09bf6" target="_blank" rel="nofollow" style="font-weight: bold; color: #1CAAD9;"> fonlumei
-        </a> on <a href="https://sketchfab.com?utm_medium=embed&utm_campaign=share-popup&utm_content=377986eda71940839236a81f2da09bf6" target="_blank" rel="nofollow" style="font-weight: bold; color: #1CAAD9;">Sketchfab</a></p></div>
+
 <section class="case-study">
     <h2>Project: Pet-Link Shackle <span class="status-tag">HARDWARE PROTOTYPE</span></h2>
-    <p>A "handcuff" style wearable interface. The animal sits atop the wrist, facing the hand, while the control box (LED Screen & Push-buttons) is mounted to the underside of the forearm, acting as the anchor for the shackle structure.</p>
+    
+    <div class="project-main-content">
+        <div class="project-text">
+            <p>A "handcuff" style wearable interface. The animal sits atop the wrist, facing the hand, while the control box (LED Screen & Push-buttons) is mounted to the underside of the forearm, acting as the anchor for the shackle structure.</p>
+            <p>Features embedded simulation interfaces to display physical text alerts through mechanical synchronization.</p>
+            
+            <div class="game-container">
+                </div>
+        </div>
+        
+        <div class="project-media">
+            <div class="sketchfab-embed-wrapper">
+                <iframe title="Meshy_AI_Dino_Ring_Light_0516125858_texture" 
+                        frameborder="0" allowfullscreen mozallowfullscreen="true" webkitallowfullscreen="true" 
+                        allow="autoplay; fullscreen; xr-spatial-tracking" xr-spatial-tracking 
+                        execution-while-out-of-viewport execution-while-not-rendered web-share
+                        src="https://sketchfab.com/models/377986eda71940839236a81f2da09bf6/embed"> 
+                </iframe> 
+                <p style="font-size: 11px; margin: 5px; text-align: center;"> 
+                    <a href="https://sketchfab.com/3d-models/meshy-ai-dino-ring-light-0516125858-texture-377986eda71940839236a81f2da09bf6" target="_blank" rel="nofollow" style="color: #00f2ff;">[VIEW MODEL ON SKETCHFAB]</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="progress-gallery">
+        <div class="gallery-title">PHYSICAL PROTOTYPING / R&D PROGRESS:</div>
+        <div class="gallery-grid">
+            <img src="prototype_skeleton.jpg" alt="Alpha wire skeleton hardware">
+            <img src="nested_head_mechanics.jpg" alt="Nested head motor stacking modification">
+            <img src="final_watch_render.jpg" alt="Final conceptual design model">
+        </div>
+    </div>
     
     <div class="wishlist-box">
         <h3>BRACELET SUPPLY MANIFEST</h3>
@@ -136,35 +211,41 @@ target="_blank" rel="nofollow" style="font-weight: bold; color: #1CAAD9;"> Meshy
         
         <div id="terminal-container">
             <div class="scanline"></div>
-            <div id="scrolling-log">
-                </div>
+            <div id="scrolling-log"></div>
         </div>
     </div>
 </section>
 
 <section class="case-study">
     <h2>Project: Keeper of Shards Wearable <span class="status-tag">DESIGN PHASE</span></h2>
-    <p>Interactive wearable tech for Cryptocon. Features custom spherical housings and circular OLED displays. Designed to transition digital vulnerability into a physical manifestation.</p>
-    <div class="sketchfab-embed-wrapper"> 
-    <iframe title="The keeper of shards" 
-            width="100%" 
-            height="480px" 
-            frameborder="0" 
-            allowfullscreen 
-            mozallowfullscreen="true" 
-            webkitallowfullscreen="true" 
-            allow="autoplay; fullscreen; xr-spatial-tracking" 
-            xr-spatial-tracking 
-            execution-while-out-of-viewport 
-            execution-while-not-rendered 
-            web-share 
-            src="https://sketchfab.com/models/f85bd77907ea4094b1727aa6537b9663/embed"> 
-    </iframe> 
-    <p style="font-size: 13px; font-weight: normal; margin: 5px; color: #4A4A4A;"> 
-        <a href="https://sketchfab.com/3d-models/the-keeper-of-shards-f85bd77907ea4094b1727aa6537b9663?utm_medium=embed&utm_campaign=share-popup&utm_content=f85bd77907ea4094b1727aa6537b9663" target="_blank" rel="nofollow" style="font-weight: bold; color: #1CAAD9;"> The keeper of shards </a> 
-        by <a href="https://sketchfab.com/fonlumei?utm_medium=embed&utm_campaign=share-popup&utm_content=f85bd77907ea4094b1727aa6537b9663" target="_blank" rel="nofollow" style="font-weight: bold; color: #1CAAD9;"> fonlumei </a> 
-        on <a href="https://sketchfab.com?utm_medium=embed&utm_campaign=share-popup&utm_content=f85bd77907ea4094b1727aa6537b9663" target="_blank" rel="nofollow" style="font-weight: bold; color: #1CAAD9;">Sketchfab</a>
-    </p>
+    
+    <div class="project-main-content">
+        <div class="project-text">
+            <p>Interactive wearable tech for Cryptocon. Features custom spherical housings and circular OLED displays. Designed to transition digital vulnerability into a physical manifestation.</p>
+            <p>Optimized asset framework designed to reduce processing latency from 85MB down to performance-ready web standards.</p>
+        </div>
+        
+        <div class="project-media">
+            <div class="sketchfab-embed-wrapper"> 
+                <iframe title="The keeper of shards" 
+                        frameborder="0" allowfullscreen mozallowfullscreen="true" webkitallowfullscreen="true" 
+                        allow="autoplay; fullscreen; xr-spatial-tracking" xr-spatial-tracking 
+                        execution-while-out-of-viewport execution-while-not-rendered web-share 
+                        src="https://sketchfab.com/models/f85bd77907ea4094b1727aa6537b9663/embed"> 
+                </iframe> 
+                <p style="font-size: 11px; margin: 5px; text-align: center;"> 
+                    <a href="https://sketchfab.com/3d-models/the-keeper-of-shards-f85bd77907ea4094b1727aa6537b9663" target="_blank" rel="nofollow" style="color: #00f2ff;">[VIEW MODEL ON SKETCHFAB]</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="progress-gallery">
+        <div class="gallery-title">PHYSICAL PROTOTYPING / R&D PROGRESS:</div>
+        <div class="gallery-grid">
+            <img src="dress_fabric_test.jpg" alt="Fabric layer test">
+            <img src="skirt_bell_structure.jpg" alt="Mechanical skirt assembly">
+        </div>
     </div>
     
     <div class="wishlist-box">
@@ -175,7 +256,22 @@ target="_blank" rel="nofollow" style="font-weight: bold; color: #1CAAD9;"> Meshy
 
 <section class="case-study">
     <h2>Project: Anima-Sync Animatronic <span class="status-tag">CHASSIS BUILD</span></h2>
-    <p>Dual-glove gesture-controlled doll using triple-ESP32 synchronization. Features a "Subconscious Idle" state for autonomous movement simulation. Transitioning from wood to thin-profile metal frame.</p>
+    
+    <div class="project-main-content">
+        <div class="project-text">
+            <p>Dual-glove gesture-controlled doll using triple-ESP32 synchronization. Features a "Subconscious Idle" state for autonomous movement simulation. Transitioning from wood to thin-profile metal frame.</p>
+        </div>
+        <div class="project-media">
+            </div>
+    </div>
+
+    <div class="progress-gallery">
+        <div class="gallery-title">PHYSICAL PROTOTYPING / R&D PROGRESS:</div>
+        <div class="gallery-grid">
+            <img src="doll_chassis_alpha.jpg" alt="Initial wood frame setup">
+            <img src="metal_profile_upgrade.jpg" alt="Thin-profile metal frame transition">
+        </div>
+    </div>
     
     <div class="wishlist-box">
         <h3>DOLL HARDWARE MANIFEST</h3>
@@ -185,7 +281,6 @@ target="_blank" rel="nofollow" style="font-weight: bold; color: #1CAAD9;"> Meshy
 
 <script>
     // --- THE FORGE REGISTRY DATABASE ---
-    // Add your supporters here!
     const registryData = [
         ["1x ESP32-S3 MODULE", "SYSTEM INITIALIZED"],
         ["OLED DISPLAY (CIRCULAR)", "FORGE READY"],
@@ -210,10 +305,8 @@ target="_blank" rel="nofollow" style="font-weight: bold; color: #1CAAD9;"> Meshy
             logContainer.appendChild(line);
             index++;
             
-            // Speed of the terminal typewriter (1.2 seconds per entry)
             setTimeout(addRegistryEntry, 1200); 
         } else {
-            // Loop back to start after a delay
             setTimeout(() => {
                 logContainer.innerHTML = '';
                 index = 0;
@@ -222,7 +315,6 @@ target="_blank" rel="nofollow" style="font-weight: bold; color: #1CAAD9;"> Meshy
         }
     }
 
-    // Start the scan when page loads
     window.onload = addRegistryEntry;
 </script>
 
