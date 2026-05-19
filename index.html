@@ -20,31 +20,53 @@
 
     /* THE WANTED POSTER - NOW IN CYBER BLUE */
     .poster-frame {
-    /* Change 'white' or '#444' to your new aqua color */
-    border: 8px double #00f2ff; 
-    padding: 20px;
-    background: #000;
-    max-width: 500px;
-    width: 90%;
-    text-align: center;
-    /* Adding a glow to match your 'Noctuluc Ethereal' theme */
-    box-shadow: 0 0 25px rgba(0, 242, 255, 0.4); 
-    margin: 40px 0 100px 0;
-}
+        border: 8px double #00f2ff; 
+        padding: 20px;
+        background: #000;
+        max-width: 500px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 0 25px rgba(0, 242, 255, 0.4); 
+        margin: 40px 0 100px 0;
+    }
 
     h1 { font-size: 3rem; margin: 10px 0; letter-spacing: 5px; color: #fff; text-shadow: 0 0 10px #004d7c; }
     .alias { font-size: 1.1rem; color: #00f2ff; margin-bottom: 20px; border-bottom: 1px solid #004d7c; padding-bottom: 10px; }
 
+    /* PHOTO CONTAINER WITH INTEGRATED PROTECTION FLANKS */
+    .photo-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        margin: 20px 0;
+    }
+
     .photo-area {
-        width: 100%;
+        flex-grow: 1;
         aspect-ratio: 1/1;
         background: #001f33;
         border: 4px solid #004d7c;
-        margin: 20px 0;
         overflow: hidden;
     }
-    /* Keeping the photo high-tech blue */
     .photo-area img { width: 100%; height: 100%; object-fit: cover; filter: cyan(50%) brightness(80%); }
+
+    /* DIGITAL TALISMAN PILLARS */
+    .talisman-pillar {
+        font-family: monospace;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #00f2ff;
+        text-shadow: 0 0 8px rgba(0, 242, 255, 0.8);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 350px; /* Aligns with the height of your photo scale */
+        width: 30px;
+        letter-spacing: 2px;
+        line-height: 1.2;
+        user-select: none;
+    }
 
     .bio-info { text-align: left; line-height: 1.6; font-size: 1rem; color: #00f2ff; }
     .label { font-weight: bold; color: #00f2ff; margin-right: 10px; }
@@ -65,14 +87,14 @@
         display: inline-block;
         white-space: nowrap;
         animation: scroll 25s linear infinite;
-        color: #fff; /* White text for high visibility */
+        color: #fff; 
         font-weight: bold;
     }
     @keyframes scroll {
         0% { transform: translateX(100%); }
         100% { transform: translateX(-100%); }
     }
-    .ticker span { margin-right: 60px; color: #00f2ff; } /* Cyan bullet points */
+    .ticker span { margin-right: 60px; color: #00f2ff; } 
 
     /* NAVIGATION */
     nav { width: 100%; background: #000; border-bottom: 1px solid #004d7c; padding: 10px 0; position: sticky; top: 0; z-index: 1000; }
@@ -84,7 +106,6 @@
 </head>
 <body>
 
-    <!-- YOUR NAVIGATION -->
     <nav>
         <ul>
             <li><a href="index.html">HOME</a></li>
@@ -100,9 +121,26 @@
         <h1>WANTED</h1>
         <div class="alias">AI DIRECTOR & CREATIVE VISIONARY</div>
         
-        <div class="photo-area">
-            <!-- Replace this src with your actual photo file name -->
-            <img src="water-pixa-a409fe4cbcd3-0-38d91715044c.jpg" alt="Fonda Dutton">
+        <div class="photo-wrapper">
+            <div class="talisman-pillar">
+                <div>🝔</div>
+                <div>𝌆</div>
+                <div>⛓</div>
+                <div>𝌃</div>
+                <div>🝖</div>
+            </div>
+
+            <div class="photo-area">
+                <img src="water-pixa-a409fe4cbcd3-0-38d91715044c.jpg" alt="Fonda Dutton">
+            </div>
+
+            <div class="talisman-pillar">
+                <div>🝔</div>
+                <div>𝌃</div>
+                <div>⛓</div>
+                <div>𝌆</div>
+                <div>🝖</div>
+            </div>
         </div>
 
         <div class="bio-info">
@@ -113,7 +151,6 @@
         </div>
     </div>
 
-    <!-- TIMES SQUARE NEWS TICKER -->
     <div class="ticker-wrap">
         <div class="ticker">
             <span>● BREAKING: DNA FORGE LIVE IN THE GAMES ROOM</span>
@@ -123,5 +160,6 @@
         </div>
     </div>
 
-</body>
+    </body>
 </html>
+
