@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
+
     <title>FMD50XP_Engineering_Manifest</title>
     <style>
         body { 
@@ -215,9 +216,52 @@
         </div>
     </div>
 </section>
+<section class="project-optimization">
+  
+  <h2>3D Asset Optimization & Compression</h2>
+  <p>To ensure smooth performance and fast loading times on the web, I engineered this 3D model to be as lightweight as possible without sacrificing visual fidelity.</p>
 
+  <div class="model-display">
+    </div>
+
+  <div class="metrics-grid" style="display: flex; justify-content: space-around; margin-top: 20px; font-family: sans-serif;">
+    
+    <div class="metric-box" style="text-align: center; padding: 20px; background: #222; color: #ff6b6b; border-radius: 8px;">
+      <h3>Original Model Size</h3>
+      <p style="font-size: 24px; font-weight: bold;">85 MB</p>
+      <span style="font-size: 12px; color: #aaa;">Raw High-Poly Export</span>
+    </div>
+
+    <div class="metric-box" style="text-align: center; padding: 20px; background: #222; color: #51cf66; border-radius: 8px;">
+      <h3>Optimized Web Size</h3>
+      <p style="font-size: 24px; font-weight: bold;">17 MB</p>
+      <span style="font-size: 12px; color: #aaa;">Reduced Mesh & Compressed Textures</span>
+    </div>
+
+  </div>
+
+  <div class="optimization-notes" style="margin-top: 20px;">
+    <h4>The Process:</h4>
+    <ul>
+      <li>Reduced geometry to the simplest functional form for efficient web rendering.</li>
+      <li>Optimized the inner frame assets to drastically cut down download speeds while retaining complete mechanical articulation details.</li>
+    </ul>
+  </div>
+
+</section>
+    
 <section class="case-study">
     <h2>Project: Keeper of Shards Wearable <span class="status-tag">DESIGN PHASE</span></h2>
+  <div class="model-container">
+  <model-viewer 
+    src="your-optimized-model.glb" 
+    alt="A 3D model of my custom robot doll project" 
+    auto-rotate 
+    camera-controls 
+    ar 
+    style="width: 100%; height: 500px; background-color: #111;">
+  </model-viewer>
+  </div>
     
     <div class="project-main-content">
         <div class="project-text">
