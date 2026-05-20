@@ -26,25 +26,26 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 30px;
+        gap: 40px; /* Increased gap slightly for a cleaner layout */
         width: 100%;
-        max-width: 1200px;
+        max-width: 1400px; /* Expanded max-width to allow room for larger pillars */
         margin: 40px auto 1200px auto; /* Centered with room for scrolling above ticker */
     }
 
-    /* THE COLUMNS FOR THE 3D MODEL VIEWERS */
+    /* THE COLUMNS FOR THE 3D MODEL VIEWERS - Expanded width for larger frames */
     .model-column {
         display: flex;
         flex-direction: column;
-        gap: 20px;
-        width: 180px; /* Adjust width to fit your 3D model screenshots */
+        gap: 25px;
+        width: 260px; /* Increased width from 180px to 260px */
     }
 
+    /* THE MODEL CARD - Transformed into tall rectangular pillars */
     .model-card {
         background: #000;
         border: 2px solid #004d7c;
         box-shadow: 0 0 15px rgba(0, 77, 124, 0.4);
-        aspect-ratio: 1/1;
+        height: 380px; /* Explicit height to create an elongated pillar shape */
         overflow: hidden;
         display: flex;
         align-items: center;
@@ -154,7 +155,7 @@
     @media (max-width: 900px) {
         .page-layout { flex-direction: column; margin-bottom: 150px; }
         .model-column { flex-direction: row; width: 100%; justify-content: center; }
-        .model-card { width: 45%; max-width: 180px; }
+        .model-card { width: 45%; height: 250px; } /* Slightly shorter rectangles on mobile to fit nicely */
     }
 </style>
 </head>
@@ -175,16 +176,8 @@
         
         <div class="model-column">
             <div class="model-card">
-                <model-viewer src="model_left_1.glb" 
+                <model-viewer src="Meshy_AI_Sigil_Scroll_0519235706_texture.glb" 
                               alt="3D Model Asset 1" 
-                              auto-rotate 
-                              camera-controls 
-                              touch-action="pan-y">
-                </model-viewer>
-            </div>
-            <div class="model-card">
-                <model-viewer src="model_left_2.glb" 
-                              alt="3D Model Asset 2" 
                               auto-rotate 
                               camera-controls 
                               touch-action="pan-y">
@@ -235,14 +228,7 @@
                               touch-action="pan-y">
                 </model-viewer>
             </div>
-            <div class="model-card">
-                <model-viewer src="Meshy_AI_Sigil_Scroll_0519235706_texture.glb" 
-                              alt="3D Model Asset 4" 
-                              auto-rotate 
-                              camera-controls 
-                              touch-action="pan-y">
-                </model-viewer>
-            </div>
+            
         </div>
 
     </div>
