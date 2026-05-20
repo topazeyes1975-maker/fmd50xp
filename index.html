@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FMD50XP | Classified File</title>
+    
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+
 <style>
     body {
         background-color: #000a12; /* Matches Atlas Mutatis background */
@@ -29,7 +32,7 @@
         margin: 40px auto 1200px auto; /* Centered with room for scrolling above ticker */
     }
 
-    /* THE COLUMNS FOR THE 3D MODEL IMAGES */
+    /* THE COLUMNS FOR THE 3D MODEL VIEWERS */
     .model-column {
         display: flex;
         flex-direction: column;
@@ -43,6 +46,17 @@
         box-shadow: 0 0 15px rgba(0, 77, 124, 0.4);
         aspect-ratio: 1/1;
         overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Styling for the interactive 3D players */
+    .model-card model-viewer {
+        width: 100%;
+        height: 100%;
+        background-color: #000;
+        --poster-color: transparent;
     }
 
     .model-card img {
@@ -157,20 +171,27 @@
         </ul>
     </nav>
 
-    <!-- NEW CONTENT WRAPPER -->
     <div class="page-layout">
         
-        <!-- LEFT COLUMN: 2 IMAGES OF 3D MODELS -->
         <div class="model-column">
             <div class="model-card">
-                <img src="model_left_1.jpg" alt="3D Model Asset 1">
+                <model-viewer src="model_left_1.glb" 
+                              alt="3D Model Asset 1" 
+                              auto-rotate 
+                              camera-controls 
+                              touch-action="pan-y">
+                </model-viewer>
             </div>
             <div class="model-card">
-                <img src="model_left_2.jpg" alt="3D Model Asset 2">
+                <model-viewer src="model_left_2.glb" 
+                              alt="3D Model Asset 2" 
+                              auto-rotate 
+                              camera-controls 
+                              touch-action="pan-y">
+                </model-viewer>
             </div>
         </div>
 
-        <!-- CENTER COLUMN: THE ORIGINAL WANTED POSTER -->
         <div class="poster-frame">
             <h1>WANTED</h1>
             <div class="alias">AI DIRECTOR & CREATIVE VISIONARY</div>
@@ -205,13 +226,22 @@
             </div>
         </div>
 
-        <!-- RIGHT COLUMN: 2 IMAGES OF 3D MODELS -->
         <div class="model-column">
             <div class="model-card">
-                <img src="Meshy_AI_Sigil_Scroll_0519235706_texture.glb" alt="3D Model Asset 3">
+                <model-viewer src="Meshy_AI_Sigil_Scroll_0519235706_texture.glb" 
+                              alt="3D Model Asset 3" 
+                              auto-rotate 
+                              camera-controls 
+                              touch-action="pan-y">
+                </model-viewer>
             </div>
             <div class="model-card">
-                <img src="Meshy_AI_Sigil_Scroll_0519235706_texture.glb" alt="3D Model Asset 4">
+                <model-viewer src="Meshy_AI_Sigil_Scroll_0519235706_texture.glb" 
+                              alt="3D Model Asset 4" 
+                              auto-rotate 
+                              camera-controls 
+                              touch-action="pan-y">
+                </model-viewer>
             </div>
         </div>
 
