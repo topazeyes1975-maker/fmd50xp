@@ -18,16 +18,49 @@
         text-transform: uppercase;
     }
 
+    /* MAIN LAYOUT WRAPPER - Centers the entire layout on the page */
+    .page-layout {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 30px;
+        width: 100%;
+        max-width: 1200px;
+        margin: 40px auto 1200px auto; /* Centered with room for scrolling above ticker */
+    }
+
+    /* THE COLUMNS FOR THE 3D MODEL IMAGES */
+    .model-column {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        width: 180px; /* Adjust width to fit your 3D model screenshots */
+    }
+
+    .model-card {
+        background: #000;
+        border: 2px solid #004d7c;
+        box-shadow: 0 0 15px rgba(0, 77, 124, 0.4);
+        aspect-ratio: 1/1;
+        overflow: hidden;
+    }
+
+    .model-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: hue-rotate(180deg) brightness(80%); /* Gives an outer-space/cyber hue */
+    }
+
     /* THE WANTED POSTER - NOW IN CYBER BLUE */
     .poster-frame {
         border: 8px double #00f2ff; 
         padding: 20px;
         background: #000;
         max-width: 500px;
-        width: 90%;
+        width: 100%;
         text-align: center;
         box-shadow: 0 0 25px rgba(0, 242, 255, 0.4); 
-        margin: 40px 0 100px 0;
     }
 
     h1 { font-size: 3rem; margin: 10px 0; letter-spacing: 5px; color: #fff; text-shadow: 0 0 10px #004d7c; }
@@ -102,6 +135,13 @@
     nav li { margin: 5px 15px; }
     nav a { color: #a0f0ff; text-decoration: none; font-weight: bold; font-size: 0.9rem; }
     nav a:hover { color: #fff; text-shadow: 0 0 10px #004d7c; }
+
+    /* RESPONSIVE DESIGN - Stacks columns under the poster on mobile screens */
+    @media (max-width: 900px) {
+        .page-layout { flex-direction: column; margin-bottom: 150px; }
+        .model-column { flex-direction: row; width: 100%; justify-content: center; }
+        .model-card { width: 45%; max-width: 180px; }
+    }
 </style>
 </head>
 <body>
@@ -117,38 +157,64 @@
         </ul>
     </nav>
 
-    <div class="poster-frame">
-        <h1>WANTED</h1>
-        <div class="alias">AI DIRECTOR & CREATIVE VISIONARY</div>
+    <!-- NEW CONTENT WRAPPER -->
+    <div class="page-layout">
         
-        <div class="photo-wrapper">
-            <div class="talisman-pillar">
-                <div>🝔</div>
-                <div>𝌆</div>
-                <div>⛓</div>
-                <div>𝌃</div>
-                <div>🝖</div>
+        <!-- LEFT COLUMN: 2 IMAGES OF 3D MODELS -->
+        <div class="model-column">
+            <div class="model-card">
+                <img src="model_left_1.jpg" alt="3D Model Asset 1">
             </div>
-
-            <div class="photo-area">
-                <img src="water-pixa-a409fe4cbcd3-0-38d91715044c.jpg" alt="Fonda Dutton">
-            </div>
-
-            <div class="talisman-pillar">
-                <div>🝔</div>
-                <div>𝌃</div>
-                <div>⛓</div>
-                <div>𝌆</div>
-                <div>🝖</div>
+            <div class="model-card">
+                <img src="model_left_2.jpg" alt="3D Model Asset 2">
             </div>
         </div>
 
-        <div class="bio-info">
-            <p><span class="label">IDENTIFIED AS:</span> Fonda Dutton</p>
-            <p><span class="label">OCCUPATION:</span> Web Developer, Story Writer & Song writer</p>
-            <p><span class="label">LAST SEEN:</span> Building the Internal Ark Portfolio</p>
-            <p><span class="label">REWARD:</span> Insights into the 'Uneek' Self</p>
+        <!-- CENTER COLUMN: THE ORIGINAL WANTED POSTER -->
+        <div class="poster-frame">
+            <h1>WANTED</h1>
+            <div class="alias">AI DIRECTOR & CREATIVE VISIONARY</div>
+            
+            <div class="photo-wrapper">
+                <div class="talisman-pillar">
+                    <div>🝔</div>
+                    <div>𝌆</div>
+                    <div>⛓</div>
+                    <div>𝌃</div>
+                    <div>🝖</div>
+                </div>
+
+                <div class="photo-area">
+                    <img src="water-pixa-a409fe4cbcd3-0-38d91715044c.jpg" alt="Fonda Dutton">
+                </div>
+
+                <div class="talisman-pillar">
+                    <div>🝔</div>
+                    <div>𝌃</div>
+                    <div>⛓</div>
+                    <div>𝌆</div>
+                    <div>🝖</div>
+                </div>
+            </div>
+
+            <div class="bio-info">
+                <p><span class="label">IDENTIFIED AS:</span> Fonda Dutton</p>
+                <p><span class="label">OCCUPATION:</span> Web Developer, Story Writer & Song writer</p>
+                <p><span class="label">LAST SEEN:</span> Building the Internal Ark Portfolio</p>
+                <p><span class="label">REWARD:</span> Insights into the 'Uneek' Self</p>
+            </div>
         </div>
+
+        <!-- RIGHT COLUMN: 2 IMAGES OF 3D MODELS -->
+        <div class="model-column">
+            <div class="model-card">
+                <img src="model_right_1.jpg" alt="3D Model Asset 3">
+            </div>
+            <div class="model-card">
+                <img src="model_right_2.jpg" alt="3D Model Asset 4">
+            </div>
+        </div>
+
     </div>
 
     <div class="ticker-wrap">
@@ -160,6 +226,5 @@
         </div>
     </div>
 
-    </body>
+</body>
 </html>
-
