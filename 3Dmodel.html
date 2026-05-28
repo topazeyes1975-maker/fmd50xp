@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Archive of Imagination | AI Director</title>
+    <title>3D Model Vault | FMD50XP</title>
     
+    <!-- Stable Model-Viewer script for interactive 3D files -->
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
 
     <style>
-        /* 1. THE FOUNDATION */
+        /* 1. BRAND FOUNDATION (SOLID BLACK, CYAN, PINK) */
         :root {
-            --primary: #00f0ff;
-            --accent: #ff007a;
-            --bg: #050505;
-            --card-bg: #111;
+            --primary: #00f0ff;  /* Neon Cyan */
+            --accent: #ff007a;   /* Neon Pink */
+            --bg: #050505;       /* Pure Deep Black */
+            --card-bg: #111;     /* Dark Card Gray */
         }
 
         body { 
@@ -26,7 +27,7 @@
             overflow-x: hidden;
         }
 
-        /* 2. PROFESSIONAL NAV BAR */
+        /* 2. MATCHING NAV BAR */
         nav {
             background: #000;
             border-bottom: 1px solid #222;
@@ -55,61 +56,69 @@
             transition: 0.3s;
         }
 
-        nav a:hover { color: var(--accent); text-shadow: 0 0 8px var(--accent); }
+        nav a:hover { 
+            color: var(--accent); 
+            text-shadow: 0 0 8px var(--accent); 
+        }
 
+        /* 3. HEADER & CENTRAL COMMENT LINK */
         .header-section { 
             text-align: center; 
             padding: 40px 10px; 
             border-bottom: 2px solid #222; 
         }
 
-        h1 { color: var(--primary); text-transform: uppercase; letter-spacing: 3px; font-size: 1.8em; margin-bottom: 5px; }
-
-        /* 3. THE BLUE COMMENT TEXT FIX */
-        .comment-area p {
+        h1 { 
             color: var(--primary); 
+            text-transform: uppercase; 
+            letter-spacing: 3px; 
+            font-size: 1.8em; 
+            margin-bottom: 10px; 
+        }
+
+        /* Direct Link Button to your Standalone Comment Page */
+        .comment-hub-btn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 12px 30px;
+            background: transparent;
+            border: 2px solid var(--accent);
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+            text-transform: uppercase;
             font-size: 0.9em;
-            font-style: italic;
-            margin-bottom: 10px;
-            border-left: 3px solid var(--accent);
-            padding-left: 10px;
+            letter-spacing: 1px;
+            border-radius: 30px;
+            transition: all 0.3s ease;
         }
 
-        /* EMOJI KEY BOX */
-        .emoji-key-box {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            justify-content: center;
-            background: #111;
-            border: 1px solid var(--primary);
-            padding: 12px;
-            border-radius: 12px;
-            margin: 20px auto;
-            max-width: 90%;
-            font-size: 0.85em;
+        .comment-hub-btn:hover {
+            background: var(--accent);
+            box-shadow: 0 0 15px var(--accent);
+            transform: translateY(-2px);
         }
-        
-        .key-item { border-right: 1px solid #333; padding-right: 8px; margin-right: 2px; white-space: nowrap; }
-        .key-item:last-child { border: none; }
 
-        /* 4. RESPONSIVE GRID */
+        /* 4. GENRE SECTION HEADINGS */
         .main-content {
             max-width: 1200px; 
             margin: 0 auto;
             padding: 20px;
         }
 
-        .category-container { margin-bottom: 60px; }
-        .category-title { 
-            color: var(--accent); 
-            border-left: 5px solid var(--accent); 
+        .genre-section { margin-bottom: 60px; }
+        
+        .genre-title { 
+            color: var(--primary); 
+            border-left: 5px solid var(--primary); 
             padding-left: 15px; 
             margin-bottom: 25px; 
-            font-size: 1.5em;
+            font-size: 1.6em;
             text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
+        /* 5. 3D MODEL CARDS GRID */
         .gallery-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -123,75 +132,77 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, border-color 0.3s ease;
         }
 
-        .model-card:hover { border-color: var(--primary); }
+        .model-card:hover { 
+            border-color: var(--accent);
+            transform: translateY(-5px);
+        }
 
         model-viewer {
             width: 100%;
-            height: 400px;
-            background-color: #1a1a1a;
+            height: 380px;
+            background-color: #151515;
         }
 
-        /* 5. INTERACTION BAR */
+        /* 6. REACTION BAR */
         .interaction-bar { 
             display: flex; 
-            gap: 12px; 
+            justify-content: space-around;
             padding: 15px;
             border-top: 1px solid #222;
-            overflow-x: auto; 
-            white-space: nowrap;
-            -webkit-overflow-scrolling: touch;
+            background: rgba(0,0,0,0.2);
         }
-        .interaction-bar::-webkit-scrollbar { display: none; }
 
-        .emoji-btn { 
+        .like-btn { 
             background: #222; 
             border: 1px solid #333; 
             color: #eee; 
-            padding: 10px 16px; 
-            border-radius: 25px; 
-            flex: 0 0 auto;
+            padding: 8px 16px; 
+            border-radius: 20px; 
             display: flex;
             align-items: center;
             gap: 8px;
-        }
-        .count-num { font-weight: bold; color: var(--primary); }
-
-        /* 6. CUSDIS AREA */
-        #cusdis_thread, [id^="cusdis_thread_"] {
-            padding: 10px;
-            background: transparent;
-            color: #eee;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: 0.2s;
         }
 
-        #cusdis_thread iframe, [id^="cusdis_thread_"] iframe {
-            filter: invert(1) hue-rotate(180deg) brightness(1.2) saturate(2);
+        .like-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
         }
+
+        .count-num { font-weight: bold; color: #fff; }
 
         @media (min-width: 768px) {
-            h1 { font-size: 3em; }
+            h1 { font-size: 2.5em; }
         }
     </style>
 </head>
 <body>
 
-<nav>
-    <ul>
-        <li><a href="index.html">HOME</a></li>
-        <li><a href="Atlas_Mutatis.html">ATLAS MUTATIS</a></li>
-        <li><a href="Project.html">PHYSICAL PROJECT</a></li>
-        <li><a href="Games.html">GAMES</a></li>
-        <li><a href="3Dmodel.html">3D MODEL</a></li>
-        <li><a href="contact.html">CONTACT</a></li>
-    </ul>
-</nav>
+    <!-- PORTFOLIO NAVIGATION -->
+    <nav>
+        <ul>
+            <li><a href="index.html">HOME</a></li>
+            <li><a href="Atlas_Mutatis.html">ATLAS MUTATIS</a></li>
+            <li><a href="Project.html">PHYSICAL PROJECT</a></li>
+            <li><a href="Games.html">GAMES</a></li>
+            <li><a href="3Dmodel.html">3D MODEL</a></li>
+            <li><a href="story.html">Cover of Stories & Theme Song</a></li>
+            <li><a href="contact.html">CONTACT</a></li>
+        </ul>
+    </nav>
 
-<div class="header-section">
-    <h1>Archive of Imagination</h1>
-    <p style="color:#888;">AI Director & Creative Visionary</p>
-    
+    <div class="header-section">
+        <h1>3D Character Vault</h1>
+        <p style="color:#888; margin: 0;">Exploring Lore, Myths, and Experimental Concepts</p>
+        
+        <!-- COMMENT HUB LINK (Points to your standalone comment page) -->
+        <a href="contact.html" class="comment-hub-btn">💬 Open Archive Comments</a>
+    </div>
     <div class="emoji-key-box">
         <span class="key-item">🧠 Smart</span>
         <span class="key-item">🔮 Imaginative</span>
@@ -203,114 +214,134 @@
         <span class="key-item">😡 Hate</span>
     </div>
 </div>
+    
 
-<div class="main-content">
-    <div class="category-container">
-        <h2 class="category-title">Unique Visions</h2>
-        <div class="gallery-grid">
-            
-            <!-- MODEL 1: Boom Belly Baby -->
-            <div class="model-card">
-                <model-viewer src="Meshy_AI_Crimson_Core_0502004451_texture.glb" auto-rotate camera-controls shadow-intensity="1"></model-viewer>
-                <div style="padding:20px">
-                    <span style="font-weight:bold; font-size:1.3em; color:white">Boom Belly Baby</span>
-                    <p style="font-size:0.9em; color:#aaa; margin-top:5px">THE LEGEND OF BOOM BELLY (fanfiction story of puppet Master) ...</p>
-                </div>
+    <div class="main-content">
 
-                <div class="interaction-bar">
+        <!-- CATEGORY 1: TRAGIC HEROES -->
+        <div class="genre-section">
+            <h2 class="genre-title">Tragic Heroes</h2>
+            <div class="gallery-grid">
+                
+                <div class="model-card">
+                    <!-- Swap src placeholder with your actual GLB file name -->
+                    <model-viewer src="path-to-tragic-hero.glb" auto-rotate camera-controls shadow-intensity="1"></model-viewer>
+                    <div style="padding:20px">
+                        <span style="font-weight:bold; font-size:1.2em; color:white">Character Name</span>
+                        <p style="font-size:0.85rem; color:#aaa; margin: 5px 0 0 0;">Sculpted assets exploring classical character lore and heroic depth.</p>
+                    </div>
+                    <div class="interaction-bar">
                     <button class="emoji-btn" onclick="addCount(this)">🧠 <span class="count-num">0</span></button>
                     <button class="emoji-btn" onclick="addCount(this)">🔮 <span class="count-num">0</span></button>
                     <button class="emoji-btn" onclick="addCount(this)">❤️ <span class="count-num">0</span></button>
                     <button class="emoji-btn" onclick="addCount(this)">👍 <span class="count-num">0</span></button>
                     <button class="emoji-btn" onclick="addCount(this)">😂 <span class="count-num">0</span></button>
-                </div>
-
-                <div class="comment-area" style="padding:15px; background:rgba(0,0,0,0.3)">
-                    <p>HAVE A QUESTION OR COMMENT? LEAVE IT BELOW:</p>
-                    <div id="cusdis_thread"
-                      data-host="https://cusdis.com"
-                      data-app-id="fc0a0af2-ba4a-4d87-8fe3-a209781809bc"
-                      data-page-id="boombelly_001"
-                      data-page-url="https://fmd50xp.com/3D"
-                      data-page-title="Boom Belly Baby">
+                    <button class="emoji-btn" onclick="addCount(this)">😐 <span class="count-num">0</span></button>
+                    <button class="emoji-btn" onclick="addCount(this)">👎 <span class="count-num">0</span></button>
+                    <button class="emoji-btn" onclick="addCount(this)">😡 <span class="count-num">0</span></button>
                     </div>
+                    
                 </div>
             </div>
+        </div>
 
-            <!-- MODEL 2: Aqualon -->
-            <div class="model-card">
-                <model-viewer src="Meshy_AI_Abyssal_Guardian_0509141700_texture.glb" auto-rotate camera-controls></model-viewer>
-                <div style="padding:20px">
-                    <span style="font-weight:bold; font-size:1.3em; color:white">Aqualon</span>
-                    <p style="font-size:0.9em; color:#aaa; margin-top:5px">Origin: A noble warrior hailing from the bioluminescent world of Aqualumia’s Veil ...</p>
-                </div>
-
-                <div class="interaction-bar">
+        <!-- CATEGORY 2: MYTHOLOGICAL CREATURES OF ALL COUNTRIES -->
+        <div class="genre-section">
+            <h2 class="genre-title">Mythological Creatures of All Countries</h2>
+            <div class="gallery-grid">
+                
+                <div class="model-card">
+                    <model-viewer src="path-to-mythical-creature.glb" auto-rotate camera-controls></model-viewer>
+                    <div style="padding:20px">
+                        <span style="font-weight:bold; font-size:1.2em; color:white">Global Myth Specimen</span>
+                        <p style="font-size:0.85rem; color:#aaa; margin: 5px 0 0 0;">Custom models weaving traditional global folklore and legendary beasts.</p>
+                    </div>
+                    <div class="interaction-bar">
                     <button class="emoji-btn" onclick="addCount(this)">🧠 <span class="count-num">0</span></button>
                     <button class="emoji-btn" onclick="addCount(this)">🔮 <span class="count-num">0</span></button>
                     <button class="emoji-btn" onclick="addCount(this)">❤️ <span class="count-num">0</span></button>
-                </div>
-
-                <div class="comment-area" style="padding:15px; background:rgba(0,0,0,0.3)">
-                    <p>HAVE A QUESTION OR COMMENT? LEAVE IT BELOW:</p>
-                    <div id="cusdis_thread_aqualon"
-                      data-host="https://cusdis.com"
-                      data-app-id="fc0a0af2-ba4a-4d87-8fe3-a209781809bc"
-                      data-page-id="aqualon_002"
-                      data-page-url="https://fmd50xp.com/3D"
-                      data-page-title="Aqualon">
+                    <button class="emoji-btn" onclick="addCount(this)">👍 <span class="count-num">0</span></button>
+                    <button class="emoji-btn" onclick="addCount(this)">😂 <span class="count-num">0</span></button>
+                     <button class="emoji-btn" onclick="addCount(this)">😐 <span class="count-num">0</span></button>
+                    <button class="emoji-btn" onclick="addCount(this)">👎 <span class="count-num">0</span></button>
+                    <button class="emoji-btn" onclick="addCount(this)">😡 <span class="count-num">0</span></button>
+                   
                     </div>
-                </div>
-            </div>
-            
-            <!-- MODEL 3: Fantasy Gown -->
-            <div class="model-card">
-                <model-viewer src="The_Dress.glb" auto-rotate camera-controls></model-viewer>
-                <div style="padding:20px">
-                    <span style="font-weight:bold; font-size:1.3em; color:white">Fantasy Gown</span>
-                    <p style="font-size:0.9em; color:#aaa; margin-top:5px">Specialized 3D Garment</p>
+
                 </div>
 
-                <div class="interaction-bar">
+            </div>
+        </div>
+
+        <!-- CATEGORY 3: HOROSCOPES & HAIRSTYLES -->
+        <div class="genre-section">
+            <h2 class="genre-title">Horoscopes & Hairstyles</h2>
+            <div class="gallery-grid">
+                
+                <div class="model-card">
+                    <model-viewer src="path-to-horoscope-model.glb" auto-rotate camera-controls></model-viewer>
+                    <div style="padding:20px">
+                        <span style="font-weight:bold; font-size:1.2em; color:white">Zodiac Concept</span>
+                        <p style="font-size:0.85rem; color:#aaa; margin: 5px 0 0 0;">Stylized character meshes pairing astrological traits with complex hair designs.</p>
+                    </div>
+                    <div class="interaction-bar">
                     <button class="emoji-btn" onclick="addCount(this)">🧠 <span class="count-num">0</span></button>
                     <button class="emoji-btn" onclick="addCount(this)">🔮 <span class="count-num">0</span></button>
-                </div>
-
-                <div class="comment-area" style="padding:15px; background:rgba(0,0,0,0.3)">
-                    <p>HAVE A QUESTION OR COMMENT? LEAVE IT BELOW:</p>
-                    <div id="cusdis_thread_gown"
-                      data-host="https://cusdis.com"
-                      data-app-id="fc0a0af2-ba4a-4d87-8fe3-a209781809bc"
-                      data-page-id="fantasy_gown_003"
-                      data-page-url="https://fmd50xp.com/3D"
-                      data-page-title="Fantasy Gown">
+                    <button class="emoji-btn" onclick="addCount(this)">❤️ <span class="count-num">0</span></button>
+                    <button class="emoji-btn" onclick="addCount(this)">👍 <span class="count-num">0</span></button>
+                    <button class="emoji-btn" onclick="addCount(this)">😂 <span class="count-num">0</span></button>
+                    <button class="emoji-btn" onclick="addCount(this)">😐 <span class="count-num">0</span></button>
+                    <button class="emoji-btn" onclick="addCount(this)">👎 <span class="count-num">0</span></button>
+                    <button class="emoji-btn" onclick="addCount(this)">😡 <span class="count-num">0</span></button>
+                   
                     </div>
+
                 </div>
+
             </div>
-            
         </div>
+
+        <!-- CATEGORY 4: UNIQUE ANIMALS (UN-CATEGORIZED EXPERIMENTS) -->
+        <div class="genre-section">
+            <h2 class="genre-title">Unique Animals</h2>
+            <div class="gallery-grid">
+                
+                <div class="model-card">
+                    <model-viewer src="path-to-unique-animal.glb" auto-rotate camera-controls></model-viewer>
+                    <div style="padding:20px">
+                        <span style="font-weight:bold; font-size:1.2em; color:white">Merged Specimen</span>
+                        <p style="font-size:0.85rem; color:#aaa; margin: 5px 0 0 0;">Experimental animal combinations and rare biological concept sculpts.</p>
+                    </div>
+                    <div class="interaction-bar">
+                    <button class="emoji-btn" onclick="addCount(this)">🧠 <span class="count-num">0</span></button>
+                    <button class="emoji-btn" onclick="addCount(this)">🔮 <span class="count-num">0</span></button>
+                    <button class="emoji-btn" onclick="addCount(this)">❤️ <span class="count-num">0</span></button>
+                    <button class="emoji-btn" onclick="addCount(this)">👍 <span class="count-num">0</span></button>
+                    <button class="emoji-btn" onclick="addCount(this)">😂 <span class="count-num">0</span></button>
+               <button class="emoji-btn" onclick="addCount(this)">😐 <span class="count-num">0</span></button>
+                    <button class="emoji-btn" onclick="addCount(this)">👎 <span class="count-num">0</span></button>
+                    <button class="emoji-btn" onclick="addCount(this)">😡 <span class="count-num">0</span></button>
+                   
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+        
     </div>
-</div>
 
-<script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
-
-<script>
-    function addCount(btn) {
-        let counter = btn.querySelector('.count-num');
-        let current = parseInt(counter.innerText);
-        counter.innerText = current + 1;
-        btn.style.borderColor = "#00f0ff";
-        setTimeout(() => { btn.style.borderColor = "#333"; }, 200);
-    }
-
-    // Force rendering of multiple comment sections
-    window.addEventListener('load', function() {
-        if (window.CUSDIS) {
-            window.CUSDIS.renderWidget(document.getElementById('cusdis_thread_aqualon'));
-            window.CUSDIS.renderWidget(document.getElementById('cusdis_thread_gown'));
+    <script>
+        // Local counter click flash function
+        function addLike(btn) {
+            let counter = btn.querySelector('.count-num');
+            let current = parseInt(counter.innerText);
+            counter.innerText = current + 1;
+            
+            btn.style.borderColor = "#00f0ff";
+            setTimeout(() => { btn.style.borderColor = "#333"; }, 200);
         }
-    });
-</script>
+    </script>
 
 </body>
 </html>
