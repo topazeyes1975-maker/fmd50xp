@@ -3,27 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Physical Project Workspace | FMD50XP</title>
+    <title>Archive of Imagination | AI Director</title>
+    
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+
     <style>
-        /* 1. THE FOUNDATION (FMD50XP BRANDING) */
+        /* 1. THE FOUNDATION */
         :root {
-            --primary: #00f0ff;  /* Cyan */
-            --accent: #ff007a;   /* Pink */
-            --bg: #050505;       /* Deep Black */
-            --card-bg: #111;     /* Dark Gray Card */
-            --amazon: #ff9900;   /* Amazon Orange Accent */
+            --primary: #00f0ff;
+            --accent: #ff007a;
+            --bg: #050505;
+            --card-bg: #111;
         }
 
-        body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg);
-            color: #e0e0e0;
-            margin: 0;
-            padding: 0;
+        body { 
+            background-color: var(--bg); 
+            color: #e0e0e0; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            padding: 0; 
             line-height: 1.6;
+            overflow-x: hidden;
         }
 
-        /* 2. MATCHING NAV BAR */
+        /* 2. PROFESSIONAL NAV BAR */
         nav {
             background: #000;
             border-bottom: 1px solid #222;
@@ -52,231 +55,262 @@
             transition: 0.3s;
         }
 
-        nav a:hover { 
-            color: var(--accent); 
-            text-shadow: 0 0 8px var(--accent); 
-        }
+        nav a:hover { color: var(--accent); text-shadow: 0 0 8px var(--accent); }
 
-        /* 3. HEADER SECTION */
         .header-section { 
             text-align: center; 
             padding: 40px 10px; 
             border-bottom: 2px solid #222; 
         }
 
-        h1 { 
+        h1 { color: var(--primary); text-transform: uppercase; letter-spacing: 3px; font-size: 1.8em; margin-bottom: 5px; }
+
+        /* 3. THE BLUE COMMENT TEXT FIX */
+        .comment-area p {
             color: var(--primary); 
-            text-transform: uppercase; 
-            letter-spacing: 3px; 
-            font-size: 1.8em; 
-            margin: 0 0 5px 0; 
+            font-size: 0.9em;
+            font-style: italic;
+            margin-bottom: 10px;
+            border-left: 3px solid var(--accent);
+            padding-left: 10px;
         }
 
-        /* 4. LAYOUT CONTROLLER */
-        .workspace-container {
-            max-width: 1100px;
-            margin: 40px auto;
-            padding: 0 20px;
+        /* EMOJI KEY BOX */
+        .emoji-key-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            background: #111;
+            border: 1px solid var(--primary);
+            padding: 12px;
+            border-radius: 12px;
+            margin: 20px auto;
+            max-width: 90%;
+            font-size: 0.85em;
+        }
+        
+        .key-item { border-right: 1px solid #333; padding-right: 8px; margin-right: 2px; white-space: nowrap; }
+        .key-item:last-child { border: none; }
+
+        /* 4. RESPONSIVE GRID */
+        .main-content {
+            max-width: 1200px; 
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .category-container { margin-bottom: 60px; }
+        .category-title { 
+            color: var(--accent); 
+            border-left: 5px solid var(--accent); 
+            padding-left: 15px; 
+            margin-bottom: 25px; 
+            font-size: 1.5em;
+            text-transform: uppercase;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+        }
+
+        .model-card {
+            background: var(--card-bg);
+            border: 1px solid #222;
+            border-radius: 18px;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            gap: 40px;
+            transition: transform 0.3s ease;
         }
 
-        /* Project Showcase Row */
-        .project-card {
-            background-color: var(--card-bg);
-            border: 1px solid #222;
-            border-radius: 16px;
-            padding: 30px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            align-items: center;
-            transition: border-color 0.3s ease;
-        }
+        .model-card:hover { border-color: var(--primary); }
 
-        .project-card:hover {
-            border-color: var(--primary);
-        }
-
-        /* Image Display area */
-        .project-visual {
+        model-viewer {
             width: 100%;
-            height: 350px;
+            height: 400px;
             background-color: #1a1a1a;
-            border-radius: 12px;
-            border: 1px solid #333;
+        }
+
+        /* 5. INTERACTION BAR */
+        .interaction-bar { 
+            display: flex; 
+            gap: 12px; 
+            padding: 15px;
+            border-top: 1px solid #222;
+            overflow-x: auto; 
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+        .interaction-bar::-webkit-scrollbar { display: none; }
+
+        .emoji-btn { 
+            background: #222; 
+            border: 1px solid #333; 
+            color: #eee; 
+            padding: 10px 16px; 
+            border-radius: 25px; 
+            flex: 0 0 auto;
             display: flex;
             align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            position: relative;
+            gap: 8px;
+        }
+        .count-num { font-weight: bold; color: var(--primary); }
+
+        /* 6. CUSDIS AREA */
+        #cusdis_thread, [id^="cusdis_thread_"] {
+            padding: 10px;
+            background: transparent;
+            color: #eee;
         }
 
-        .project-visual img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        #cusdis_thread iframe, [id^="cusdis_thread_"] iframe {
+            filter: invert(1) hue-rotate(180deg) brightness(1.2) saturate(2);
         }
 
-        /* Project Specs Details */
-        .project-details h2 {
-            color: #ffffff;
-            margin-top: 0;
-            font-size: 1.6rem;
-            border-bottom: 2px solid var(--accent);
-            padding-bottom: 8px;
-            display: inline-block;
-        }
-
-        .tech-tags {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin: 15px 0;
-        }
-
-        .tag {
-            background: #222;
-            border: 1px solid var(--primary);
-            color: var(--primary);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
-
-        .project-log {
-            background: rgba(0,0,0,0.4);
-            border-left: 3px solid var(--primary);
-            padding: 15px;
-            border-radius: 0 8px 8px 0;
-            font-size: 0.95rem;
-            color: #ccc;
-        }
-
-        /* Amazon Support Card Design */
-        .wishlist-card {
-            background: linear-gradient(145deg, #111111, #1a1a1a);
-            border: 1px solid #333;
-            border-radius: 16px;
-            padding: 30px;
-            text-align: center;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-            transition: border-color 0.3s ease;
-        }
-
-        .wishlist-card:hover {
-            border-color: var(--amazon);
-        }
-
-        .wishlist-card h2 {
-            color: var(--amazon);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 0;
-        }
-
-        .amazon-btn {
-            display: inline-block;
-            background: var(--amazon);
-            color: #000000;
-            text-decoration: none;
-            font-weight: bold;
-            text-transform: uppercase;
-            padding: 15px 35px;
-            border-radius: 30px;
-            letter-spacing: 1px;
-            margin-top: 15px;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .amazon-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 15px rgba(255, 153, 0, 0.4);
-        }
-
-        /* Responsive Breakpoint */
-        @media (max-width: 768px) {
-            .project-card {
-                grid-template-columns: 1fr;
-                padding: 20px;
-            }
-            .project-visual {
-                height: 250px;
-            }
-            h1 { font-size: 1.5em; }
+        @media (min-width: 768px) {
+            h1 { font-size: 3em; }
         }
     </style>
 </head>
 <body>
 
-    <nav>
-        <ul>
-            <li><a href="index.html">HOME</a></li>
-            <li><a href="Atlas_Mutatis.html">ATLAS MUTATIS</a></li>
-            <li><a href="Project.html">PHYSICAL PROJECT</a></li>
-            <li><a href="Games.html">GAMES</a></li>
-            <li><a href="3Dmodel.html">3D MODEL</a></li>
-            <li><a href="story.html">Cover of Stories & Theme Song</a></li>
-            <li><a href="contact.html">CONTACT</a></li>
-        </ul>
-    </nav>
+<nav>
+    <ul>
+        <li><a href="index.html">HOME</a></li>
+        <li><a href="Atlas_Mutatis.html">ATLAS MUTATIS</a></li>
+        <li><a href="Project.html">PHYSICAL PROJECT</a></li>
+        <li><a href="Games.html">GAMES</a></li>
+        <li><a href="3Dmodel.html">3D MODEL</a></li>
+        <li><a href="contact.html">CONTACT</a></li>
+    </ul>
+</nav>
 
-    <div class="header-section">
-        <h1>Hardware & Robotics Forge</h1>
-        <p style="color:#888;">Bringing Digital Creations to Physical Reality</p>
+<div class="header-section">
+    <h1>Archive of Imagination</h1>
+    <p style="color:#888;">AI Director & Creative Visionary</p>
+    
+    <div class="emoji-key-box">
+        <span class="key-item">🧠 Smart</span>
+        <span class="key-item">🔮 Imaginative</span>
+        <span class="key-item">❤️ Love</span>
+        <span class="key-item">👍 Like</span>
+        <span class="key-item">😂 Funny</span>
+        <span class="key-item">😐 Neutral</span>
+        <span class="key-item">👎 Dislike</span>
+        <span class="key-item">😡 Hate</span>
     </div>
+</div>
 
-    <div class="workspace-container">
+<div class="main-content">
+    <div class="category-container">
+        <h2 class="category-title">Unique Visions</h2>
+        <div class="gallery-grid">
+            
+            <!-- MODEL 1: Boom Belly Baby -->
+            <div class="model-card">
+                <model-viewer src="Meshy_AI_Crimson_Core_0502004451_texture.glb" auto-rotate camera-controls shadow-intensity="1"></model-viewer>
+                <div style="padding:20px">
+                    <span style="font-weight:bold; font-size:1.3em; color:white">Boom Belly Baby</span>
+                    <p style="font-size:0.9em; color:#aaa; margin-top:5px">THE LEGEND OF BOOM BELLY (fanfiction story of puppet Master) ...</p>
+                </div>
 
-        <div class="project-card">
-            <div class="project-visual">
-                <img src="path-to-your-photo1.jpg" alt="Boom Belly Baby Build Progress">
-            </div>
-            <div class="project-details">
-                <h2>Boom Belly Baby: Physical Frame</h2>
-                <div class="tech-tags">
-                    <span class="tag">Arduino Hardware</span>
-                    <span class="tag">Custom Frame</span>
-                    <span class="tag">Servo Mechanics</span>
+                <div class="interaction-bar">
+                    <button class="emoji-btn" onclick="addCount(this)">🧠 <span class="count-num">0</span></button>
+                    <button class="emoji-btn" onclick="addCount(this)">🔮 <span class="count-num">0</span></button>
+                    <button class="emoji-btn" onclick="addCount(this)">❤️ <span class="count-num">0</span></button>
+                    <button class="emoji-btn" onclick="addCount(this)">👍 <span class="count-num">0</span></button>
+                    <button class="emoji-btn" onclick="addCount(this)">😂 <span class="count-num">0</span></button>
                 </div>
-                <p>Developing the physical, interactive framework for the wood-grain masterpiece puppet. Integrating direct mechanical assemblies to translate digital 3D sculpture concepts into a real-world moving performance frame.</p>
-                
-                <div class="project-log">
-                    <strong>Architect Log:</strong> Testing motor stress responses and weight balance inside the core chassis to prepare for interactive component programming.
+
+                <div class="comment-area" style="padding:15px; background:rgba(0,0,0,0.3)">
+                    <p>HAVE A QUESTION OR COMMENT? LEAVE IT BELOW:</p>
+                    <div id="cusdis_thread"
+                      data-host="https://cusdis.com"
+                      data-app-id="fc0a0af2-ba4a-4d87-8fe3-a209781809bc"
+                      data-page-id="boombelly_001"
+                      data-page-url="https://fmd50xp.com/3D"
+                      data-page-title="Boom Belly Baby">
+                    </div>
                 </div>
             </div>
+
+            <!-- MODEL 2: Aqualon -->
+            <div class="model-card">
+                <model-viewer src="Meshy_AI_Abyssal_Guardian_0509141700_texture.glb" auto-rotate camera-controls></model-viewer>
+                <div style="padding:20px">
+                    <span style="font-weight:bold; font-size:1.3em; color:white">Aqualon</span>
+                    <p style="font-size:0.9em; color:#aaa; margin-top:5px">Origin: A noble warrior hailing from the bioluminescent world of Aqualumia’s Veil ...</p>
+                </div>
+
+                <div class="interaction-bar">
+                    <button class="emoji-btn" onclick="addCount(this)">🧠 <span class="count-num">0</span></button>
+                    <button class="emoji-btn" onclick="addCount(this)">🔮 <span class="count-num">0</span></button>
+                    <button class="emoji-btn" onclick="addCount(this)">❤️ <span class="count-num">0</span></button>
+                </div>
+
+                <div class="comment-area" style="padding:15px; background:rgba(0,0,0,0.3)">
+                    <p>HAVE A QUESTION OR COMMENT? LEAVE IT BELOW:</p>
+                    <div id="cusdis_thread_aqualon"
+                      data-host="https://cusdis.com"
+                      data-app-id="fc0a0af2-ba4a-4d87-8fe3-a209781809bc"
+                      data-page-id="aqualon_002"
+                      data-page-url="https://fmd50xp.com/3D"
+                      data-page-title="Aqualon">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- MODEL 3: Fantasy Gown -->
+            <div class="model-card">
+                <model-viewer src="The_Dress.glb" auto-rotate camera-controls></model-viewer>
+                <div style="padding:20px">
+                    <span style="font-weight:bold; font-size:1.3em; color:white">Fantasy Gown</span>
+                    <p style="font-size:0.9em; color:#aaa; margin-top:5px">Specialized 3D Garment</p>
+                </div>
+
+                <div class="interaction-bar">
+                    <button class="emoji-btn" onclick="addCount(this)">🧠 <span class="count-num">0</span></button>
+                    <button class="emoji-btn" onclick="addCount(this)">🔮 <span class="count-num">0</span></button>
+                </div>
+
+                <div class="comment-area" style="padding:15px; background:rgba(0,0,0,0.3)">
+                    <p>HAVE A QUESTION OR COMMENT? LEAVE IT BELOW:</p>
+                    <div id="cusdis_thread_gown"
+                      data-host="https://cusdis.com"
+                      data-app-id="fc0a0af2-ba4a-4d87-8fe3-a209781809bc"
+                      data-page-id="fantasy_gown_003"
+                      data-page-url="https://fmd50xp.com/3D"
+                      data-page-title="Fantasy Gown">
+                    </div>
+                </div>
+            </div>
+            
         </div>
-
-        <div class="project-card">
-            <div class="project-visual">
-                <img src="path-to-your-photo2.jpg" alt="Electronics and Sensors Workbench">
-            </div>
-            <div class="project-details">
-                <h2>Belly Hatch & Custom Electronics</h2>
-                <div class="tech-tags">
-                    <span class="tag">ESP32 Control</span>
-                    <span class="tag">Hardware Logic</span>
-                    <span class="tag">Sensory Input</span>
-                </div>
-                <p>Constructing the custom board layouts and power routing systems to manage mechanical hatches, LED feedback arrays, and automated sequencing safely from the interior control bay.</p>
-                
-                <div class="project-log">
-                    <strong>Architect Log:</strong> Keeping the logic boards streamlined and secure within the central hull to protect the wire clusters during multi-jointed motion.
-                </div>
-            </div>
-        </div>
-
-        <div class="wishlist-card">
-            <h2>Support the Build Stack</h2>
-            <p style="max-width: 600px; margin: 0 auto 15px auto; color: #aaa;">
-                Building advanced custom electronics and mechanical frames takes specific gears. Check out the active hardware registry to see the exact components, tools, and microcontrollers currently queued for the physical workbench.
-            </p>
-            <a href="#" target="_blank" class="amazon-btn">View My Amazon Wishlist</a>
-        </div>
-
     </div>
+</div>
+
+<script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
+
+<script>
+    function addCount(btn) {
+        let counter = btn.querySelector('.count-num');
+        let current = parseInt(counter.innerText);
+        counter.innerText = current + 1;
+        btn.style.borderColor = "#00f0ff";
+        setTimeout(() => { btn.style.borderColor = "#333"; }, 200);
+    }
+
+    // Force rendering of multiple comment sections
+    window.addEventListener('load', function() {
+        if (window.CUSDIS) {
+            window.CUSDIS.renderWidget(document.getElementById('cusdis_thread_aqualon'));
+            window.CUSDIS.renderWidget(document.getElementById('cusdis_thread_gown'));
+        }
+    });
+</script>
 
 </body>
 </html>
