@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPC Void Finder</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f6f8;
+            color: #333;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .card {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        h1 {
+            font-size: 1.5rem;
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #111;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px border #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        textarea:focus, input[type="text"]:focus {
+            border-color: #0066cc;
+            outline: none;
+        }
+        textarea {
+            height: 120px;
+            resize: vertical;
+            font-family: monospace;
+            margin-bottom: 20px;
+        }
+        .search-box {
+            margin-bottom: 25px;
+        }
+        .result {
+            padding: 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            text-align: center;
+            display: none;
+        }
+        .match {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .no-match {
+            background-color: #e2e3e5;
+            color: #383d41;
+            border: 1px solid #d6d8db;
+        }
+        .count-badge {
+            font-size: 0.8rem;
+            font-weight: normal;
+            color: #666;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>UPC Void Finder</h1>
+    
+    <label for="masterList">1. Paste Master List of Invoice UPCs <span id="count" class="count-badge">(0 loaded)</span></label>
+    <textarea id="masterList" placeholder="Paste your invoice numbers here. You can separate them with spaces, commas, or line breaks..." oninput="processList()"></textarea>
+
+    <div class="search-box">
+        <label for="searchQuery">2. Type Receipt Number to Check</label>
+        <input type="text" id="searchQuery" placeholder="Type a number and press Enter..." autocomplete="off" oninput="checkNumber()">
+    </div>
+
+    <div id="resultWindow" class="result"></div>
+</div>
+
+<script>
+    let upcSet = new Set();
+
+    // Cleans up the input data and updates our search set instantly
+    function processList() {
+        const rawText = document.getElementById('masterList').value;
+        
+        // Split by commas, spaces, or newlines, and filter out any empty strings
+        const tokens = rawText.split(/[\s,]+/).filter(token => token.trim() !== '');
+        
+        // Use a Set for lightning fast O(1) lookups
+        upcSet = new Set(tokens);
+        
+        // Update the visual count so you know the data registered
+        document.getElementById('count').textContent = `(${upcSet.size} loaded)`;
+        
+        // Re-run the search on the updated list just in case there's text in the search box
+        checkNumber();
+    }
+
+    // Checks the search input against our master set
+    function checkNumber() {
+        const query = document.getElementById('searchQuery').value.trim();
+        const resultWindow = document.getElementById('resultWindow');
+
+        // Hide result display if the search box is empty
+        if (query === '') {
+            resultWindow.style.display = 'none';
+            return;
+        }
+
+        resultWindow.style.display = 'block';
+
+        if (upcSet.has(query)) {
+            resultWindow.className = 'result match';
+            resultWindow.innerHTML = `⚠️ MATCH FOUND: ${query} is on the invoice! (KEEP & HOLD)`;
+        } else {
+            resultWindow.className = 'result no-match';
+            resultWindow.innerHTML = `❌ No Match: Not on invoice. (Move on)`;
+        }
+    }
+</script>
+
+</body>
+</html>
