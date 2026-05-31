@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Global Persistent Bluff Game</title>
-    <!-- Include the Supabase Client Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
@@ -69,7 +68,6 @@
 <div class="container">
     <h1>Global Persistent Board</h1>
     
-    <!-- GAME GUIDE AND PERSISTENT DESCRIPTION SECTION -->
     <div class="guide-box">
         <h2>How to Play & Global Rules</h2>
         <p>Welcome to a shared world-board version of the classic bluffing game. The primary goal of the game is to discard cards without being caught lying!</p>
@@ -79,7 +77,7 @@
             <li>The game cycles through ranks in order: <strong>Aces, 2s, 3s... up to Kings</strong>, then loops back to Aces.</li>
             <li>On your turn, you must declare how many cards of the current target rank you are face-down discarding.</li>
             <li>If you don't have that card, you must <strong>Bluff</strong> and play completely different cards while lying about it!</li>
-            <li>If someone suspects a lie, they shout <strong>"STRONZATE!"</strong> (the Italian equivalent of calling BS).</li>
+            <li>If someone suspects a lie, they shout <strong>"STRONZATE!"</strong></li>
         </ul>
         
         <h3>2. The Live Drop-In System:</h3>
@@ -91,7 +89,6 @@
         </ul>
     </div>
 
-    <!-- THIS BLACK BOX WILL NOW PRINT THE REAL RAW ERROR FOR US -->
     <div class="status" id="game-status">Initializing database stream...</div>
 
     <div style="background: #ffffff12; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #52b788;">
@@ -112,7 +109,8 @@
 </div>
 
 <script>
-    const SUPABASE_URL = "https://zenxyhfxbnkxfbmmsaxc.supabase.co";
+    // FIXED: Using the exact URL string you copied directly from your dashboard
+    const SUPABASE_URL = "https://zemxyhfmbexhkonmsaxc.supabase.co";
     const SUPABASE_KEY = "sb_publishable_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inplbnh5aGZ4Ym5reGZibW1zYXhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcyMjA0MjksImV4cCI6MjA2Mjc5NjQyOX0.m7Yidvpt4ffcqXL-2B54SMw";
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
