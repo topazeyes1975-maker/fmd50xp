@@ -16,12 +16,26 @@
             margin: 0;
         }
         .container { 
-            max-width: 600px; 
+            max-width: 700px; 
             margin: auto; 
             background: #2d6a4f; 
             padding: 20px; 
             border-radius: 12px; 
             box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+        }
+        .guide-box {
+            background-color: #40916c;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: left;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            border-left: 5px solid #ffb703;
+        }
+        .guide-box h2, .guide-box h3 {
+            margin-top: 0;
+            color: #ffb703;
         }
         .status { 
             background: #081c15; 
@@ -30,6 +44,7 @@
             border-radius: 8px; 
             font-size: 1.2rem; 
             border: 1px solid #52b788;
+            font-weight: bold;
         }
         button { 
             padding: 12px 24px; 
@@ -38,24 +53,47 @@
             cursor: pointer; 
             border-radius: 5px; 
             border: none;
-            transition: transform 0.1s;
+            transition: transform 0.1s, background-color 0.2s;
         }
         button:active {
             transform: scale(0.98);
         }
         .action-btn { background-color: #ffb703; color: #023047; }
+        .action-btn:hover { background-color: #edd05d; }
         .reset-btn { background-color: #e63946; color: white; }
+        .reset-btn:hover { background-color: #ff4d5a; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>Global Persistent Board</h1>
-    <p>This screen is synced live across the internet. It only changes when someone moves or resets it.</p>
+    
+    <!-- GAME GUIDE AND PERSISTENT DESCRIPTION SECTION -->
+    <div class="guide-box">
+        <h2>How to Play & Global Rules</h2>
+        <p>Welcome to a shared world-board version of the classic bluffing game. The primary goal of the game is to discard your cards by matching the target rank—or successfully faking it!</p>
+        
+        <h3>1. The Core Rules:</h3>
+        <ul>
+            <li>The game cycles through ranks in order: <strong>Aces, 2s, 3s... up to Kings</strong>, then loops back to Aces.</li>
+            <li>On your turn, you must declare how many cards of the current target rank you are face-down discarding.</li>
+            <li>If you don't have that card, you must <strong>Bluff</strong> and play completely different cards while pretending they are correct.</li>
+            <li>If someone suspects a lie, they shout <strong>"STRONZATE!"</strong> (the Italian equivalent of calling out the bluff). If caught, the liar takes the pile. If the play was honest, the challenger takes the penalty pile.</li>
+        </ul>
+
+        <h3>2. The Live Drop-In System:</h3>
+        <p>Unlike standard games that reset every time you close the window, <strong>this board is hooked up to a live cloud database brain</strong>. It acts as a persistent community table:</p>
+        <ul>
+            <li><strong>Make a Move and Leave:</strong> You can load this page up, play a hand honestly or launch a massive bluff, and then completely close your browser or walk away.</li>
+            <li><strong>Asynchronous Visitors:</strong> Random visitors from entirely different computers can drop onto this exact link hours later. They will see the exact pile size and target rank you left behind.</li>
+            <li><strong>Persistent State:</strong> They can choose to continue the cycle or challenge the previous action. The database updates in real-time, refreshing automatically every 5 seconds, and will never restart unless an admin hits the manual override button.</li>
+        </ul>
+    </div>
     
     <div class="status" id="game-status">Connecting to live cloud board...</div>
 
-    <div style="background: #40916c; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+    <div style="background: #1b4332; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #52b788;">
         <h3>Current Center Pile: <span id="pile-count">0</span> cards</h3>
         <h3>Current Target Rank: <span id="target-rank">-</span></h3>
     </div>
@@ -65,7 +103,7 @@
     <input type="number" id="card-qty" value="1" min="1" max="4" style="padding: 8px; width: 60px; border-radius: 5px; border: none; font-size: 1rem;"><br><br>
 
     <button class="action-btn" onclick="submitGlobalMove(false)">Play Honestly</button>
-    <button class="action-btn" onclick="submitGlobalMove(true)" style="background:#fb8500;">Play a Bluff!</button>
+    <button class="action-btn" onclick="submitGlobalMove(true)" style="background:#fb8500; color: white;">Play a Bluff!</button>
     <button class="action-btn" onclick="callGlobalBS()" style="background:#d62828; color:white;">STRONZATE! (Call BS)</button>
     
     <hr style="margin: 30px 0; border: 1px solid #52b788;">
@@ -73,11 +111,10 @@
 </div>
 
 <script>
-    // Automatically populated from your Supabase project dashboard
+    // Configured directly for your Supabase project dashboard
     const SUPABASE_URL = "https://zemxyhfmbexhkonmsaxc.supabase.co";
     const SUPABASE_KEY = "sb_publishable_VMCBcxU1YPBdlyVNSb0XUTrFBdLynE4ftcaX_285A5Ws=";
     
-    // Initialize the Supabase connection properly
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
     const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
@@ -150,11 +187,9 @@
         loadBoardState();
     }
 
-    // Run right away when opened
     loadBoardState();
-    
-    // Check the database every 5 seconds for new moves from other visitors
-    setInterval(loadBoardState, 5000);
+    setInterval(loadBoardState, 5000); // Poll database every 5 seconds for other visitor entries
 </script>
 </body>
 </html>
+
