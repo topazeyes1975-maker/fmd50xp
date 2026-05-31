@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Global Persistent Bluff Game</title>
+    <!-- Include the Supabase Client Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
@@ -68,6 +69,7 @@
 <div class="container">
     <h1>Global Persistent Board</h1>
     
+    <!-- GAME GUIDE AND PERSISTENT DESCRIPTION SECTION -->
     <div class="guide-box">
         <h2>How to Play & Global Rules</h2>
         <p>Welcome to a shared world-board version of the classic bluffing game. The primary goal of the game is to discard cards without being caught lying!</p>
@@ -89,7 +91,8 @@
         </ul>
     </div>
 
-    <div class="status" id="game-status">Connecting to live cloud board...</div>
+    <!-- THIS BLACK BOX WILL NOW PRINT THE REAL RAW ERROR FOR US -->
+    <div class="status" id="game-status">Initializing database stream...</div>
 
     <div style="background: #ffffff12; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #52b788;">
         <h3>Current Center Pile: <span id="pile-count">0</span> cards</h3>
@@ -109,7 +112,6 @@
 </div>
 
 <script>
-    // FIXED: Project URL corrected to match your exact live Supabase Project ID
     const SUPABASE_URL = "https://zenxyhfxbnkxfbmmsaxc.supabase.co";
     const SUPABASE_KEY = "sb_publishable_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inplbnh5aGZ4Ym5reGZibW1zYXhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcyMjA0MjksImV4cCI6MjA2Mjc5NjQyOX0.m7Yidvpt4ffcqXL-2B54SMw";
 
@@ -120,17 +122,26 @@
     let currentLocalPile = 0;
 
     async function loadBoardState() {
-        let { data, error } = await supabaseClient.from('game_state').select('*').eq('id', 1).single();
-        
-        if (data) {
-            currentLocalRank = data.target_rank;
-            currentLocalPile = data.cards_in_pile;
+        try {
+            let { data, error } = await supabaseClient.from('game_state').select('*').eq('id', 1).single();
+            
+            if (error) {
+                document.getElementById("game-status").innerText = "Supabase Alert: " + error.message + " (Code: " + error.code + ")";
+                return;
+            }
 
-            document.getElementById("pile-count").innerText = data.cards_in_pile;
-            document.getElementById("target-rank").innerText = data.target_rank;
-            document.getElementById("game-status").innerText = `${data.status_message} (Last action by: ${data.last_action_by})`;
-        } else if (error) {
-            document.getElementById("game-status").innerText = "Connected to Supabase! Run the code inside your SQL Editor dashboard to finish building the table layout.";
+            if (data) {
+                currentLocalRank = data.target_rank;
+                currentLocalPile = data.cards_in_pile;
+
+                document.getElementById("pile-count").innerText = data.cards_in_pile;
+                document.getElementById("target-rank").innerText = data.target_rank;
+                document.getElementById("game-status").innerText = `${data.status_message} (Last action: ${data.last_action_by})`;
+            } else {
+                document.getElementById("game-status").innerText = "Database responded, but table row 1 is missing entirely.";
+            }
+        } catch (err) {
+            document.getElementById("game-status").innerText = "Browser Script Error: " + err.message;
         }
     }
 
@@ -187,7 +198,7 @@
     }
 
     loadBoardState();
-    setInterval(loadBoardState, 5000); // Poll database every 5 seconds for other visitor entries
+    setInterval(loadBoardState, 5000);
 </script>
 </body>
 </html>
