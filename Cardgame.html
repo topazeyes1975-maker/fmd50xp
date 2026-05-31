@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Cheat Card Game</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1b4332;
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #2d6a4f;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+        }
+        .status-box {
+            background-color: #40916c;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+        .game-board {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        .pile, .opponent {
+            background: #52b788;
+            padding: 20px;
+            border-radius: 10px;
+            width: 40%;
+        }
+        .hand {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            background: #081c15;
+            padding: 15px;
+            border-radius: 10px;
+            min-height: 100px;
+        }
+        .card {
+            background: white;
+            color: black;
+            padding: 15px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            border: 2px solid #ccc;
+            user-select: none;
+            width: 45px;
+            text-align: center;
+        }
+        .card.selected {
+            border-color: #ffb703;
+            background-color: #ffe8a3;
+            transform: translateY(-10px);
+        }
+        button {
+            background-color: #d8f3dc;
+            color: #1b4332;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background-color: #b7e4c7;
+        }
+        button:disabled {
+            background-color: #74c69d;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>The Bluffing Card Game</h1>
+    
+    <div class="status-box" id="status">
+        Press "Start Game" to begin.
+    </div>
+
+    <div class="game-board">
+        <div class="opponent">
+            <h3>Computer Opponent</h3>
+            <p>Cards left: <span id="comp-count">0</span></p>
+            <button id="call-bs-btn" onclick="playerCallsBS()" disabled>Call Bullshit!</button>
+        </div>
+        
+        <div class="pile">
+            <h3>Center Pile</h3>
+            <p>Cards in pile: <span id="pile-count">0</span></p>
+            <p>Current Target Rank: <strong id="target-rank">-</strong></p>
+        </div>
+    </div>
+
+    <h3>Your Hand</h3>
+    <p>Select cards to play, then click "Play Selected Cards"</p>
+    <div class="hand" id="player-hand"></div>
+    
+    <div class="controls">
+        <button id="play-btn" onclick="playerPlay()" disabled>Play Selected Cards</button>
+        <button id="pass-btn" onclick="playerPass()" disabled>Pass Turn</button>
+        <button id="start-btn" onclick="initGame()">Start Game</button>
+    </div>
+</div>
+
+<script>
+    const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+    let playerHand = [];
+    let compHand = [];
+    let discardPile = [];
+    let currentRankIndex = 0; // Starts at Ace
+    let lastPlay = { player: '', cards: [], claimedRank: '' };
+
+    function initGame() {
+        // Create deck
+        let deck = [];
+        for (let i = 0; i < 4; i++) {
+            deck.push(...RANKS);
+        }
+        // Shuffle
+        deck.sort(() => Math.random() - 0.5);
+
+        // Deal
+        playerHand = deck.slice(0, 26).sort((a,b) => RANKS.indexOf(a) - RANKS.indexOf(b));
+        compHand = deck.slice(26, 52);
+        discardPile = [];
+        currentRankIndex = 0;
+        
+        document.getElementById('start-btn').innerText = "Restart Game";
+        updateUI();
+        document.getElementById('status').innerText = `Game started! Your turn. The target rank is Aces (A).`;
+        enablePlayerControls(true);
+    }
+
+    function updateUI() {
+        // Render Player Hand
+        const handDiv = document.getElementById('player-hand');
+        handDiv.innerHTML = '';
+        playerHand.forEach((card, index) => {
+            const cardEl = document.createElement('div');
+            cardEl.className = 'card';
+            cardEl.innerText = card;
+            cardEl.onclick = () => toggleSelectCard(cardEl);
+            handDiv.appendChild(cardEl);
+        });
+
+        // Update counts
+        document.getElementById('comp-count').innerText = compHand.length;
+        document.getElementById('pile-count').innerText = discardPile.length;
+        document.getElementById('target-rank').innerText = RANKS[currentRankIndex];
+    }
+
+    function toggleSelectCard(cardEl) {
+        cardEl.classList.toggle('selected');
+    }
+
+    function enablePlayerControls(enable) {
+        document.getElementById('play-btn').disabled = !enable;
+        document.getElementById('pass-btn').disabled = !enable;
+    }
+
+    function advanceRank() {
+        currentRankIndex = (currentRankIndex + 1) % RANKS.length;
+    }
+
+    function playerPlay() {
+        const selectedEls = document.querySelectorAll('.card.selected');
+        if (selectedEls.length === 0) {
+            alert("Please select at least one card to play.");
+            return;
+        }
+
+        let selectedCards = [];
+        let remainingHand = [...playerHand];
+
+        selectedEls.forEach(el => {
+            selectedCards.push(el.innerText);
+            const index = remainingHand.indexOf(el.innerText);
+            if (index > -1) remainingHand.splice(index, 1);
+        });
+
+        playerHand = remainingHand;
+        discardPile.push(...selectedCards);
+
+        let target = RANKS[currentRankIndex];
+        lastPlay = {
+            player: 'player',
+            cards: selectedCards,
+            claimedRank: target
+        };
+
+        document.getElementById('status').innerText = `You played ${selectedCards.length} card(s) claiming to be ${target}'s.`;
+        
+        updateUI();
+        enablePlayerControls(false);
+
+        // Check win condition
+        if (playerHand.length === 0) {
+            document.getElementById('status').innerText = "You won! You got rid of all your cards!";
+            return;
+        }
+
+        // Computer decides to call BS or not
+        setTimeout(computerDecidesBS, 1500);
+    }
+
+    function playerPass() {
+        document.getElementById('status').innerText = "You passed. Computer's turn.";
+        enablePlayerControls(false);
+        advanceRank();
+        setTimeout(computerTurn, 1500);
+    }
+
+    function computerDecidesBS() {
+        // Computer logic: 15% random chance to call BS, or 100% chance if it knows player is lying based on its own hand cards
+        let target = lastPlay.claimedRank;
+        let actualCountInHand = compHand.filter(c => c === target).length;
+        let claimedCount = lastPlay.cards.length;
+        
+        let isLying = lastPlay.cards.some(c => c !== target);
+        let absoluteProof = (actualCountInHand + claimedCount) > 4;
+
+        if (absoluteProof || (isLying && Math.random() < 0.4) || Math.random() < 0.1) {
+            // Computer calls BS
+            document.getElementById('status').innerText = `Computer calls BULLSHIT on your play!`;
+            
+            setTimeout(() => {
+                if (isLying) {
+                    document.getElementById('status').innerText = `Caught! You were lying. You pick up the pile (+${discardPile.length} cards).`;
+                    playerHand.push(...discardPile);
+                    playerHand.sort((a,b) => RANKS.indexOf(a) - RANKS.indexOf(b));
+                } else {
+                    document.getElementById('status').innerText = `Truth! You were honest. Computer picks up the pile (+${discardPile.length} cards).`;
+                    compHand.push(...discardPile);
+                }
+                discardPile = [];
+                advanceRank();
+                updateUI();
+                setTimeout(computerTurn, 2000);
+            }, 1500);
+        } else {
+            document.getElementById('status').innerText = `Computer lets it pass. Computer's turn.`;
+            advanceRank();
+            setTimeout(computerTurn, 1500);
+        }
+    }
+
+    function computerTurn() {
+        if (compHand.length === 0) return;
+
+        let target = RANKS[currentRankIndex];
+        // Computer finds real target cards
+        let realCards = compHand.filter(c => c === target);
+        let cardsToPlay = [];
+
+        if (realCards.length > 0 && Math.random() > 0.2) {
+            // Play honest cards
+            cardsToPlay = [...realCards];
+        } else {
+            // Bluff: pick 1 or 2 random cards
+            let numToBluff = Math.floor(Math.random() * 2) + 1;
+            for(let i=0; i<numToBluff && compHand.length > i; i++) {
+                cardsToPlay.push(compHand[i]);
+            }
+        }
+
+        // Remove from computer hand, add to pile
+        cardsToPlay.forEach(card => {
+            const index = compHand.indexOf(card);
+            if (index > -1) compHand.splice(index, 1);
+        });
+        discardPile.push(...cardsToPlay);
+
+        lastPlay = {
+            player: 'computer',
+            cards: cardsToPlay,
+            claimedRank: target
+        };
+
+        document.getElementById('status').innerText = `Computer played ${cardsToPlay.length} card(s) claiming to be ${target}'s. Your move!`;
+        document.getElementById('call-bs-btn').disabled = false;
+        
+        updateUI();
+
+        // If computer emptied its hand, give player one last chance to call BS
+        if (compHand.length === 0) {
+            document.getElementById('status').innerText = `Computer claims to have played its last cards as ${target}'s! Call Bullshit or lose!`;
+        }
+    }
+
+    function playerCallsBS() {
+        document.getElementById('call-bs-btn').disabled = true;
+        let target = lastPlay.claimedRank;
+        let isLying = lastPlay.cards.some(c => c !== target);
+
+        if (isLying) {
+            document.getElementById('status').innerText = `Successful call! Computer was lying. Computer takes the pile (+${discardPile.length} cards).`;
+            compHand.push(...discardPile);
+        } else {
+            document.getElementById('status').innerText = `Oops! Computer was telling the truth. You take the pile (+${discardPile.length} cards).`;
+            playerHand.push(...discardPile);
+            playerHand.sort((a,b) => RANKS.indexOf(a) - RANKS.indexOf(b));
+        }
+
+        discardPile = [];
+        
+        if (compHand.length === 0 && !isLying) {
+            document.getElementById('status').innerText = "Computer wins! It successfully got rid of all cards.";
+            enablePlayerControls(false);
+            updateUI();
+            return;
+        }
+
+        advanceRank();
+        updateUI();
+        enablePlayerControls(true);
+    }
+</script>
+</body>
+</html>
+
