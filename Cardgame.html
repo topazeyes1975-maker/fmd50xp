@@ -3,86 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bluff Card Game: Human vs Computer</title>
+    <title>Void Match: Card Edition</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #1b4332;
             color: white;
             text-align: center;
-            padding: 20px;
+            padding: 10px;
             margin: 0;
         }
         .container {
-            max-width: 700px;
+            max-width: 600px;
             margin: auto;
             background: #2d6a4f;
-            padding: 20px;
+            padding: 15px;
             border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
-        .guide-box {
-            background-color: #40916c;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: left;
-            margin-bottom: 20px;
-            font-size: 0.9rem;
-            line-height: 1.4;
-            border-left: 5px solid #ffb703;
-        }
-        .guide-box h2 { margin-top: 0; color: #ffb703; font-size: 1.2rem; }
         .status {
             background: #081c15;
-            padding: 15px;
-            margin: 15px 0;
+            padding: 12px;
+            margin: 10px 0;
             border-radius: 8px;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             border: 1px solid #52b788;
             font-weight: bold;
-            min-height: 30px;
+            min-height: 24px;
         }
         .game-panel {
             background: #ffffff12;
-            padding: 15px;
+            padding: 12px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border: 1px solid #52b788;
             display: flex;
             justify-content: space-around;
         }
         .panel-box { text-align: center; }
-        .panel-box h3 { margin: 5px 0; }
-        .count-highlight { color: #ffb703; font-size: 1.4rem; }
-        button {
-            padding: 12px 24px;
+        .panel-box h3 { margin: 2px 0; font-size: 0.9rem; color: #a3b18a; }
+        .count-highlight { color: #ffb703; font-size: 1.3rem; font-weight: bold; }
+        
+        /* Your Hand Style */
+        .hand-container {
+            background: #081c15;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border: 1px solid #52b788;
+        }
+        .hand-title {
+            margin-top: 0;
+            font-size: 1rem;
+            color: #ffb703;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .cards-flex {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+        .card {
+            background: white;
+            color: black;
+            width: 45px;
+            height: 65px;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             font-weight: bold;
-            margin: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            border: 2px solid transparent;
+            transition: transform 0.1s, border-color 0.1s;
+        }
+        .card.selected {
+            border-color: #ffb703;
+            background-color: #ffeaa7;
+            transform: translateY(-8px);
+        }
+        .card.hearts, .card.diamonds { color: #d62828; }
+        .card.clubs, .card.spades { color: #111; }
+
+        button {
+            padding: 12px 20px;
+            font-weight: bold;
+            margin: 6px;
             cursor: pointer;
             border-radius: 6px;
             border: none;
             font-size: 1rem;
-            transition: transform 0.1s, background-color 0.2s;
+            transition: transform 0.1s;
         }
         button:active { transform: scale(0.95); }
         button:disabled { background-color: #555 !important; color: #aaa; cursor: not-allowed; }
-        .action-btn { background-color: #ffb703; color: #023047; }
-        .action-bluff { background-color: #fb8500; color: white; }
+        
+        .action-btn { background-color: #ffb703; color: #023047; width: 85%; }
         .bs-btn { background-color: #d62828; color: white; width: 85%; font-size: 1.1rem; }
-        .reset-btn { background-color: #3a86c8; color: white; font-size: 0.9rem; padding: 8px 16px; }
+        .reset-btn { background-color: #3a86c8; color: white; font-size: 0.85rem; padding: 6px 12px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Void Match: Bluff Edition</h1>
+    <h2>Void Match: Personal Deck</h2>
     
-    <div class="guide-box">
-        <h2>Local Board Rules</h2>
-        <p>Match the target rank cycle (Aces up to Kings). Play honestly if you want, or click <strong>Play a Bluff!</strong> to lie. Watch out—the computer opponent will take turns playing cards into the pile too, and it loves to bluff! If you think it's lying, slam the big red button!</p>
-    </div>
-
-    <div class="status" id="game-status">Your turn! Lay down some Aces.</div>
+    <div class="status" id="game-status">Game loaded! Select cards from your deck below to play.</div>
 
     <div class="game-panel">
         <div class="panel-box">
@@ -94,109 +126,186 @@
             <span class="count-highlight" id="target-rank">A</span>
         </div>
         <div class="panel-box">
-            <h3>Whose Turn</h3>
-            <span class="count-highlight" id="current-turn" style="color: #ffb703;">Your Turn</span>
+            <h3>Opponent Hand</h3>
+            <span class="count-highlight" id="comp-count" style="color: #ffb703;">6</span> left
         </div>
     </div>
 
     <div id="player-controls">
-        <h3>Your Move:</h3>
-        <label>How many cards to drop? </label>
-        <input type="number" id="card-qty" value="1" min="1" max="4" style="padding: 8px; width: 50px; border-radius: 5px; border: none; font-size: 1rem; text-align: center; margin-bottom: 15px;"><br>
-
-        <button class="action-btn" id="btn-honest" onclick="playerMove(false)">Play Honestly</button>
-        <button class="action-bluff" id="btn-bluff" onclick="playerMove(true)">Play a Bluff!</button>
+        <button class="action-btn" id="btn-play" onclick="submitSelectedCards()" disabled>Drop Selected Cards</button>
     </div>
 
-    <div id="challenge-controls" style="margin-top: 15px;">
-        <button class="bs-btn" id="btn-bs" onclick="callBS()" disabled>STRONZATE! (Call BS on Computer)</button>
+    <div id="challenge-controls" style="margin-top: 5px;">
+        <button class="bs-btn" id="btn-bs" onclick="callBS()" disabled>STRONZATE! (Call BS)</button>
+    </div>
+
+    <div class="hand-container">
+        <div class="hand-title">Your Live Deck (<span id="hand-count">0</span> cards)</div>
+        <div class="cards-flex" id="player-hand">
+            </div>
     </div>
     
-    <hr style="margin: 25px 0; border: 1px solid #52b788;">
-    <button class="reset-btn" onclick="resetGame()">Reset Local Game</button>
+    <hr style="margin: 15px 0; border: 1px solid #52b788;">
+    <button class="reset-btn" onclick="resetGame()">Reset & Reshuffle Deck</button>
 </div>
 
 <script>
     const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+    const SUITS = [
+        { symbol: '♠', class: 'spades' },
+        { symbol: '♥', class: 'hearts' },
+        { symbol: '♦', class: 'diamonds' },
+        { symbol: '♣', class: 'clubs' }
+    ];
+
     let rankIndex = 0;
     let cardsInPile = 0;
+    
+    let playerHand = [];
+    let computerHandCount = 6;
+    let selectedIndices = [];
+    
     let computerLastMoveWasBluff = false;
-    let computerLastQty = 0;
     let isPlayerTurn = true;
 
-    function updateDisplay() {
-        document.getElementById("pile-count").innerText = cardsInPile;
-        document.getElementById("target-rank").innerText = RANKS[rankIndex];
-        
-        if (isPlayerTurn) {
-            document.getElementById("current-turn").innerText = "Your Turn";
-            document.getElementById("current-turn").style.color = "#ffb703";
-            document.getElementById("btn-honest").disabled = false;
-            document.getElementById("btn-bluff").disabled = false;
-            document.getElementById("btn-bs").disabled = true; // Can't call BS on yourself
-        } else {
-            document.getElementById("current-turn").innerText = "Computer Thinking...";
-            document.getElementById("current-turn").style.color = "#fb8500";
-            document.getElementById("btn-honest").disabled = true;
-            document.getElementById("btn-bluff").disabled = true;
-            // Enable BS button right after computer drops cards
-            document.getElementById("btn-bs").disabled = (cardsInPile === 0);
+    // Build a tiny baseline pool of random cards for both players to start
+    function dealInitialHands() {
+        playerHand = [];
+        for(let i=0; i<6; i++) {
+            let randomRank = RANKS[Math.floor(Math.random() * RANKS.length)];
+            let randomSuit = SUITS[Math.floor(Math.random() * SUITS.length)];
+            playerHand.push({ rank: randomRank, suit: randomSuit });
         }
+        // Sort your deck hand cleanly so it's easy to read
+        playerHand.sort((a,b) => RANKS.indexOf(a.rank) - RANKS.indexOf(b.rank));
+        computerHandCount = 6;
+        selectedIndices = [];
     }
 
-    function playerMove(isBluff) {
+    function renderHand() {
+        const handDiv = document.getElementById("player-hand");
+        handDiv.innerHTML = "";
+        
+        playerHand.forEach((card, index) => {
+            const cardEl = document.createElement("div");
+            cardEl.className = `card ${card.suit.class}`;
+            if (selectedIndices.includes(index)) {
+                cardEl.classList.add("selected");
+            }
+            cardEl.innerHTML = `<div>${card.rank}</div><div>${card.suit.symbol}</div>`;
+            cardEl.onclick = () => toggleCardSelection(index);
+            handDiv.appendChild(cardEl);
+        });
+
+        document.getElementById("hand-count").innerText = playerHand.length;
+        document.getElementById("comp-count").innerText = computerHandCount;
+    }
+
+    function toggleCardSelection(index) {
         if (!isPlayerTurn) return;
         
-        const qty = parseInt(document.getElementById('card-qty').value) || 1;
+        const pos = selectedIndices.indexOf(index);
+        if (pos > -1) {
+            selectedIndices.splice(pos, 1);
+        } else {
+            selectedIndices.push(index);
+        }
+        
+        // Button lights up only if you have selected at least 1 card
+        document.getElementById("btn-play").disabled = (selectedIndices.length === 0);
+        renderHand();
+    }
+
+    function submitSelectedCards() {
+        if (!isPlayerTurn || selectedIndices.length === 0) return;
+
+        let targetRank = RANKS[rankIndex];
+        let playedBluff = false;
+        let qty = selectedIndices.length;
+
+        // Verify if any selected card is a bluff
+        selectedIndices.forEach(idx => {
+            if (playerHand[idx].rank !== targetRank) {
+                playedBluff = true;
+            }
+        });
+
+        // Remove the played cards out of your hand deck
+        // Sort index descending so removing one doesn't break the positions of others
+        selectedIndices.sort((a,b) => b - a);
+        selectedIndices.forEach(idx => {
+            playerHand.splice(idx, 1);
+        });
+
         cardsInPile += qty;
+        selectedIndices = [];
         
-        let currentRank = RANKS[rankIndex];
-        let msg = isBluff 
-            ? `You secretly bluffed and laid down ${qty} cards, claiming they were ${currentRank}s!` 
-            : `You played ${qty} real ${currentRank}(s).`;
-        
-        document.getElementById("game-status").innerText = msg;
-        
-        // Pass the turn to the computer
+        if (playedBluff) {
+            document.getElementById("game-status").innerText = `You dropped ${qty} card(s) into the pile and bluffed, claiming they are ${targetRank}s!`;
+        } else {
+            document.getElementById("game-status").innerText = `You cleanly played ${qty} real ${targetRank}(s).`;
+        }
+
+        if (playerHand.length === 0) {
+            document.getElementById("game-status").innerText = "🎉 AMAZING! You emptied your entire hand deck! You win!";
+            endGameMode();
+            return;
+        }
+
         isPlayerTurn = false;
         advanceRank();
         updateDisplay();
-        
-        // Let the computer take its turn after a short realistic delay
-        setTimeout(computerTurn, 2000);
+
+        setTimeout(computerTurn, 2200);
     }
 
     function computerTurn() {
         if (isPlayerTurn) return;
-        
-        // Determine quantity (1 to 3 cards)
-        computerLastQty = Math.floor(Math.random() * 3) + 1;
-        cardsInPile += computerLastQty;
-        
-        // Computer decides to bluff 35% of the time
+
+        // Computer decides how many cards to lay down (1 to 2)
+        let qty = Math.floor(Math.random() * 2) + 1;
+        if (qty > computerHandCount) qty = computerHandCount;
+
+        computerHandCount -= qty;
+        cardsInPile += qty;
+
+        // 35% chance computer is lying
         computerLastMoveWasBluff = Math.random() < 0.35;
-        
         let targetRank = RANKS[rankIndex];
-        
+
         document.getElementById("game-status").innerText = 
-            `The Computer just placed down ${computerLastQty} card(s) and claims they are ${targetRank}s. Do you believe them?`;
-        
+            `The Computer drops down ${qty} card(s) and claims they are ${targetRank}s. Do you believe them?`;
+
+        if (computerHandCount === 0 && !computerLastMoveWasBluff) {
+            document.getElementById("game-status").innerText = "The computer played its final cards honestly and won the round!";
+            endGameMode();
+            return;
+        }
+
         advanceRank();
         updateDisplay();
     }
 
     function callBS() {
-        // Can only call BS if it's currently the computer's waiting block
         if (isPlayerTurn || cardsInPile === 0) return;
-        
+
         if (computerLastMoveWasBluff) {
+            // Computer caught! Penalty cards added to its count
+            computerHandCount += cardsInPile;
             document.getElementById("game-status").innerText = 
-                `💥 STRONZATE!!! You caught the computer red-handed bluffing! It picks up the entire pile of ${cardsInPile} cards!`;
+                `💥 STRONZATE!!! You caught them bluffing! The computer absorbs all ${cardsInPile} cards into its hand!`;
         } else {
+            // Player guessed wrong! Penalty cards go to your deck hand
+            for(let i=0; i<cardsInPile; i++) {
+                let randomRank = RANKS[Math.floor(Math.random() * RANKS.length)];
+                let randomSuit = SUITS[Math.floor(Math.random() * SUITS.length)];
+                playerHand.push({ rank: randomRank, suit: randomSuit });
+            }
+            playerHand.sort((a,b) => RANKS.indexOf(a.rank) - RANKS.indexOf(b.rank));
             document.getElementById("game-status").innerText = 
-                `😇 Oh no! The computer was actually telling the truth! You have to pick up the entire pile of ${cardsInPile} cards!`;
+                `😇 Ouch! The computer was telling the truth! You have to absorb all ${cardsInPile} cards into your deck hand!`;
         }
-        
+
         cardsInPile = 0;
         isPlayerTurn = true;
         updateDisplay();
@@ -206,17 +315,36 @@
         rankIndex = (rankIndex + 1) % RANKS.length;
     }
 
+    function updateDisplay() {
+        document.getElementById("pile-count").innerText = cardsInPile;
+        document.getElementById("target-rank").innerText = RANKS[rankIndex];
+        
+        if (isPlayerTurn) {
+            document.getElementById("btn-play").disabled = (selectedIndices.length === 0);
+            document.getElementById("btn-bs").disabled = true;
+        } else {
+            document.getElementById("btn-play").disabled = true;
+            document.getElementById("btn-bs").disabled = (cardsInPile === 0);
+        }
+        renderHand();
+    }
+
+    function endGameMode() {
+        document.getElementById("btn-play").disabled = true;
+        document.getElementById("btn-bs").disabled = true;
+    }
+
     function resetGame() {
         rankIndex = 0;
         cardsInPile = 0;
-        computerLastMoveWasBluff = false;
-        computerLastQty = 0;
         isPlayerTurn = true;
-        document.getElementById("game-status").innerText = "Game reset! Your turn to drop Aces.";
+        dealInitialHands();
+        document.getElementById("game-status").innerText = "Deck reshuffled! Tap your Aces below to make your first play.";
         updateDisplay();
     }
 
-    // Run when page loads
+    // Startup Execution
+    dealInitialHands();
     updateDisplay();
 </script>
 </body>
