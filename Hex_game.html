@@ -92,18 +92,18 @@
 <body>
 
     <h2>HEX PROTOCOL</h2>
-<h6><p>how to play the game: Each opponent takes a turn. One opponent 
+    <h6><p>how to play the game: Each opponent takes a turn. One opponent 
     tries to go horizontal line. While the other opponent goes 
-vertical line. The first one to complete their line wins.
-The object of the game is to prevent the other one from making a line but also make your line.</p></h6>
+    vertical line. The first one to complete their line wins.
+    The object of the game is to prevent the other one from making a line but also make your line.</p></h6>
+    
     <div id="canvas-container">
         <div id="winNotification" class="win-overlay"></div>
-        
         <canvas id="hexCanvas" width="700" height="600"></canvas>
     </div>
 
     <div id="controls">
-        <p>Active Frequency: <span id="currentTurn" class="red-t">RED</span></p>
+        <p>Active Frequency: <span id="currentTurn" class="red-t">RED (YOUR TURN)</span></p>
         <button onclick="initGame()">RESET SYSTEM</button>
     </div>
 
@@ -123,7 +123,7 @@ The object of the game is to prevent the other one from making a line but also m
         const startY = 60;
 
         let board = [];
-        let currentPlayer = 'Red';
+        let currentPlayer = 'Red'; // Red = Human Player, Blue = System AI
         let gameActive = true;
 
         const redImg = new Image();
@@ -138,22 +138,27 @@ The object of the game is to prevent the other one from making a line but also m
             board = Array(boardSize).fill(null).map(() => Array(boardSize).fill(null));
             currentPlayer = 'Red';
             gameActive = true;
-            winNotification.style.display = 'none'; // Hide overlay on reset
-            winNotification.className = 'win-overlay'; // Clean visual classes
+            winNotification.style.display = 'none'; 
+            winNotification.className = 'win-overlay'; 
             updateUI();
             drawBoard();
         }
 
         function updateUI() {
-            turnText.innerText = currentPlayer.toUpperCase();
-            turnText.className = currentPlayer === 'Red' ? 'red-t' : 'blue-t';
+            if (currentPlayer === 'Red') {
+                turnText.innerText = "RED (YOUR TURN)";
+                turnText.className = 'red-t';
+            } else {
+                turnText.innerText = "BLUE (COMPUTER THINKING...)";
+                turnText.className = 'blue-t';
+            }
         }
 
         function drawBoard() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             ctx.lineWidth = 8;
-            // Red Goals (Top and Bottom edges)
+            // Red Goals (Top and Bottom edges - Player tries to link these horizontally across the shifting grid layout)
             ctx.strokeStyle = '#ff4444';
             ctx.beginPath(); ctx.moveTo(0, 10); ctx.lineTo(canvas.width, 10); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(0, canvas.height-10); ctx.lineTo(canvas.width, canvas.height-10); ctx.stroke();
@@ -230,8 +235,73 @@ The object of the game is to prevent the other one from making a line but also m
             return false;
         }
 
-        canvas.addEventListener('click', (e) => {
+        // SMART SYSTEM AI OPPONENT MOVE CALCULATOR
+        function triggerComputerMove() {
             if (!gameActive) return;
+
+            let targetQ = -1;
+            let targetR = -1;
+            let foundBlock = false;
+
+            // Search Strategy 1: Check if the human player has adjacent red pieces to block actively
+            for (let q = 0; q < boardSize && !foundBlock; q++) {
+                for (let r = 0; r < boardSize && !foundBlock; r++) {
+                    if (board[q][r] === 'Red') {
+                        // Scan immediate structural neighbors
+                        const neighbors = [
+                            {q: q+1, r: r}, {q: q-1, r: r},
+                            {q: q, r: r+1}, {q: q, r: r-1}
+                        ];
+                        for (const n of neighbors) {
+                            if (n.q >= 0 && n.q < boardSize && n.r >= 0 && n.r < boardSize && !board[n.q][n.r]) {
+                                targetQ = n.q;
+                                targetR = n.r;
+                                foundBlock = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Search Strategy 2: If no active threats, claim the nearest open central position
+            if (!foundBlock) {
+                let openNodes = [];
+                for (let q = 0; q < boardSize; q++) {
+                    for (let r = 0; r < boardSize; r++) {
+                        if (!board[q][r]) openNodes.push({q, r});
+                    }
+                }
+                if (openNodes.length > 0) {
+                    // Pull a random open slot to build an unpredictable pathing setup
+                    const selection = openNodes[Math.floor(Math.random() * openNodes.length)];
+                    targetQ = selection.q;
+                    targetR = selection.r;
+                }
+            }
+
+            // Process Computer Action placement
+            if (targetQ !== -1 && targetR !== -1) {
+                board[targetQ][targetR] = 'Blue';
+                drawBoard();
+
+                if (checkWin('Blue')) {
+                    gameActive = false;
+                    winNotification.innerText = "BLUE SYSTEM BRIDGE SECURED!";
+                    winNotification.className += ' blue-win';
+                    winNotification.style.display = 'block';
+                    setTimeout(initGame, 4000);
+                } else {
+                    currentPlayer = 'Red';
+                    updateUI();
+                }
+            }
+        }
+
+        canvas.addEventListener('click', (e) => {
+            // Stop player clicks if game is over OR if it's the computer's turning cycle
+            if (!gameActive || currentPlayer !== 'Red') return;
+
             const rect = canvas.getBoundingClientRect();
             const sx = canvas.width / rect.width;
             const sy = canvas.height / rect.height;
@@ -245,24 +315,22 @@ The object of the game is to prevent the other one from making a line but also m
                     const dist = Math.sqrt((mx - hx)**2 + (my - hy)**2);
 
                     if (dist < hexRadius && !board[q][r]) {
-                        board[q][r] = currentPlayer;
+                        // Drop player piece
+                        board[q][r] = 'Red';
                         drawBoard();
                         
-                        if (checkWin(currentPlayer)) {
+                        if (checkWin('Red')) {
                             gameActive = false;
-                            
-                            // DISPLAY THE IMMERSIVE THEMED OVERLAY INSTEAD OF SYSTEM ALERT
-                            winNotification.innerText = currentPlayer.toUpperCase() + " BRIDGE SECURED!";
-                            winNotification.className += (currentPlayer === 'Red') ? ' red-win' : ' blue-win';
+                            winNotification.innerText = "RED FREQUENCY BRIDGE SECURED!";
+                            winNotification.className += ' red-win';
                             winNotification.style.display = 'block';
-                            
-                            // Give players 3 seconds to admire their victory pathway, then auto-reset
-                            setTimeout(() => {
-                                initGame();
-                            }, 3000);
+                            setTimeout(initGame, 4000);
                         } else {
-                            currentPlayer = (currentPlayer === 'Red') ? 'Blue' : 'Red';
+                            // Turn control over to the computer opponent
+                            currentPlayer = 'Blue';
                             updateUI();
+                            // Fire automated defensive block with a 1-second delay
+                            setTimeout(triggerComputerMove, 1000);
                         }
                         return;
                     }
