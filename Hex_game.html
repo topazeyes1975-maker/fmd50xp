@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hex Protocol: Smart Dual AI</title>
+    <title>Hex Protocol: Full Strategic AI</title>
     <style>
         * { box-sizing: border-box; touch-action: manipulation; -webkit-user-select: none; }
         body {
@@ -236,51 +236,93 @@
             return list.filter(n => n.q >= 0 && n.q < boardSize && n.r >= 0 && n.r < boardSize);
         }
 
-        // BI-DIRECTIONAL STRATEGY ENGINE (ATTACK + DEFEND)
+        // CALCULATE SHORTEST PATHS TO EVALUATE DEFENSE VS OFFENSE
+        function getPathDistance(player, tempBoard) {
+            let distance = Array(boardSize).fill(null).map(() => Array(boardSize).fill(Infinity));
+            let queue = [];
+
+            for (let i = 0; i < boardSize; i++) {
+                if (player === 'Red') {
+                    if (tempBoard[i][0] === 'Red' || tempBoard[i][0] === null) {
+                        distance[i][0] = tempBoard[i][0] === 'Red' ? 0 : 1;
+                        queue.push({q: i, r: 0});
+                    }
+                } else {
+                    if (tempBoard[0][i] === 'Blue' || tempBoard[0][i] === null) {
+                        distance[0][i] = tempBoard[0][i] === 'Blue' ? 0 : 1;
+                        queue.push({q: 0, r: i});
+                    }
+                }
+            }
+
+            while (queue.length > 0) {
+                let {q, r} = queue.shift();
+                let currentDist = distance[q][r];
+
+                let neighbors = getNeighbors(q, r);
+                for (let n of neighbors) {
+                    let cell = tempBoard[n.q][n.r];
+                    if (cell === (player === 'Red' ? 'Blue' : 'Red')) continue; // Path blocked
+
+                    let cost = (cell === player) ? 0 : 1;
+                    if (currentDist + cost < distance[n.q][n.r]) {
+                        distance[n.q][n.r] = currentDist + cost;
+                        queue.push({q: n.q, r: n.r});
+                    }
+                }
+            }
+
+            let minPath = Infinity;
+            for (let i = 0; i < boardSize; i++) {
+                let endDist = player === 'Red' ? distance[i][boardSize - 1] : distance[boardSize - 1][i];
+                if (endDist < minPath) minPath = endDist;
+            }
+            return minPath;
+        }
+
         function triggerComputerMove() {
             if (!gameActive) return;
 
             let bestMove = null;
-            let highestWeight = -1000;
+            let bestScore = -Infinity;
 
-            // Analyze every single hex on the grid to calculate positional strategic value
+            // Global simulation to find the most high-value cell
             for (let q = 0; q < boardSize; q++) {
                 for (let r = 0; r < boardSize; r++) {
-                    if (board[q][r] !== null) continue; // Skip occupied slots
+                    if (board[q][r] !== null) continue;
 
-                    let defenseScore = 0;
-                    let offenseScore = 0;
-                    const neighbors = getNeighbors(q, r);
+                    // Simulate playing a Blue piece here
+                    board[q][r] = 'Blue';
+                    let blueOffensePath = getPathDistance('Blue', board);
+                    board[q][r] = null; // Revert
 
-                    // 1. EVALUATE DEFENSE: Count how many red pieces are surrounding this spot
-                    neighbors.forEach(n => {
-                        if (board[n.q][n.r] === 'Red') defenseScore += 15;
-                    });
+                    // Simulate if Red were to play here to see how vital it is for blocking
+                    board[q][r] = 'Red';
+                    let redDefensePath = getPathDistance('Red', board);
+                    board[q][r] = null; // Revert
 
-                    // 2. EVALUATE OFFENSE: Give extra value to cells that connect to existing Blue pieces
-                    neighbors.forEach(n => {
-                        if (board[n.q][n.r] === 'Blue') offenseScore += 20;
-                    });
+                    // Scores: We want to shorten Blue's path and lengthen Red's path
+                    // If a move heavily cripples Red's progress, redDefensePath becomes a large number
+                    let offenseScore = (blueOffensePath === Infinity) ? 0 : (100 - blueOffensePath * 8);
+                    let defenseScore = (redDefensePath === Infinity) ? 500 : (redDefensePath * 12);
 
-                    // 3. SEED INITIAL DIRECTIONAL DRIVES
-                    // Blue moves horizontally across columns (q changes from 0 to 10)
-                    // We slightly reward moving toward the center or keeping chains level
-                    offenseScore += (5 - Math.abs(5 - q)) * 2; 
+                    // If Red is close to winning (short path distance left), prioritize defense massively
+                    if (redDefensePath <= 3) {
+                        defenseScore *= 3;
+                    }
 
-                    // Combine the engine priorities
-                    let totalWeight = defenseScore + offenseScore;
+                    let totalScore = offenseScore + defenseScore;
 
-                    // Add a tiny random fraction to break ties unpredictably
-                    totalWeight += Math.random() * 3;
+                    // Tie-breaker bias toward the center of the vertical axis
+                    totalScore += (5 - Math.abs(5 - q)) * 1.5;
 
-                    if (totalWeight > highestWeight) {
-                        highestWeight = totalWeight;
+                    if (totalScore > bestScore) {
+                        bestScore = totalScore;
                         bestMove = {q, r};
                     }
                 }
             }
 
-            // Execute calculated action
             if (bestMove) {
                 board[bestMove.q][bestMove.r] = 'Blue';
                 drawBoard();
@@ -326,7 +368,7 @@
                         } else {
                             currentPlayer = 'Blue';
                             updateUI();
-                            setTimeout(triggerComputerMove, 700);
+                            setTimeout(triggerComputerMove, 600);
                         }
                         return;
                     }
