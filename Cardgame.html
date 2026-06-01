@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Persistent Bluff Game</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Bluff Card Game: Human vs Computer</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -24,18 +23,15 @@
         }
         .guide-box {
             background-color: #40916c;
-            padding: 20px;
+            padding: 15px;
             border-radius: 10px;
             text-align: left;
-            margin-bottom: 25px;
-            font-size: 0.95rem;
-            line-height: 1.5;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            line-height: 1.4;
             border-left: 5px solid #ffb703;
         }
-        .guide-box h2, .guide-box h3 {
-            margin-top: 0;
-            color: #ffb703;
-        }
+        .guide-box h2 { margin-top: 0; color: #ffb703; font-size: 1.2rem; }
         .status {
             background: #081c15;
             padding: 15px;
@@ -44,156 +40,184 @@
             font-size: 1.2rem;
             border: 1px solid #52b788;
             font-weight: bold;
+            min-height: 30px;
         }
+        .game-panel {
+            background: #ffffff12;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #52b788;
+            display: flex;
+            justify-content: space-around;
+        }
+        .panel-box { text-align: center; }
+        .panel-box h3 { margin: 5px 0; }
+        .count-highlight { color: #ffb703; font-size: 1.4rem; }
         button {
             padding: 12px 24px;
             font-weight: bold;
-            margin: 10px;
+            margin: 8px;
             cursor: pointer;
             border-radius: 6px;
             border: none;
+            font-size: 1rem;
             transition: transform 0.1s, background-color 0.2s;
         }
-        button:active {
-            transform: scale(0.95);
-        }
+        button:active { transform: scale(0.95); }
+        button:disabled { background-color: #555 !important; color: #aaa; cursor: not-allowed; }
         .action-btn { background-color: #ffb703; color: #023047; }
         .action-bluff { background-color: #fb8500; color: white; }
-        .reset-btn { background-color: #d62828; color: white; }
-        .reset-btn:hover { background-color: #ae2012; }
+        .bs-btn { background-color: #d62828; color: white; width: 85%; font-size: 1.1rem; }
+        .reset-btn { background-color: #3a86c8; color: white; font-size: 0.9rem; padding: 8px 16px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Global Persistent Board</h1>
+    <h1>Void Match: Bluff Edition</h1>
     
     <div class="guide-box">
-        <h2>How to Play & Global Rules</h2>
-        <p>Welcome to a shared world-board version of the classic bluffing game. The primary goal of the game is to discard cards without being caught lying!</p>
-        
-        <h3>1. The Core Rules:</h3>
-        <ul>
-            <li>The game cycles through ranks in order: <strong>Aces, 2s, 3s... up to Kings</strong>, then loops back to Aces.</li>
-            <li>On your turn, you must declare how many cards of the current target rank you are face-down discarding.</li>
-            <li>If you don't have that card, you must <strong>Bluff</strong> and play completely different cards while lying about it!</li>
-            <li>If someone suspects a lie, they shout <strong>"STRONZATE!"</strong></li>
-        </ul>
-        
-        <h3>2. The Live Drop-In System:</h3>
-        <p>Unlike standard games that reset every time you close the window, <strong>this board is hooked up to a live global database:</strong></p>
-        <ul>
-            <li><strong>Make a Move and Leave:</strong> You can load this page up, play a hand honestly or launch a massive bluff, and leave!</li>
-            <li><strong>Asynchronous Visitors:</strong> Random visitors from entirely different computers can drop onto the board later and see your exact move.</li>
-            <li><strong>Persistent State:</strong> They can choose to continue the cycle or challenge the previous action left by a total stranger.</li>
-        </ul>
+        <h2>Local Board Rules</h2>
+        <p>Match the target rank cycle (Aces up to Kings). Play honestly if you want, or click <strong>Play a Bluff!</strong> to lie. Watch out—the computer opponent will take turns playing cards into the pile too, and it loves to bluff! If you think it's lying, slam the big red button!</p>
     </div>
 
-    <div class="status" id="game-status">Synchronizing secure connection...</div>
+    <div class="status" id="game-status">Your turn! Lay down some Aces.</div>
 
-    <div style="background: #ffffff12; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #52b788;">
-        <h3>Current Center Pile: <span id="pile-count">0</span> cards</h3>
-        <h3>Current Target Rank: <span id="target-rank">-</span></h3>
+    <div class="game-panel">
+        <div class="panel-box">
+            <h3>Center Pile</h3>
+            <span class="count-highlight" id="pile-count">0</span> cards
+        </div>
+        <div class="panel-box">
+            <h3>Target Rank</h3>
+            <span class="count-highlight" id="target-rank">A</span>
+        </div>
+        <div class="panel-box">
+            <h3>Whose Turn</h3>
+            <span class="count-highlight" id="current-turn" style="color: #ffb703;">Your Turn</span>
+        </div>
     </div>
 
-    <h3>Make Your Move:</h3>
-    <label>How many cards are you laying down?</label>
-    <input type="number" id="card-qty" value="1" min="1" max="4" style="padding: 8px; width: 60px; border-radius: 5px; border: none; font-size: 1rem; text-align: center; margin-left: 10px;"><br>
+    <div id="player-controls">
+        <h3>Your Move:</h3>
+        <label>How many cards to drop? </label>
+        <input type="number" id="card-qty" value="1" min="1" max="4" style="padding: 8px; width: 50px; border-radius: 5px; border: none; font-size: 1rem; text-align: center; margin-bottom: 15px;"><br>
 
-    <button class="action-btn" onclick="submitGlobalMove(false)">Play Honestly</button>
-    <button class="action-bluff" onclick="submitGlobalMove(true)">Play a Bluff!</button>
-    <button class="reset-btn" style="background: #d62828; color: white;" onclick="callGlobalBS()">STRONZATE! (Call BS)</button>
+        <button class="action-btn" id="btn-honest" onclick="playerMove(false)">Play Honestly</button>
+        <button class="action-bluff" id="btn-bluff" onclick="playerMove(true)">Play a Bluff!</button>
+    </div>
+
+    <div id="challenge-controls" style="margin-top: 15px;">
+        <button class="bs-btn" id="btn-bs" onclick="callBS()" disabled>STRONZATE! (Call BS on Computer)</button>
+    </div>
     
-    <hr style="margin: 30px 0; border: 1px solid #52b788;">
-    <button class="reset-btn" onclick="resetGlobalBoard()">Forced Board Reset</button>
+    <hr style="margin: 25px 0; border: 1px solid #52b788;">
+    <button class="reset-btn" onclick="resetGame()">Reset Local Game</button>
 </div>
 
 <script>
-    // Pure, explicit URL verified directly from your screen copy
-    const SUPABASE_URL = "https://zemxyhfmbexhkonmsaxc.supabase.co";
-    
-    // Pure, explicit public anon token matching project 'zemxyhfmbexhkonmsaxc'
-    const SUPABASE_KEY = "sb_publishable_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplbXh5aGZtYmV4aGtvbm1zYXhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcyMjA0MjksImV4cCI6MjA2Mjc5NjQyOX0.m7Yidvpt4ffcqXL-2B54SMw";
-
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
     const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
-    let currentLocalRank = 'A';
-    let currentLocalPile = 0;
+    let rankIndex = 0;
+    let cardsInPile = 0;
+    let computerLastMoveWasBluff = false;
+    let computerLastQty = 0;
+    let isPlayerTurn = true;
 
-    async function loadBoardState() {
-        try {
-            let { data, error } = await supabaseClient.from('game_state').select('*').eq('id', 1).maybeSingle();
-            
-            if (error) {
-                document.getElementById("game-status").innerText = "Table Authorization Error: " + error.message;
-                return;
-            }
-
-            if (data) {
-                currentLocalRank = data.target_rank;
-                currentLocalPile = data.cards_in_pile;
-
-                document.getElementById("pile-count").innerText = data.cards_in_pile;
-                document.getElementById("target-rank").innerText = data.target_rank;
-                document.getElementById("game-status").innerText = `${data.status_message} (Last action: ${data.last_action_by})`;
-            } else {
-                document.getElementById("game-status").innerText = "Database live! Initializing row values...";
-                // Setup default row if empty
-                await supabaseClient.from('game_state').insert([{ id: 1, cards_in_pile: 0, target_rank: 'A', status_message: 'Game initiated!', last_action_by: 'System' }]);
-            }
-        } catch (err) {
-            document.getElementById("game-status").innerText = "Script Sync Warning: " + err.message;
+    function updateDisplay() {
+        document.getElementById("pile-count").innerText = cardsInPile;
+        document.getElementById("target-rank").innerText = RANKS[rankIndex];
+        
+        if (isPlayerTurn) {
+            document.getElementById("current-turn").innerText = "Your Turn";
+            document.getElementById("current-turn").style.color = "#ffb703";
+            document.getElementById("btn-honest").disabled = false;
+            document.getElementById("btn-bluff").disabled = false;
+            document.getElementById("btn-bs").disabled = true; // Can't call BS on yourself
+        } else {
+            document.getElementById("current-turn").innerText = "Computer Thinking...";
+            document.getElementById("current-turn").style.color = "#fb8500";
+            document.getElementById("btn-honest").disabled = true;
+            document.getElementById("btn-bluff").disabled = true;
+            // Enable BS button right after computer drops cards
+            document.getElementById("btn-bs").disabled = (cardsInPile === 0);
         }
     }
 
-    async function submitGlobalMove(isBluff) {
-        const qty = parseInt(document.getElementById('card-qty').value);
-        const nextRankIndex = (RANKS.indexOf(currentLocalRank) + 1) % RANKS.length;
-        const nextRank = RANKS[nextRankIndex];
-
-        const msg = isBluff 
-            ? `Someone secretly bluffed and laid down ${qty} fake cards!` 
-            : `Someone safely played ${qty} real ${currentLocalRank}'s.`;
-
-        await supabaseClient.from('game_state').update({
-            cards_in_pile: currentLocalPile + qty,
-            target_rank: nextRank,
-            status_message: msg,
-            last_action_by: "A Global Visitor"
-        }).eq('id', 1);
-
-        loadBoardState();
+    function playerMove(isBluff) {
+        if (!isPlayerTurn) return;
+        
+        const qty = parseInt(document.getElementById('card-qty').value) || 1;
+        cardsInPile += qty;
+        
+        let currentRank = RANKS[rankIndex];
+        let msg = isBluff 
+            ? `You secretly bluffed and laid down ${qty} cards, claiming they were ${currentRank}s!` 
+            : `You played ${qty} real ${currentRank}(s).`;
+        
+        document.getElementById("game-status").innerText = msg;
+        
+        // Pass the turn to the computer
+        isPlayerTurn = false;
+        advanceRank();
+        updateDisplay();
+        
+        // Let the computer take its turn after a short realistic delay
+        setTimeout(computerTurn, 2000);
     }
 
-    async function callGlobalBS() {
-        const caught = Math.random() > 0.5;
-        let msg = caught 
-            ? `💥 Stronzate! The bluff was caught! The liar took all ${currentLocalPile} cards from the pile!` 
-            : `😇 Clean Play! The player was honest. The challenger had to pick up the ${currentLocalPile} card pile!`;
-
-        await supabaseClient.from('game_state').update({
-            cards_in_pile: 0,
-            status_message: msg,
-            last_action_by: "The Challenger"
-        }).eq('id', 1);
-
-        loadBoardState();
+    function computerTurn() {
+        if (isPlayerTurn) return;
+        
+        // Determine quantity (1 to 3 cards)
+        computerLastQty = Math.floor(Math.random() * 3) + 1;
+        cardsInPile += computerLastQty;
+        
+        // Computer decides to bluff 35% of the time
+        computerLastMoveWasBluff = Math.random() < 0.35;
+        
+        let targetRank = RANKS[rankIndex];
+        
+        document.getElementById("game-status").innerText = 
+            `The Computer just placed down ${computerLastQty} card(s) and claims they are ${targetRank}s. Do you believe them?`;
+        
+        advanceRank();
+        updateDisplay();
     }
 
-    async function resetGlobalBoard() {
-        await supabaseClient.from('game_state').update({
-            cards_in_pile: 0,
-            target_rank: 'A',
-            status_message: "The board was manually wiped clean. Brand new game started!",
-            last_action_by: "Admin"
-        }).eq('id', 1);
-
-        loadBoardState();
+    function callBS() {
+        // Can only call BS if it's currently the computer's waiting block
+        if (isPlayerTurn || cardsInPile === 0) return;
+        
+        if (computerLastMoveWasBluff) {
+            document.getElementById("game-status").innerText = 
+                `💥 STRONZATE!!! You caught the computer red-handed bluffing! It picks up the entire pile of ${cardsInPile} cards!`;
+        } else {
+            document.getElementById("game-status").innerText = 
+                `😇 Oh no! The computer was actually telling the truth! You have to pick up the entire pile of ${cardsInPile} cards!`;
+        }
+        
+        cardsInPile = 0;
+        isPlayerTurn = true;
+        updateDisplay();
     }
 
-    loadBoardState();
-    setInterval(loadBoardState, 5000);
+    function advanceRank() {
+        rankIndex = (rankIndex + 1) % RANKS.length;
+    }
+
+    function resetGame() {
+        rankIndex = 0;
+        cardsInPile = 0;
+        computerLastMoveWasBluff = false;
+        computerLastQty = 0;
+        isPlayerTurn = true;
+        document.getElementById("game-status").innerText = "Game reset! Your turn to drop Aces.";
+        updateDisplay();
+    }
+
+    // Run when page loads
+    updateDisplay();
 </script>
 </body>
 </html>
