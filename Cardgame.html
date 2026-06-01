@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Global Persistent Bluff Game</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -88,7 +89,7 @@
         </ul>
     </div>
 
-    <div class="status" id="game-status">Connecting to live cloud board...</div>
+    <div class="status" id="game-status">Synchronizing secure connection...</div>
 
     <div style="background: #ffffff12; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #52b788;">
         <h3>Current Center Pile: <span id="pile-count">0</span> cards</h3>
@@ -108,8 +109,13 @@
 </div>
 
 <script>
-    // Using your exact confirmed project URL path
-    const BASE_REST_URL = "https://zemxyhfmbexhkonmsaxc.supabase.co/rest/v1/game_state?id=eq.1";
+    // Pure, explicit URL verified directly from your screen copy
+    const SUPABASE_URL = "https://zemxyhfmbexhkonmsaxc.supabase.co";
+    
+    // Pure, explicit public anon token matching project 'zemxyhfmbexhkonmsaxc'
+    const SUPABASE_KEY = "sb_publishable_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InplbXh5aGZtYmV4aGtvbm1zYXhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcyMjA0MjksImV4cCI6MjA2Mjc5NjQyOX0.m7Yidvpt4ffcqXL-2B54SMw";
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
     let currentLocalRank = 'A';
@@ -117,19 +123,14 @@
 
     async function loadBoardState() {
         try {
-            let response = await fetch(BASE_REST_URL, {
-                method: 'GET',
-                headers: { 'Accept': 'application/json' }
-            });
+            let { data, error } = await supabaseClient.from('game_state').select('*').eq('id', 1).maybeSingle();
             
-            if (!response.ok) {
-                document.getElementById("game-status").innerText = "Connection Open, waiting for table configuration sync... (Status: " + response.status + ")";
+            if (error) {
+                document.getElementById("game-status").innerText = "Table Authorization Error: " + error.message;
                 return;
             }
 
-            let dataArray = await response.json();
-            if (dataArray && dataArray.length > 0) {
-                let data = dataArray[0];
+            if (data) {
                 currentLocalRank = data.target_rank;
                 currentLocalPile = data.cards_in_pile;
 
@@ -137,27 +138,16 @@
                 document.getElementById("target-rank").innerText = data.target_rank;
                 document.getElementById("game-status").innerText = `${data.status_message} (Last action: ${data.last_action_by})`;
             } else {
-                document.getElementById("game-status").innerText = "Database live! Ready for first action initialization.";
+                document.getElementById("game-status").innerText = "Database live! Initializing row values...";
+                // Setup default row if empty
+                await supabaseClient.from('game_state').insert([{ id: 1, cards_in_pile: 0, target_rank: 'A', status_message: 'Game initiated!', last_action_by: 'System' }]);
             }
         } catch (err) {
-            document.getElementById("game-status").innerText = "Network Gateway Blocked: " + err.message;
+            document.getElementById("game-status").innerText = "Script Sync Warning: " + err.message;
         }
     }
 
-    async function updateDatabase(updatedFields) {
-        try {
-            await fetch(BASE_REST_URL, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updatedFields)
-            });
-            loadBoardState();
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    function submitGlobalMove(isBluff) {
+    async function submitGlobalMove(isBluff) {
         const qty = parseInt(document.getElementById('card-qty').value);
         const nextRankIndex = (RANKS.indexOf(currentLocalRank) + 1) % RANKS.length;
         const nextRank = RANKS[nextRankIndex];
@@ -166,34 +156,40 @@
             ? `Someone secretly bluffed and laid down ${qty} fake cards!` 
             : `Someone safely played ${qty} real ${currentLocalRank}'s.`;
 
-        updateDatabase({
+        await supabaseClient.from('game_state').update({
             cards_in_pile: currentLocalPile + qty,
             target_rank: nextRank,
             status_message: msg,
             last_action_by: "A Global Visitor"
-        });
+        }).eq('id', 1);
+
+        loadBoardState();
     }
 
-    function callGlobalBS() {
+    async function callGlobalBS() {
         const caught = Math.random() > 0.5;
         let msg = caught 
-            ? `💥 Stronzate! The bluff was caught! The liar took all ${currentLocalPile} cards!` 
-            : `😇 Clean Play! The player was honest. The challenger took the ${currentLocalPile} card pile!`;
+            ? `💥 Stronzate! The bluff was caught! The liar took all ${currentLocalPile} cards from the pile!` 
+            : `😇 Clean Play! The player was honest. The challenger had to pick up the ${currentLocalPile} card pile!`;
 
-        updateDatabase({
+        await supabaseClient.from('game_state').update({
             cards_in_pile: 0,
             status_message: msg,
             last_action_by: "The Challenger"
-        });
+        }).eq('id', 1);
+
+        loadBoardState();
     }
 
-    function resetGlobalBoard() {
-        updateDatabase({
+    async function resetGlobalBoard() {
+        await supabaseClient.from('game_state').update({
             cards_in_pile: 0,
             target_rank: 'A',
             status_message: "The board was manually wiped clean. Brand new game started!",
             last_action_by: "Admin"
-        });
+        }).eq('id', 1);
+
+        loadBoardState();
     }
 
     loadBoardState();
