@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hex Protocol: Win Detection</title>
+    <title>Hex Protocol: Smart Dual AI</title>
     <style>
         * { box-sizing: border-box; touch-action: manipulation; -webkit-user-select: none; }
         body {
@@ -30,11 +30,10 @@
             background: #111;
             border: 1px solid #333;
             border-radius: 8px;
-            position: relative; /* Anchor the win banner relative to this box */
+            position: relative;
         }
         canvas { max-width: 100%; max-height: 100%; }
         
-        /* SLEEK IN-GAME WIN BANNER OVERLAY */
         .win-overlay {
             position: absolute;
             top: 50%;
@@ -49,7 +48,7 @@
             text-align: center;
             z-index: 50;
             letter-spacing: 2px;
-            display: none; /* Controlled via script */
+            display: none;
             pointer-events: none;
             width: 85%;
             max-width: 400px;
@@ -123,7 +122,7 @@
         const startY = 60;
 
         let board = [];
-        let currentPlayer = 'Red'; // Red = Human Player, Blue = System AI
+        let currentPlayer = 'Red'; 
         let gameActive = true;
 
         const redImg = new Image();
@@ -156,14 +155,14 @@
 
         function drawBoard() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
             ctx.lineWidth = 8;
-            // Red Goals (Top and Bottom edges - Player tries to link these horizontally across the shifting grid layout)
+            
+            // Red Goals (Top & Bottom borders)
             ctx.strokeStyle = '#ff4444';
             ctx.beginPath(); ctx.moveTo(0, 10); ctx.lineTo(canvas.width, 10); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(0, canvas.height-10); ctx.lineTo(canvas.width, canvas.height-10); ctx.stroke();
             
-            // Blue Goals (Left and Right edges)
+            // Blue Goals (Left & Right borders)
             ctx.strokeStyle = '#00d4ff';
             ctx.beginPath(); ctx.moveTo(10, 0); ctx.lineTo(10, canvas.height); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(canvas.width-10, 0); ctx.lineTo(canvas.width-10, canvas.height); ctx.stroke();
@@ -220,69 +219,70 @@
                 if (player === 'Red' && r === boardSize - 1) return true;
                 if (player === 'Blue' && q === boardSize - 1) return true;
 
-                const neighbors = [
-                    {q: q+1, r: r}, {q: q-1, r: r},
-                    {q: q, r: r+1}, {q: q, r: r-1},
-                    {q: q-1, r: r+1}, {q: q+1, r: r-1}
-                ];
-
+                const neighbors = getNeighbors(q, r);
                 for (const n of neighbors) {
-                    if (n.q >= 0 && n.q < boardSize && n.r >= 0 && n.r < boardSize) {
-                        if (board[n.q][n.r] === player) stack.push(n);
-                    }
+                    if (board[n.q][n.r] === player) stack.push(n);
                 }
             }
             return false;
         }
 
-        // SMART SYSTEM AI OPPONENT MOVE CALCULATOR
+        function getNeighbors(q, r) {
+            const list = [
+                {q: q+1, r: r}, {q: q-1, r: r},
+                {q: q, r: r+1}, {q: q, r: r-1},
+                {q: q-1, r: r+1}, {q: q+1, r: r-1}
+            ];
+            return list.filter(n => n.q >= 0 && n.q < boardSize && n.r >= 0 && n.r < boardSize);
+        }
+
+        // BI-DIRECTIONAL STRATEGY ENGINE (ATTACK + DEFEND)
         function triggerComputerMove() {
             if (!gameActive) return;
 
-            let targetQ = -1;
-            let targetR = -1;
-            let foundBlock = false;
+            let bestMove = null;
+            let highestWeight = -1000;
 
-            // Search Strategy 1: Check if the human player has adjacent red pieces to block actively
-            for (let q = 0; q < boardSize && !foundBlock; q++) {
-                for (let r = 0; r < boardSize && !foundBlock; r++) {
-                    if (board[q][r] === 'Red') {
-                        // Scan immediate structural neighbors
-                        const neighbors = [
-                            {q: q+1, r: r}, {q: q-1, r: r},
-                            {q: q, r: r+1}, {q: q, r: r-1}
-                        ];
-                        for (const n of neighbors) {
-                            if (n.q >= 0 && n.q < boardSize && n.r >= 0 && n.r < boardSize && !board[n.q][n.r]) {
-                                targetQ = n.q;
-                                targetR = n.r;
-                                foundBlock = true;
-                                break;
-                            }
-                        }
+            // Analyze every single hex on the grid to calculate positional strategic value
+            for (let q = 0; q < boardSize; q++) {
+                for (let r = 0; r < boardSize; r++) {
+                    if (board[q][r] !== null) continue; // Skip occupied slots
+
+                    let defenseScore = 0;
+                    let offenseScore = 0;
+                    const neighbors = getNeighbors(q, r);
+
+                    // 1. EVALUATE DEFENSE: Count how many red pieces are surrounding this spot
+                    neighbors.forEach(n => {
+                        if (board[n.q][n.r] === 'Red') defenseScore += 15;
+                    });
+
+                    // 2. EVALUATE OFFENSE: Give extra value to cells that connect to existing Blue pieces
+                    neighbors.forEach(n => {
+                        if (board[n.q][n.r] === 'Blue') offenseScore += 20;
+                    });
+
+                    // 3. SEED INITIAL DIRECTIONAL DRIVES
+                    // Blue moves horizontally across columns (q changes from 0 to 10)
+                    // We slightly reward moving toward the center or keeping chains level
+                    offenseScore += (5 - Math.abs(5 - q)) * 2; 
+
+                    // Combine the engine priorities
+                    let totalWeight = defenseScore + offenseScore;
+
+                    // Add a tiny random fraction to break ties unpredictably
+                    totalWeight += Math.random() * 3;
+
+                    if (totalWeight > highestWeight) {
+                        highestWeight = totalWeight;
+                        bestMove = {q, r};
                     }
                 }
             }
 
-            // Search Strategy 2: If no active threats, claim the nearest open central position
-            if (!foundBlock) {
-                let openNodes = [];
-                for (let q = 0; q < boardSize; q++) {
-                    for (let r = 0; r < boardSize; r++) {
-                        if (!board[q][r]) openNodes.push({q, r});
-                    }
-                }
-                if (openNodes.length > 0) {
-                    // Pull a random open slot to build an unpredictable pathing setup
-                    const selection = openNodes[Math.floor(Math.random() * openNodes.length)];
-                    targetQ = selection.q;
-                    targetR = selection.r;
-                }
-            }
-
-            // Process Computer Action placement
-            if (targetQ !== -1 && targetR !== -1) {
-                board[targetQ][targetR] = 'Blue';
+            // Execute calculated action
+            if (bestMove) {
+                board[bestMove.q][bestMove.r] = 'Blue';
                 drawBoard();
 
                 if (checkWin('Blue')) {
@@ -299,7 +299,6 @@
         }
 
         canvas.addEventListener('click', (e) => {
-            // Stop player clicks if game is over OR if it's the computer's turning cycle
             if (!gameActive || currentPlayer !== 'Red') return;
 
             const rect = canvas.getBoundingClientRect();
@@ -315,7 +314,6 @@
                     const dist = Math.sqrt((mx - hx)**2 + (my - hy)**2);
 
                     if (dist < hexRadius && !board[q][r]) {
-                        // Drop player piece
                         board[q][r] = 'Red';
                         drawBoard();
                         
@@ -326,11 +324,9 @@
                             winNotification.style.display = 'block';
                             setTimeout(initGame, 4000);
                         } else {
-                            // Turn control over to the computer opponent
                             currentPlayer = 'Blue';
                             updateUI();
-                            // Fire automated defensive block with a 1-second delay
-                            setTimeout(triggerComputerMove, 1000);
+                            setTimeout(triggerComputerMove, 700);
                         }
                         return;
                     }
