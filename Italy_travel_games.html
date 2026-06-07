@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Imparare l'Italiano - Hotel Edition</title>
+    <title>Imparare l'Italiano - The Complete Journey</title>
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -24,6 +24,21 @@
         }
         h2 { margin-top: 0; color: #f4f4f4; }
         #location-title { color: #ffc107; font-weight: bold; margin-bottom: 5px; }
+        
+        /* SLEEK RULES BANNER */
+        .rules-banner {
+            background: #222;
+            border: 1px solid #cd212a;
+            border-left: 6px solid #cd212a;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+            text-align: left;
+            line-height: 1.4;
+        }
+        .rules-banner strong { color: #dc3545; }
+
         .status-badge {
             background: #444;
             padding: 5px 15px;
@@ -32,14 +47,14 @@
             display: inline-block;
             margin-bottom: 20px;
         }
-        .officer-box {
+        .character-box {
             background: #1a1a1a;
-            border-left: 4px solid #ffc107;
+            border-left: 4px solid #008c45;
             padding: 20px;
             margin: 20px 0;
             border-radius: 6px;
         }
-        .officer-text { 
+        .character-text { 
             font-size: 1.4rem; 
             font-weight: bold;
             color: #5cb85c; 
@@ -85,18 +100,44 @@
         .reset-btn {
             background: none; border: 1px solid #555; color: #888; padding: 5px 10px; border-radius: 4px; margin-top: 30px; cursor: pointer; font-size: 0.8rem;
         }
+        
+        .next-level-link {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 15px 35px;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 50px;
+            box-shadow: 0 6px 12px rgba(40,167,69,0.3);
+            transition: all 0.2s ease;
+            animation: pulseGlow 2s infinite;
+        }
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 0 0 rgba(40,167,69,0.5); }
+            70% { box-shadow: 0 0 0 15px rgba(40,167,69,0); }
+            100% { box-shadow: 0 0 0 0 rgba(40,167,69,0); }
+        }
     </style>
 </head>
 <body>
 
     <div class="game-container">
-        <h3 id="location-title">STAGE 3: HOTEL LOBBY</h3>
-        <h2>The Front Desk Check-In</h2>
-        <div class="status-badge" id="game-status">Step 1 of 3</div>
+        <h2>Italian Travel Simulation</h2>
         
-        <div class="officer-box">
-            <p class="officer-text" id="officer-speech">"Buongiorno! Benvenuta all'hotel. Come posso aiutarla?"</p>
-            <p class="translation" id="officer-translation">(Good morning! Welcome to the hotel. How can I help you?)</p>
+        <!-- NEW MINI INSTRUCTION BANNER -->
+        <div class="rules-banner">
+            🎯 <strong>ARCADE RULE:</strong> This is a strict memorization game to master conversational Italian. Speak or type the correct responses to navigate from the airport to your hotel room. <strong>One mistake resets your trip completely back to Stage 1!</strong>
+        </div>
+
+        <h3 id="location-title">STAGE 1: AIRPORT DESK</h3>
+        <div class="status-badge" id="game-status">Step 1 of 9</div>
+        
+        <div class="character-box" id="speaker-border">
+            <p class="character-text" id="character-speech">"Passaporto, prego."</p>
+            <p class="translation" id="character-translation">(Passport, please.)</p>
         </div>
         
         <button class="mic-btn" id="speak-btn">🎤 Click & Speak</button>
@@ -107,10 +148,12 @@
         </div>
         
         <div class="feedback" id="game-feedback">
-            <span style="color: #aaa;">Tip: Greet the receptionist and mention that you have a reservation ("prenotazione").</span>
+            <span style="color: #aaa;">Tip: Greet the customs officer formally to begin. Do not use casual words like "Ciao".</span>
         </div>
 
-        <button class="reset-btn" id="hard-restart-btn">⚙ Restart Hotel Lobby</button>
+        <div id="level-two-portal"></div>
+
+        <button class="reset-btn" id="hard-restart-btn">⚙ Restart Trip Completely</button>
     </div>
 
     <script>
@@ -121,14 +164,16 @@
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const speakBtn = document.getElementById('speak-btn');
-        const officerSpeech = document.getElementById('officer-speech');
-        const officerTranslation = document.getElementById('officer-translation');
+        const characterSpeech = document.getElementById('character-speech');
+        const characterTranslation = document.getElementById('character-translation');
         const gameFeedback = document.getElementById('game-feedback');
         const gameStatus = document.getElementById('game-status');
         const locationTitle = document.getElementById('location-title');
         const textResponse = document.getElementById('text-response');
         const submitTextBtn = document.getElementById('submit-text-btn');
         const hardRestartBtn = document.getElementById('hard-restart-btn');
+        const speakerBorder = document.getElementById('speaker-border');
+        const levelTwoPortal = document.getElementById('level-two-portal');
 
         function startListening() {
             if (!SpeechRecognition || isTransitioning) return; 
@@ -205,7 +250,8 @@
             stopListeningEngine();
             currentStep = 1;
             isTransitioning = false;
-            gameFeedback.innerHTML = "<span style='color: #aaa;'>Lobby reset. Walk back up to the desk!</span>";
+            levelTwoPortal.innerHTML = "";
+            gameFeedback.innerHTML = "<span style='color: #aaa;'>Trip fully reset. Back to airport customs line!</span>";
             updateScene();
         });
 
@@ -213,33 +259,86 @@
             if (isTransitioning) return; 
             const cleanInput = rawInput.toLowerCase().trim();
             
-            // --- STAGE 3: HOTEL CHECK-IN ---
+            // --- STAGE 1: AIRPORT DESK ---
             if (currentStep === 1) {
+                if (cleanInput.includes("buongiorno") || cleanInput.includes("bongiorno")) {
+                    triggerStepAdvance(2, `You entered: <span class='heard-text'>"${rawInput}"</span><br><span class='success-text'>Success! The officer accepts your passport.</span>`);
+                } else if (cleanInput.includes("ciao")) {
+                    triggerReset('You used "Ciao". Too casual for a government official!');
+                } else {
+                    triggerReset('The officer looks confused. You should say "Buongiorno".');
+                }
+            } 
+            else if (currentStep === 2) {
+                if (cleanInput.includes("vacanza") || cleanInput.includes("vacanze") || cleanInput.includes("vacation")) {
+                    triggerStepAdvance(3, `You entered: <span class='heard-text'>"${rawInput}"</span><br><span class='success-text'>Success! Passport stamped.</span>`);
+                } else {
+                    triggerReset('You failed to state you are here on vacation ("in vacanza").');
+                }
+            } 
+            else if (currentStep === 3) {
+                const thanked = cleanInput.includes("grazie") || cleanInput.includes("gracias") || cleanInput.includes("graci") || cleanInput.includes("thank");
+                const saidGoodbye = cleanInput.includes("arrivederci") || cleanInput.includes("alavedersi") || cleanInput.includes("bye");
+
+                if (thanked || saidGoodbye) {
+                    triggerStepAdvance(4, `You entered: <span class='heard-text'>"${rawInput}"</span><br><span class='success-text'>Flawless! You walk through the airport gates into the train station.</span>`);
+                } else {
+                    triggerReset('You walked away without thanking them or saying goodbye ("Grazie, arrivederci").');
+                }
+            }
+            
+            // --- STAGE 2: TRAIN STATION PLATFORM ---
+            else if (currentStep === 4) {
+                const containsDestination = cleanInput.includes("roma") || cleanInput.includes("rome");
+                const containsPoliteness = cleanInput.includes("favore") || cleanInput.includes("prego") || cleanInput.includes("grazie") || cleanInput.includes("please");
+                
+                if (containsDestination || containsPoliteness) {
+                    triggerStepAdvance(5, `You entered: <span class='heard-text'>"${rawInput}"</span><br><span class='success-text'>Great job! The agent prints out your physical paper ticket.</span>`);
+                } else {
+                    triggerReset('To buy the ticket, ask for your destination politely. Try: "Un biglietto per Roma, per favore."');
+                }
+            }
+            else if (currentStep === 5) {
+                if (cleanInput.includes("grazie") || cleanInput.includes("ecco") || cleanInput.includes("thank") || cleanInput.includes("gracias") || cleanInput.includes("gratzi")) {
+                    triggerStepAdvance(6, `You entered: <span class='heard-text'>"${rawInput}"</span><br><span class='success-text'>Polite exchange complete. You pick up the ticket.</span>`);
+                } else {
+                    triggerReset('You grabbed the ticket silently without saying thank you ("Grazie").');
+                }
+            }
+            else if (currentStep === 6) {
+                if (cleanInput.includes("convalidare") || cleanInput.includes("stamp") || cleanInput.includes("convalido") || cleanInput.includes("validate")) {
+                    triggerStepAdvance(7, `You entered: <span class='heard-text'>"${rawInput}"</span><br><span class='success-text'>★ EXCELLENT! ★ You stamped your ticket. You board the train and arrive in Rome!</span>`);
+                } else {
+                    triggerReset('CRITICAL ERROR: You boarded the train with an unstamped ticket! The conductor hits you with a massive €50 fine.');
+                }
+            }
+
+            // --- STAGE 3: HOTEL LOBBY ---
+            else if (currentStep === 7) {
                 const checkReservation = cleanInput.includes("prenotazione") || cleanInput.includes("prenotato") || cleanInput.includes("reservation");
                 const checkGreeting = cleanInput.includes("buongiorno") || cleanInput.includes("buonasera") || cleanInput.includes("hello");
                 
                 if (checkReservation || (checkGreeting && cleanInput.includes("hotel"))) {
-                    triggerStepAdvance(2, `You entered: <span class='heard-text'>"${rawInput}"</span><br><span class='success-text'>Excellent. The clerk smiles and checks the system.</span>`);
+                    triggerStepAdvance(8, `You entered: <span class='heard-text'>"${rawInput}"</span><br><span class='success-text'>Excellent. The desk clerk checks the computer system.</span>`);
                 } else if (cleanInput.includes("ciao")) {
                     triggerReset('You used "Ciao". Keep it formal with the hotel staff!');
                 } else {
                     triggerReset('The clerk looks blankly at you. Try saying you have a reservation ("Ho una prenotazione").');
                 }
             } 
-            else if (currentStep === 2) {
-                // Looking for her name or confirmation
+            else if (currentStep === 8) {
                 if (cleanInput.includes("fonda") || cleanInput.includes("dutton") || cleanInput.includes("mi chiamo") || cleanInput.includes("my name")) {
-                    triggerStepAdvance(3, `You entered: <span class='heard-text'>"${rawInput}"</span><br><span class='success-text'>Perfect! They found your booking for a room with a beautiful city view.</span>`);
+                    triggerStepAdvance(9, `You entered: <span class='heard-text'>"${rawInput}"</span><br><span class='success-text'>Perfect! They found your room booking under your name.</span>`);
                 } else {
                     triggerReset('You didn\'t give your name clearly. Tell them "Mi chiamo Fonda".');
                 }
             } 
-            else if (currentStep === 3) {
+            else if (currentStep === 9) {
                 const askedForKeys = cleanInput.includes("chiavi") || cleanInput.includes("chiave") || cleanInput.includes("key") || cleanInput.includes("keys");
                 const polite = cleanInput.includes("per favore") || cleanInput.includes("grazie") || cleanInput.includes("please");
 
                 if (askedForKeys || polite) {
-                    triggerStepAdvance(4, `You entered: <span class='heard-text'>"${rawInput}"</span><br><br><span class='success-text'>★ STAGE 3 COMPLETE! ★</span><br>The clerk hands over the brass keys. Room 402 is all yours! Time to unpack and relax.`);
+                    triggerStepAdvance(10, `You entered: <span class='heard-text'>"${rawInput}"</span><br><br><span class='success-text'>★ GRAND VICTORY! ★</span><br>The clerk hands over your room keys. You successfully navigated Italy from the gateway to your hotel room!`);
                 } else {
                     triggerReset('You just stared at them! Ask for the keys politely: "Le chiavi, per favore."');
                 }
@@ -270,29 +369,61 @@
                 speakBtn.textContent = "🎤 Click & Speak";
             }
 
+            gameStatus.textContent = `Step ${currentStep === 10 ? 9 : currentStep} of 9`;
+
             if (currentStep <= 3) {
+                locationTitle.textContent = "STAGE 1: AIRPORT DESK";
+                speakerBorder.style.borderLeftColor = "#008c45";
+            } else if (currentStep > 3 && currentStep <= 6) {
+                locationTitle.textContent = "STAGE 2: TRAIN STATION PLATFORM";
+                speakerBorder.style.borderLeftColor = "#cd212a";
+            } else if (currentStep > 6 && currentStep <= 9) {
                 locationTitle.textContent = "STAGE 3: HOTEL LOBBY";
-                gameStatus.textContent = `Step ${currentStep} of 3`;
+                speakerBorder.style.borderLeftColor = "#ffc107";
             }
 
             if (currentStep === 1) {
-                officerSpeech.textContent = '"Buongiorno! Benvenuta all\'hotel. Come posso aiutarla?"';
-                officerTranslation.textContent = '(Good morning! Welcome to the hotel. How can I help you?)';
+                characterSpeech.textContent = '"Passaporto, prego."';
+                characterTranslation.textContent = '(Passport, please.)';
             } else if (currentStep === 2) {
-                officerSpeech.textContent = '"Certamente. Qual è il suo nome, per favore?"';
-                officerTranslation.textContent = '(Certainly. What is your name, please?)';
-                gameFeedback.innerHTML = `<span style="color: #aaa;">Tip: State your name clearly. Try: "Mi chiamo Fonda".</span>`;
+                characterSpeech.textContent = '"Qual è il motivo del viaggio?"';
+                characterTranslation.textContent = '(What is the purpose of your journey?)';
             } else if (currentStep === 3) {
-                officerSpeech.textContent = '"Ah, sì! Trovata. Ecco qui i suoi documenti."';
-                officerTranslation.textContent = '(Ah, yes! Found it. Here are your documents.)';
-                gameFeedback.innerHTML = `<span style="color: #ffc107; font-weight: bold;">Final Check! Ask for your room keys: "Le chiavi, per favore."</span>`;
+                characterSpeech.textContent = '"Benvenuto in Italia."';
+                characterTranslation.textContent = '(Welcome to Italy.)';
             } else if (currentStep === 4) {
-                locationTitle.textContent = "STAGE 3 COMPLETE";
+                characterSpeech.textContent = '"Buongiorno! Dove va?"';
+                characterTranslation.textContent = '(Good morning! Where are you going?)';
+                gameFeedback.innerHTML = `<span style="color: #aaa;">Tip: Ask for a ticket to Rome using "per favore".</span>`;
+            } else if (currentStep === 5) {
+                characterSpeech.textContent = '"Sono quindici euro, prego."';
+                characterTranslation.textContent = '(That is 15 euros, please.)';
+                gameFeedback.innerHTML = `<span style="color: #ffc107; font-weight: bold;">Say "Grazie" to hand over the money politely.</span>`;
+            } else if (currentStep === 6) {
+                characterSpeech.textContent = '"Ecco il biglietto. Buon viaggio!"';
+                characterTranslation.textContent = '(Here is your ticket. Have a good trip!)';
+                gameFeedback.innerHTML = `<span style="color: #ffc107; font-weight:bold;">⚠️ What must you do to your ticket before boarding?</span>`;
+            } else if (currentStep === 7) {
+                characterSpeech.textContent = '"Buongiorno! Benvenuta all\'hotel. Come posso aiutarla?"';
+                characterTranslation.textContent = '(Good morning! Welcome to the hotel. How can I help you?)';
+                gameFeedback.innerHTML = `<span style="color: #aaa;">Tip: Greet them and mention your reservation ("prenotazione").</span>`;
+            } else if (currentStep === 8) {
+                characterSpeech.textContent = '"Certamente. Qual è il suo nome, per favore?"';
+                characterTranslation.textContent = '(What is your name, please?)';
+                gameFeedback.innerHTML = `<span style="color: #aaa;">Tip: State your name clearly ("Mi chiamo Fonda").</span>`;
+            } else if (currentStep === 9) {
+                characterSpeech.textContent = '"Ah, sì! Trovata. Ecco qui i suoi documenti."';
+                characterTranslation.textContent = '(Ah, yes! Found it. Here are your documents.)';
+                gameFeedback.innerHTML = `<span style="color: #ffc107; font-weight: bold;">Final Check! Ask for your room keys: "Le chiavi, per favore."</span>`;
+            } else if (currentStep === 10) {
+                locationTitle.textContent = "LEVEL 1 COMPLETE";
                 gameStatus.textContent = "VICTORY";
-                officerSpeech.textContent = '"Buon soggiorno a Roma!"';
-                officerTranslation.textContent = '(Have a great stay in Rome!)';
+                characterSpeech.textContent = '"Buon soggiorno a Roma!"';
+                characterTranslation.textContent = '(Have a wonderful stay in Rome!)';
                 document.getElementById('input-fallback-zone').style.display = "none";
                 if(speakBtn) speakBtn.style.display = "none";
+                
+                levelTwoPortal.innerHTML = `<a href="level2.html" class="next-level-link">Proceed to Level 2: Into the Italian World ➔</a>`;
             }
         }
 
@@ -301,7 +432,8 @@
             stopListeningEngine();
             
             currentStep = 1;
-            gameFeedback.innerHTML = `<span class='fail-text'>LOBBY RESET!</span><br>${reason}<br><br><span style="color: #aaa;">Step back into line at the front desk and let's try again!</span>`;
+            levelTwoPortal.innerHTML = "";
+            gameFeedback.innerHTML = `<span class='fail-text'>TRIP RESET!</span><br>${reason}<br><br><span style="color: #aaa;">Sent all the way back to the airport customs counter. Time to practice the whole run!</span>`;
 
             setTimeout(() => {
                 isTransitioning = false;
