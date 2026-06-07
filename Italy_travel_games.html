@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Imparare l'Italiano - Fixed & Smooth</title>
+    <title>Imparare l'Italiano - Crash-Proof Edition</title>
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -60,12 +60,12 @@
             border-radius: 30px;
             cursor: pointer; 
             font-weight: bold;
-            transition: background 0.2s, transform 0.1s;
             box-shadow: 0 4px 6px rgba(0,0,0,0.2);
             margin-bottom: 15px;
+            transition: background 0.2s;
         }
-        .mic-btn:hover { background: #b01c24; }
         .mic-btn:disabled { background: #555; cursor: not-allowed; }
+        .mic-listening { background: #ffc107 !important; color: #000 !important; }
         .feedback { 
             margin-top: 25px; 
             font-size: 1.1rem;
@@ -78,6 +78,7 @@
         
         input[type="text"] {
             padding: 12px; width: 55%; font-size: 1rem; border-radius: 4px; border: none; margin-top: 10px;
+            background: #444; color: white;
         }
         button.submit-btn {
             padding: 12px 20px; font-size: 1rem; background: #008c45; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;
@@ -85,7 +86,6 @@
         .reset-btn {
             background: none; border: 1px solid #555; color: #888; padding: 5px 10px; border-radius: 4px; margin-top: 30px; cursor: pointer; font-size: 0.8rem;
         }
-        .reset-btn:hover { color: #fff; border-color: #aaa; }
     </style>
 </head>
 <body>
@@ -116,6 +116,8 @@
 
     <script>
         let currentStep = 1;
+        let recognition = null;
+        let backupTimeout = null;
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const speakBtn = document.getElementById('speak-btn');
@@ -128,51 +130,82 @@
         const submitTextBtn = document.getElementById('submit-text-btn');
         const hardRestartBtn = document.getElementById('hard-restart-btn');
 
-        let recognition;
-        if (!SpeechRecognition) {
-            speakBtn.style.display = "none";
-        } else {
-            recognition = new SpeechRecognition();
-            recognition.lang = 'it-IT';
-            recognition.interimResults = false;
+        // Main function to carefully boot up speech detection without crashing
+        function startListening() {
+            if (!SpeechRecognition) {
+                gameFeedback.innerHTML = "<span class='fail-text'>Speech recognition not supported in this browser. Please use the text box below!</span>";
+                return;
+            }
 
-            speakBtn.addEventListener('click', () => {
-                try {
-                    recognition.start();
+            // SAFETY: Force-kill any old hanging instances before starting fresh
+            stopListeningEngine();
+
+            try {
+                recognition = new SpeechRecognition();
+                recognition.lang = 'it-IT';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
+
+                recognition.onstart = () => {
                     speakBtn.textContent = "Listening... Speak now!";
-                    speakBtn.disabled = true;
-                } catch(e) {
-                    // Force clean reset of mic engine if it gets stuck locked
-                    recognition.stop();
-                    speakBtn.disabled = false;
+                    speakBtn.classList.add('mic-listening');
+                    
+                    // ANTI-FREEZE SAFETY NET: If the browser stays silent for 6 seconds, un-freeze automatically
+                    backupTimeout = setTimeout(() => {
+                        gameFeedback.innerHTML = "<span style='color: #ffc107;'>Audio timed out. Try speaking closer, or type your answer below!</span>";
+                        stopListeningEngine();
+                    }, 6000);
+                };
+
+                recognition.onresult = (event) => {
+                    clearTimeout(backupTimeout);
+                    const speechResult = event.results[0][0].transcript;
+                    stopListeningEngine();
+                    processInput(speechResult);
+                };
+                
+                recognition.onerror = (err) => { 
+                    clearTimeout(backupTimeout);
+                    stopListeningEngine();
+                    gameFeedback.innerHTML = `<span style='color: #aaa;'>Audio connection hitch. Feel free to use the manual text box below!</span>`;
+                };
+
+                recognition.onend = () => {
+                    clearTimeout(backupTimeout);
+                    // Ensure buttons revert to normal styling even if it cuts off
                     speakBtn.textContent = "🎤 Click & Speak";
-                    gameFeedback.innerHTML = "<span class='fail-text'>Mic sync lost. Please click again or use the text box!</span>";
-                }
-            });
+                    speakBtn.classList.remove('mic-listening');
+                };
 
-            recognition.onresult = (event) => {
-                unlockMicButton();
-                processInput(event.results[0][0].transcript);
-            };
-            
-            recognition.onerror = (e) => { 
-                unlockMicButton();
-                if(e.error === 'no-speech') {
-                    triggerReset("Silence detected. You took too long to answer!");
-                }
-            };
-        }
+                recognition.start();
 
-        function unlockMicButton() {
-            if(speakBtn) {
-                speakBtn.disabled = false;
-                speakBtn.textContent = "🎤 Click & Speak";
+            } catch (e) {
+                stopListeningEngine();
             }
         }
 
-        // Text Box Input Processing
+        // Hard reset function for the audio engine to break loops
+        function stopListeningEngine() {
+            clearTimeout(backupTimeout);
+            if (recognition) {
+                try {
+                    recognition.abort();
+                } catch(e) {}
+                recognition = null;
+            }
+            if (speakBtn) {
+                speakBtn.textContent = "🎤 Click & Speak";
+                speakBtn.classList.remove('mic-listening');
+            }
+        }
+
+        if (speakBtn) {
+            speakBtn.addEventListener('click', startListening);
+        }
+
         submitTextBtn.addEventListener('click', () => {
             if(textResponse.value.trim() !== "") {
+                stopListeningEngine();
                 processInput(textResponse.value);
                 textResponse.value = "";
             }
@@ -180,19 +213,19 @@
 
         textResponse.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && textResponse.value.trim() !== "") {
+                stopListeningEngine();
                 processInput(textResponse.value);
                 textResponse.value = "";
             }
         });
 
-        // Hard Restart Setup
         hardRestartBtn.addEventListener('click', () => {
+            stopListeningEngine();
             currentStep = 1;
             gameFeedback.innerHTML = "<span style='color: #aaa;'>Game fully rebooted. Welcome back to the gate!</span>";
             updateScene();
         });
 
-        // GAME LOGIC ENGINE
         function processInput(rawInput) {
             const cleanInput = rawInput.toLowerCase().trim();
             
@@ -226,15 +259,18 @@
             
             // --- TRAIN STATION PLATFORM ---
             else if (currentStep === 4) {
-                if (cleanInput.includes("roma") && (cleanInput.includes("favore") || cleanInput.includes("prego"))) {
+                const containsDestination = cleanInput.includes("roma") || cleanInput.includes("rome");
+                const containsPoliteness = cleanInput.includes("favore") || cleanInput.includes("prego") || cleanInput.includes("grazie") || cleanInput.includes("please");
+                
+                if (containsDestination && containsPoliteness) {
                     gameFeedback.innerHTML = `You entered: <span class='heard-text'>"${rawInput}"</span><br><span class='success-text'>Great job! The agent prints out your physical paper ticket.</span>`;
                     currentStep = 5;
                 } else {
-                    triggerReset('To buy the ticket, ask politely: "Un biglietto per Roma, per favore."');
+                    triggerReset('To buy the ticket, ask for your destination politely. Try saying or typing: "Un biglietto per Roma, per favore."');
                 }
             }
             else if (currentStep === 5) {
-                if (cleanInput.includes("grazie") || cleanInput.includes("ecco")) {
+                if (cleanInput.includes("grazie") || cleanInput.includes("ecco") || cleanInput.includes("thank")) {
                     gameFeedback.innerHTML = `You entered: <span class='heard-text'>"${rawInput}"</span><br><span class='success-text'>Polite exchange complete. You pick up the ticket.</span>`;
                     currentStep = 6;
                 } else {
@@ -242,7 +278,7 @@
                 }
             }
             else if (currentStep === 6) {
-                if (cleanInput.includes("convalidare") || cleanInput.includes("stamp") || cleanInput.includes("convalido")) {
+                if (cleanInput.includes("convalidare") || cleanInput.includes("stamp") || cleanInput.includes("convalido") || cleanInput.includes("validate")) {
                     gameFeedback.innerHTML = `You entered: <span class='heard-text'>"${rawInput}"</span><br><br><span class='success-text'>★ EXCELLENT! ★</span><br>You successfully stamped your ticket in the yellow machine before boarding! You bypass the massive fine and head safely toward Rome.`;
                     currentStep = 7;
                 } else {
@@ -254,8 +290,6 @@
         }
 
         function updateScene() {
-            unlockMicButton(); // Make sure the button is always clickable on a new step
-
             if (currentStep <= 3) {
                 locationTitle.textContent = "STAGE 1: AIRPORT DESK";
                 gameStatus.textContent = `Step ${currentStep} of 6`;
@@ -276,7 +310,7 @@
             } else if (currentStep === 4) {
                 officerSpeech.textContent = '"Buongiorno! Dove va?"';
                 officerTranslation.textContent = '(Good morning! Where are you going?)';
-                gameFeedback.innerHTML = `<span style="color: #aaa;">Remember to click "Click & Speak" again for the train station! Tip: Ask for a ticket to Rome using "per favore".</span>`;
+                gameFeedback.innerHTML = `<span style="color: #aaa;">Tip: Ask for a ticket to Rome using "per favore". (Example: "Un biglietto per Roma, per favore")</span>`;
             } else if (currentStep === 5) {
                 officerSpeech.textContent = '"Sono quindici euro, prego."';
                 officerTranslation.textContent = '(That is 15 euros, please.)';
