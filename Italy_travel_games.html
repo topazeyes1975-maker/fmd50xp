@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imparare l'Italiano - Passport Control</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #1e1e1e; 
+            color: #fff; 
+            text-align: center; 
+            padding: 20px;
+        }
+        .game-container { 
+            max-width: 600px; 
+            margin: 40px auto; 
+            background: #2d2d2d;
+            padding: 30px; 
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            border-top: 8px solid #008c45; /* Italian Green */
+            border-bottom: 8px solid #cd212a; /* Italian Red */
+        }
+        h2 { margin-top: 0; color: #f4f4f4; }
+        .status-badge {
+            background: #444;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        .officer-box {
+            background: #1a1a1a;
+            border-left: 4px solid #008c45;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 6px;
+        }
+        .officer-text { 
+            font-size: 1.4rem; 
+            font-weight: bold;
+            color: #5cb85c; 
+            margin: 0 0 10px 0;
+        }
+        .translation {
+            font-size: 1rem;
+            color: #aaa;
+            font-style: italic;
+            margin: 0;
+        }
+        .mic-btn { 
+            padding: 15px 40px; 
+            font-size: 1.2rem; 
+            background: #cd212a; 
+            color: white; 
+            border: none; 
+            border-radius: 30px;
+            cursor: pointer; 
+            font-weight: bold;
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .mic-btn:hover { background: #b01c24; }
+        .mic-btn:active { transform: scale(0.98); }
+        .mic-btn:disabled { background: #555; cursor: not-allowed; }
+        .feedback { 
+            margin-top: 25px; 
+            font-size: 1.1rem;
+            min-height: 50px;
+            line-height: 1.5;
+        }
+        .heard-text {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        .fail-text { color: #dc3545; font-weight: bold; }
+        .success-text { color: #28a745; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h2>Stage 1: Passport Control</h2>
+        <div class="status-badge" id="game-status">Step 1 of 3</div>
+        
+        <div class="officer-box">
+            <p class="officer-text" id="officer-speech">"Passaporto, prego."</p>
+            <p class="translation" id="officer-translation">(Passport, please.)</p>
+        </div>
+        
+        <button class="mic-btn" id="speak-btn">🎤 Click & Speak</button>
+        
+        <div class="feedback" id="game-feedback">
+            <span style="color: #aaa;">Tip: Greet the officer formally to begin. Do not use casual words like "Ciao".</span>
+        </div>
+    </div>
+
+    <script>
+        // Track the current step of the dialogue loop
+        let currentStep = 1;
+
+        // Check for Web Speech API browser support
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            document.getElementById('game-feedback').innerHTML = "<span class='fail-text'>Error: Your browser does not support Web Speech API. Try using Google Chrome.</span>";
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'it-IT'; // Lock voice capture to Italian phonetics
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        const speakBtn = document.getElementById('speak-btn');
+        const officerSpeech = document.getElementById('officer-speech');
+        const officerTranslation = document.getElementById('officer-translation');
+        const gameFeedback = document.getElementById('game-feedback');
+        const gameStatus = document.getElementById('game-status');
+
+        // UI updates for each game state
+        function updateScene() {
+            if (currentStep === 1) {
+                gameStatus.textContent = "Step 1 of 3";
+                officerSpeech.textContent = '"Passaporto, prego."';
+                officerTranslation.textContent = '(Passport, please.)';
+            } else if (currentStep === 2) {
+                gameStatus.textContent = "Step 2 of 3";
+                officerSpeech.textContent = '"Qual è il motivo del viaggio?"';
+                officerTranslation.textContent = '(What is the purpose of your journey?)';
+            } else if (currentStep === 3) {
+                gameStatus.textContent = "Step 3 of 3";
+                officerSpeech.textContent = '"Benvenuto in Italia."';
+                officerTranslation.textContent = '(Welcome to Italy.)';
+            }
+        }
+
+        // Trigger a hard reset back to step 1 when an error occurs
+        function triggerReset(reason) {
+            currentStep = 1;
+            gameFeedback.innerHTML = `<span class='fail-text'>CULTURAL MISSTEP / RESET!</span><br>${reason}<br><br><span style="color: #aaa;">Returning to the back of the customs line...</span>`;
+            updateScene();
+        }
+
+        // Turn microphone listening on
+        speakBtn.addEventListener('click', () => {
+            recognition.start();
+            speakBtn.disabled = true;
+            speakBtn.textContent = "Listening... Speak now!";
+        });
+
+        // Fire when the microphone finishes capturing audio
+        recognition.onresult = (event) => {
+            speakBtn.disabled = false;
+            speakBtn.textContent = "🎤 Click & Speak";
+            
+            // Clean up the text response from the browser
+            const spokenText = event.results[0][0].transcript.toLowerCase().trim();
+            
+            if (currentStep === 1) {
+                // STEP 1 RULES: Must use formal greeting keywords
+                if (spokenText.includes("buongiorno")) {
+                    gameFeedback.innerHTML = `You said: <span class='heard-text'>"${spokenText}"</span><br><span class='success-text'>Success! The officer accepts your passport.</span>`;
+                    currentStep = 2;
+                    updateScene();
+                } else if (spokenText.includes("ciao")) {
+                    triggerReset('You used "Ciao". This is too casual for an official customs officer!');
+                } else {
+                    triggerReset(`The officer did not understand. You needed to say "Buongiorno".`);
+                }
+                
+            } else if (currentStep === 2) {
+                // STEP 2 RULES: Must state vacation purpose keyword
+                if (spokenText.includes("vacanza") || spokenText.includes("vacanze")) {
+                    gameFeedback.innerHTML = `You said: <span class='heard-text'>"${spokenText}"</span><br><span class='success-text'>Success! He stamps your book.</span>`;
+                    currentStep = 3;
+                    updateScene();
+                } else {
+                    triggerReset(`You didn't clearly state "Sono qui in vacanza". He pulls you aside for questioning.`);
+                }
+                
+            } else if (currentStep === 3) {
+                // STEP 3 RULES: Must express gratitude and formal departure
+                if (spokenText.includes("grazie") && spokenText.includes("arrivederci")) {
+                    gameStatus.textContent = "STAGE CLEARED";
+                    officerSpeech.textContent = '"Arrivederci!"';
+                    officerTranslation.textContent = "";
+                    gameFeedback.innerHTML = `You said: <span class='heard-text'>"${spokenText}"</span><br><br><span class='success-text'>★ STAGE CLEARED! ★</span><br>You passed customs flawlessly. Next up: The Train Station hub!`;
+                    speakBtn.style.display = "none"; // Hide button on total victory
+                } else if (spokenText.includes("ciao")) {
+                    triggerReset('You said goodbye with "Ciao". Use "Arrivederci" for formal professional settings!');
+                } else {
+                    triggerReset('You forgot to say "Grazie mille, arrivederci" before walking through the gates.');
+                }
+            }
+        };
+
+        // Handle errors or silence gracefully
+        recognition.onerror = (event) => {
+            speakBtn.disabled = false;
+            speakBtn.textContent = "🎤 Click & Speak";
+            if(event.error === 'no-speech') {
+                triggerReset("Silence detected. You took too long to speak to the officer!");
+            }
+        };
+    </script>
+</body>
+</html>
+
