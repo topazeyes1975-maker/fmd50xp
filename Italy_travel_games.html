@@ -354,9 +354,8 @@
                     triggerReset('The taxi driver looks at you waiting. Tell him you want to go to the hotel ("All\'hotel, per favore").');
                 }
             }
-
-            // --- STAGE 4: HOTEL LOBBY ---
-            else if (currentStep === 8) {
+             // ----- stage 4: hotel ---
+             else if (currentStep === 8) {
                 const checkReservation = cleanInput.includes("prenotazione") || cleanInput.includes("prenotato") || cleanInput.includes("reservation");
                 const checkGreeting = cleanInput.includes("buongiorno") || cleanInput.includes("buonasera") || cleanInput.includes("hello");
                 
@@ -457,7 +456,7 @@
                 levelTwoPortal.innerHTML = `<a href="level2.html" class="next-level-link">Proceed to Level 2: Into the Italian World ➔</a>`;
             }
         }
-
+        
         function triggerReset(reason) {
             isTransitioning = true;
             stopListeningEngine();
