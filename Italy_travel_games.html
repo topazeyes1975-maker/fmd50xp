@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
@@ -189,11 +189,9 @@
         const monitorText = document.getElementById('monitor-text');
 
         function startListening() {
-            if (!SpeechRecognition || isTransitioning) return; 
+            if (!SpeechRecognition || isTransitioning || isProcessingResult) return; 
             
-            // Clean slate lock checks on button initialization
             stopListeningEngine();
-            isProcessingResult = false; 
 
             try {
                 recognition = new SpeechRecognition();
@@ -222,7 +220,7 @@
                 recognition.onerror = () => { 
                     clearTimeout(backupTimeout);
                     stopListeningEngine();
-                    isProcessingResult = false; // Free up lock on error
+                    isProcessingResult = false; 
                     monitorText.textContent = "Error capturing voice. Try clicking again.";
                 };
 
@@ -401,16 +399,15 @@
 
             setTimeout(() => {
                 isTransitioning = false;
-                isProcessingResult = false; 
                 updateScene();
+                // SAFETY ENGINE LOCK: Only allow inputs AFTER the scene has completely changed!
+                isProcessingResult = false; 
             }, 2500); 
         }
 
         function updateScene() {
             if(isTransitioning) return;
 
-            // CRITICAL RESET POINT: Instantly unlock the software flags for the fresh scene!
-            isProcessingResult = false; 
             stopListeningEngine();
 
             if (speakBtn) {
@@ -426,6 +423,9 @@
             } else if (currentStep > 3 && currentStep <= 6) {
                 locationTitle.textContent = "STAGE 2: TRAIN STATION PLATFORM";
                 speakerBorder.style.borderLeftColor = "#cd212a";
+            } else if (currentStep === 7) {
+                locationTitle.textContent = "STAGE 3: THE TAXI STAND";
+                speakerBorder.style.borderLeftColor = "#ffffff";
             } else if (currentStep === 7) {
                 characterSpeech.textContent = '"Buongiorno! Dove andiamo?"';
                 characterTranslation.textContent = '(Good morning! Where are we going?)';
@@ -468,8 +468,8 @@
 
             setTimeout(() => {
                 isTransitioning = false;
-                isProcessingResult = false; 
                 updateScene();
+                isProcessingResult = false; 
             }, 2500);
         }
     </script>
