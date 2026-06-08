@@ -38,7 +38,6 @@
         }
         .rules-banner strong { color: #dc3545; }
 
-        /* NEW DIAGNOSTIC MONITOR STYLING */
         .live-monitor {
             background: #111;
             border: 1px dashed #ffc107;
@@ -128,12 +127,6 @@
             border-radius: 50px;
             box-shadow: 0 6px 12px rgba(40,167,69,0.3);
             transition: all 0.2s ease;
-            animation: pulseGlow 2s infinite;
-        }
-        @keyframes pulseGlow {
-            0% { box-shadow: 0 0 0 0 rgba(40,167,69,0.5); }
-            70% { box-shadow: 0 0 0 15px rgba(40,167,69,0); }
-            100% { box-shadow: 0 0 0 0 rgba(40,167,69,0); }
         }
     </style>
 </head>
@@ -149,7 +142,6 @@
         <h3 id="location-title">STAGE 1: AIRPORT DESK</h3>
         <div class="status-badge" id="game-status">Step 1 of 10</div>
         
-        <!-- LIVE DIAGNOSTIC MONITOR BAR -->
         <div class="live-monitor">
             🎙️ [Speech Monitor]: <span id="monitor-text">Waiting for audio input...</span>
         </div>
@@ -180,6 +172,7 @@
         let recognition = null;
         let backupTimeout = null;
         let isTransitioning = false; 
+        let isProcessingResult = false; // NEW STATE LOCK
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const speakBtn = document.getElementById('speak-btn');
@@ -193,11 +186,12 @@
         const hardRestartBtn = document.getElementById('hard-restart-btn');
         const speakerBorder = document.getElementById('speaker-border');
         const levelTwoPortal = document.getElementById('level-two-portal');
-        const monitorText = document.getElementById('monitor-text'); // Monitor hook
+        const monitorText = document.getElementById('monitor-text');
 
         function startListening() {
-            if (!SpeechRecognition || isTransitioning) return; 
+            if (!SpeechRecognition || isTransitioning || isProcessingResult) return; 
             stopListeningEngine();
+            isProcessingResult = false;
 
             try {
                 recognition = new SpeechRecognition();
@@ -212,17 +206,18 @@
                 };
 
                 recognition.onresult = (event) => {
+                    if (isProcessingResult) return; // Ignore secondary fires
+                    isProcessingResult = true;
+                    
                     clearTimeout(backupTimeout);
                     const speechResult = event.results[0][0].transcript;
                     stopListeningEngine();
                     
-                    // Display exactly what the mic registered instantly on screen
                     monitorText.textContent = `"${speechResult}"`;
-                    
                     processInput(speechResult);
                 };
                 
-                recognition.onerror = (e) => { 
+                recognition.onerror = () => { 
                     clearTimeout(backupTimeout);
                     stopListeningEngine();
                     monitorText.textContent = "Error capturing voice. Try clicking again.";
@@ -257,7 +252,8 @@
         if (speakBtn) speakBtn.addEventListener('click', startListening);
 
         submitTextBtn.addEventListener('click', () => {
-            if(!isTransitioning && textResponse.value.trim() !== "") {
+            if(!isTransitioning && !isProcessingResult && textResponse.value.trim() !== "") {
+                isProcessingResult = true;
                 stopListeningEngine();
                 monitorText.textContent = `[Typed Input]: "${textResponse.value}"`;
                 processInput(textResponse.value);
@@ -266,7 +262,8 @@
         });
 
         textResponse.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !isTransitioning && textResponse.value.trim() !== "") {
+            if (e.key === 'Enter' && !isTransitioning && !isProcessingResult && textResponse.value.trim() !== "") {
+                isProcessingResult = true;
                 stopListeningEngine();
                 monitorText.textContent = `[Typed Input]: "${textResponse.value}"`;
                 processInput(textResponse.value);
@@ -278,6 +275,7 @@
             stopListeningEngine();
             currentStep = 1;
             isTransitioning = false;
+            isProcessingResult = false;
             levelTwoPortal.innerHTML = "";
             monitorText.textContent = "System fully reset.";
             gameFeedback.innerHTML = "<span style='color: #aaa;'>Trip fully reset. Back to airport customs line!</span>";
@@ -285,7 +283,6 @@
         });
 
         function processInput(rawInput) {
-            if (isTransitioning) return; 
             const cleanInput = rawInput.toLowerCase().trim();
             
             // --- STAGE 1: AIRPORT DESK ---
@@ -316,14 +313,13 @@
                 }
             }
             
-            // --- STAGE 2: TRAIN STATION PLATFORM (STRICT VOCAB PRACTICE MODE) ---
+            // --- STAGE 2: TRAIN STATION PLATFORM ---
             else if (currentStep === 4) {
-                // Must mention destination (Roma/Rome) and attempt proper ticket framing words
                 const validDestination = cleanInput.includes("roma") || cleanInput.includes("rome");
                 const hasTicketVocab = cleanInput.includes("biglietto") || cleanInput.includes("per") || cleanInput.includes("favore");
                 
                 if (validDestination && hasTicketVocab) {
-                    triggerStepAdvance(5, `You entered: <span class='heard-text'>"${rawInput}"</span><br><span class='success-text'>Great job! Your pronunciation matched the target parameters. The agent prints your ticket to Rome.</span>`);
+                    triggerStepAdvance(5, `You entered: <span class='heard-text'>"${rawInput}"</span><br><span class='success-text'>Great job! The agent prints your ticket to Rome.</span>`);
                 } else {
                     triggerReset('The microphone target missed the vocabulary requirements. Target phrase: "Un biglietto per Roma, per favore."');
                 }
@@ -401,8 +397,9 @@
 
             setTimeout(() => {
                 isTransitioning = false;
+                isProcessingResult = false; // UNLOCK
                 updateScene();
-            }, 2500); // Extended window so you can read the monitor before the scene clears
+            }, 2500); 
         }
 
         function updateScene() {
@@ -421,6 +418,35 @@
             } else if (currentStep > 3 && currentStep <= 6) {
                 locationTitle.textContent = "STAGE 2: TRAIN STATION PLATFORM";
                 speakerBorder.style.borderLeftColor = "#cd212a";
+            } else if (currentStep === 7) {
+                locationTitle.textContent = "STAGE 3: THE TAXI STAND";
+                speakerBorder.style.borderLeftColor = "#ffffff";
+            } else if (currentStep > 7 && currentStep <= 10) {
+                locationTitle.textContent = "STAGE 4: HOTEL LOBBY";
+                speakerBorder.style.borderLeftColor = "#ffc107";
+            }
+
+            if (currentStep === 1) {
+                characterSpeech.textContent = '"Passaporto, prego."';
+                characterTranslation.textContent = '(Passport, please.)';
+            } else if (currentStep === 2) {
+                characterSpeech.textContent = '"Qual è il motivo del viaggio?"';
+                characterTranslation.textContent = '(What is the purpose of your journey?)';
+            } else if (currentStep === 3) {
+                characterSpeech.textContent = '"Benvenuto in Italia."';
+                characterTranslation.textContent = '(Welcome to Italy.)';
+            } else if (currentStep === 4) {
+                characterSpeech.textContent = '"Buongiorno! Dove va?"';
+                characterTranslation.textContent = '(Good morning! Where are you going?)';
+                gameFeedback.innerHTML = `<span style="color: #aaa;">Tip: Ask for a ticket to Rome using "per favore".</span>`;
+            } else if (currentStep === 5) {
+                characterSpeech.textContent = '"Sono quindici euro, prego."';
+                characterTranslation.textContent = '(That is 15 euros, please.)';
+                gameFeedback.innerHTML = `<span style="color: #ffc107; font-weight: bold;">Say "Grazie" to hand over the money politely.</span>`;
+            } else if (currentStep === 6) {
+                characterSpeech.textContent = '"Ecco il biglietto. Buon viaggio!"';
+                characterTranslation.textContent = '(Here is your ticket. Have a good trip!)';
+                gameFeedback.innerHTML = `<span style="color: #ffc107; font-weight:bold;">⚠️ What must you do to your ticket before boarding?</span>`;
             } else if (currentStep === 7) {
                 characterSpeech.textContent = '"Buongiorno! Dove andiamo?"';
                 characterTranslation.textContent = '(Good morning! Where are we going?)';
@@ -459,6 +485,7 @@
 
             setTimeout(() => {
                 isTransitioning = false;
+                isProcessingResult = false; // UNLOCK
                 updateScene();
             }, 2500);
         }
