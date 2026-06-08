@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
@@ -391,17 +391,22 @@
             isTransitioning = true;
             if(speakBtn) {
                 speakBtn.disabled = true;
-                speakBtn.textContent = "⏳ Saving Step...";
+                speakBtn.textContent = "⏳ Loading next step...";
                 speakBtn.classList.remove('mic-listening');
             }
+            
+            // Render success banner immediately
             gameFeedback.innerHTML = successMessage;
             currentStep = nextStep;
 
             setTimeout(() => {
                 isTransitioning = false;
                 updateScene();
-                // SAFETY ENGINE LOCK: Only allow inputs AFTER the scene has completely changed!
-                isProcessingResult = false; 
+                
+                // FORCE RENDER IN ENGINE CHECK
+                setTimeout(() => {
+                    isProcessingResult = false;
+                }, 50);
             }, 2500); 
         }
 
@@ -426,11 +431,6 @@
             } else if (currentStep === 7) {
                 locationTitle.textContent = "STAGE 3: THE TAXI STAND";
                 speakerBorder.style.borderLeftColor = "#ffffff";
-            } else if (currentStep === 7) {
-                characterSpeech.textContent = '"Buongiorno! Dove andiamo?"';
-                characterTranslation.textContent = '(Good morning! Where are we going?)';
-                gameFeedback.innerHTML = `<span style="color: #aaa;">Tip: Tell the driver to take you to the hotel ("All'hotel, per favore").</span>`;
-                monitorText.textContent = "Waiting for audio input...";
             } else if (currentStep === 8) {
                 characterSpeech.textContent = '"Buongiorno! Benvenuta all\'hotel. Come posso aiutarla?"';
                 characterTranslation.textContent = '(Good morning! Welcome to the hotel. How can I help you?)';
@@ -469,7 +469,10 @@
             setTimeout(() => {
                 isTransitioning = false;
                 updateScene();
-                isProcessingResult = false; 
+                
+                setTimeout(() => {
+                    isProcessingResult = false; 
+                }, 50);
             }, 2500);
         }
     </script>
