@@ -180,7 +180,7 @@
         let currentStep = 1;
         let recognition = null;
         let isListening = false;
-        let lastTranscribedText = "";
+        let currentPhraseValue = "";
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const speakBtn = document.getElementById('speak-btn');
@@ -196,7 +196,6 @@
         const levelTwoPortal = document.getElementById('level-two-portal');
         const monitorText = document.getElementById('monitor-text');
 
-        // Main manual control logic loop
         function toggleMic() {
             if (!SpeechRecognition) {
                 monitorText.textContent = "Speech engine not supported on this browser version.";
@@ -204,30 +203,24 @@
             }
 
             if (!isListening) {
-                // USER TURNS MIC ON
                 isListening = true;
-                lastTranscribedText = "";
+                currentPhraseValue = "";
                 speakBtn.textContent = "🛑 RECORDING... Click to Stop";
                 speakBtn.classList.add('mic-listening');
-                monitorText.textContent = "Listening to you speak now...";
+                monitorText.textContent = "Listening to your voice...";
 
                 recognition = new SpeechRecognition();
                 recognition.lang = 'it-IT';
-                // Continuous tracks phrases until user manually shuts it off
                 recognition.continuous = true; 
                 recognition.interimResults = true;
 
                 recognition.onresult = (event) => {
-                    let interimResult = "";
-                    for (let i = event.resultIndex; i < event.results.length; ++i) {
-                        if (event.results[i].isFinal) {
-                            lastTranscribedText += event.results[i][0].transcript;
-                        } else {
-                            interimResult += event.results[i][0].transcript;
-                        }
+                    // CRASH FIX: Direct target lookup. No long loop blocks.
+                    if (event.results && event.results.length > 0) {
+                        const latestResultIndex = event.results.length - 1;
+                        currentPhraseValue = event.results[latestResultIndex][0].transcript;
+                        monitorText.textContent = `Hearing: "${currentPhraseValue}"`;
                     }
-                    // Show live updating text in monitor bar while talking
-                    monitorText.textContent = `Hearing: "${lastTranscribedText || interimResult}"`;
                 };
 
                 recognition.onerror = (e) => {
@@ -237,18 +230,20 @@
                 recognition.start();
 
             } else {
-                // USER TURNS MIC OFF AND SUBMITS ANSWER
                 isListening = false;
                 speakBtn.textContent = "🎤 Click to Turn ON Mic";
                 speakBtn.classList.remove('mic-listening');
                 
                 if (recognition) {
-                    recognition.stop();
+                    try {
+                        recognition.stop();
+                    } catch(e) {
+                        console.log("Safe capture:", e);
+                    }
                     recognition = null;
                 }
 
-                // Clean up final answer string
-                const finalAnswer = lastTranscribedText.trim();
+                const finalAnswer = currentPhraseValue.trim();
                 if (finalAnswer !== "") {
                     monitorText.textContent = `Submitted: "${finalAnswer}"`;
                     processInput(finalAnswer);
@@ -262,7 +257,7 @@
 
         submitTextBtn.addEventListener('click', () => {
             if (textResponse.value.trim() !== "") {
-                if(isListening) toggleMic(); // Turn off mic if typing
+                if(isListening) toggleMic(); 
                 monitorText.textContent = `[Typed Input]: "${textResponse.value}"`;
                 processInput(textResponse.value);
                 textResponse.value = "";
@@ -309,8 +304,8 @@
                 }
             } 
             else if (currentStep === 3) {
-                const thanked = cleanInput.includes("grazie") || cleanInput.includes("gracias") || cleanInput.includes("graci") || cleanInput.includes("thank");
-                const saidGoodbye = cleanInput.includes("arrivederci") || cleanInput.includes("alavedersi") || cleanInput.includes("bye");
+                const thanked = cleanInput.includes("grazie") || cleanInput.includes("thank") || cleanInput.includes("gracias");
+                const saidGoodbye = cleanInput.includes("arrivederci") || cleanInput.includes("bye");
 
                 if (thanked || saidGoodbye) {
                     currentStep = 4;
@@ -333,7 +328,7 @@
                 }
             }
             else if (currentStep === 5) {
-                const thanked = cleanInput.includes("grazie") || cleanInput.includes("thank") || cleanInput.includes("gracias") || cleanInput.includes("gratzi");
+                const thanked = cleanInput.includes("grazie") || cleanInput.includes("thank") || cleanInput.includes("gracias");
                 if (thanked) {
                     currentStep = 6;
                     updateScene(`You entered: <span class='heard-text'>"${rawInput}"</span><br><span class='success-text'>Polite exchange complete. You pick up the ticket.</span>`);
@@ -342,7 +337,7 @@
                 }
             }
             else if (currentStep === 6) {
-                const validated = cleanInput.includes("convalidare") || cleanInput.includes("stamp") || cleanInput.includes("convalido") || cleanInput.includes("validate");
+                const validated = cleanInput.includes("convalidare") || cleanInput.includes("stamp") || cleanInput.includes("validate");
                 if (validated) {
                     currentStep = 7;
                     updateScene(`You entered: <span class='heard-text'>"${rawInput}"</span><br><span class='success-text'>★ EXCELLENT! ★ You board the train to Rome!</span>`);
@@ -354,9 +349,8 @@
             // --- STAGE 3: THE TAXI STAND ---
             else if (currentStep === 7) {
                 const askedForHotel = cleanInput.includes("hotel") || cleanInput.includes("albergo");
-                const polite = cleanInput.includes("per favore") || cleanInput.includes("please") || cleanInput.includes("grazie");
                 
-                if (askedForHotel || polite) {
+                if (askedForHotel) {
                     currentStep = 8;
                     updateScene(`You entered: <span class='heard-text'>"${rawInput}"</span><br><span class='success-text'>"Va bene!" The driver heads into Roman traffic!</span>`);
                 } else {
@@ -367,7 +361,7 @@
             // --- STAGE 4: HOTEL LOBBY ---
             else if (currentStep === 8) {
                 const checkReservation = cleanInput.includes("prenotazione") || cleanInput.includes("prenotato") || cleanInput.includes("reservation");
-                const checkGreeting = cleanInput.includes("buongiorno") || cleanInput.includes("buonasera") || cleanInput.includes("hello");
+                const checkGreeting = cleanInput.includes("buongiorno") || cleanInput.includes("buonasera");
                 
                 if (checkReservation || (checkGreeting && cleanInput.includes("hotel"))) {
                     currentStep = 9;
@@ -379,7 +373,7 @@
                 }
             } 
             else if (currentStep === 9) {
-                if (cleanInput.includes("fonda") || cleanInput.includes("dutton") || cleanInput.includes("mi chiamo") || cleanInput.includes("my name")) {
+                if (cleanInput.includes("fonda") || cleanInput.includes("dutton") || cleanInput.includes("mi chiamo")) {
                     currentStep = 10;
                     updateScene(`You entered: <span class='heard-text'>"${rawInput}"</span><br><span class='success-text'>Perfect! Booking found.</span>`);
                 } else {
@@ -387,10 +381,9 @@
                 }
             } 
             else if (currentStep === 10) {
-                const askedForKeys = cleanInput.includes("chiavi") || cleanInput.includes("chiave") || cleanInput.includes("key") || cleanInput.includes("keys");
-                const polite = cleanInput.includes("per favore") || cleanInput.includes("grazie") || cleanInput.includes("please");
+                const askedForKeys = cleanInput.includes("chiavi") || cleanInput.includes("chiave") || cleanInput.includes("key");
 
-                if (askedForKeys || polite) {
+                if (askedForKeys) {
                     currentStep = 11;
                     updateScene(`★ GRAND VICTORY! ★`);
                 } else {
@@ -402,7 +395,6 @@
         function updateScene(appendFeedback = "") {
             gameStatus.textContent = `Step ${currentStep === 11 ? 10 : currentStep} of 10`;
 
-            // Style headers and borders
             if (currentStep <= 3) {
                 locationTitle.textContent = "STAGE 1: AIRPORT DESK";
                 speakerBorder.style.borderLeftColor = "#008c45";
@@ -417,12 +409,11 @@
                 speakerBorder.style.borderLeftColor = "#ffc107";
             }
 
-            // Clean data text updates
             if (currentStep === 1) {
                 characterSpeech.textContent = '"Passaporto, prego."';
                 characterTranslation.textContent = '(Passport, please.)';
                 gameFeedback.innerHTML = appendFeedback || `<span style="color: #aaa;">Tip: Greet the customs officer formally to begin. Do not use casual words like "Ciao".</span>`;
-            }else if (currentStep === 2) {
+            } else if (currentStep === 2) {
                 characterSpeech.textContent = '"Qual è il motivo del viaggio?"';
                 characterTranslation.textContent = '(What is the purpose of your journey?)';
                 gameFeedback.innerHTML = `${appendFeedback}<br><br><span style="color: #ffc107; font-weight: bold;">➡️ Step 2 Target: Tell him you are on vacation ("In vacanza").</span>`;
