@@ -180,7 +180,7 @@
         let currentStep = 1;
         let recognition = null;
         let isListening = false;
-        let currentPhraseValue = "";
+        let finalSavedText = "";
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const speakBtn = document.getElementById('speak-btn');
@@ -204,7 +204,7 @@
 
             if (!isListening) {
                 isListening = true;
-                currentPhraseValue = "";
+                finalSavedText = "";
                 speakBtn.textContent = "🛑 RECORDING... Click to Stop";
                 speakBtn.classList.add('mic-listening');
                 monitorText.textContent = "Listening to your voice...";
@@ -215,11 +215,14 @@
                 recognition.interimResults = true;
 
                 recognition.onresult = (event) => {
-                    // CRASH FIX: Direct target lookup. No long loop blocks.
                     if (event.results && event.results.length > 0) {
                         const latestResultIndex = event.results.length - 1;
-                        currentPhraseValue = event.results[latestResultIndex][0].transcript;
-                        monitorText.textContent = `Hearing: "${currentPhraseValue}"`;
+                        const transcriptText = event.results[latestResultIndex][0].transcript.trim();
+                        
+                        if (transcriptText !== "") {
+                            finalSavedText = transcriptText;
+                            monitorText.textContent = `Hearing: "${transcriptText}"`;
+                        }
                     }
                 };
 
@@ -243,7 +246,15 @@
                     recognition = null;
                 }
 
-                const finalAnswer = currentPhraseValue.trim();
+                // FIX: If the mobile engine drops the string on closing, recover it directly from the UI screen text!
+                let finalAnswer = finalSavedText.trim();
+                if (finalAnswer === "") {
+                    const match = monitorText.textContent.match(/"([^"]+)"/);
+                    if (match && match[1]) {
+                        finalAnswer = match[1].trim();
+                    }
+                }
+
                 if (finalAnswer !== "") {
                     monitorText.textContent = `Submitted: "${finalAnswer}"`;
                     processInput(finalAnswer);
@@ -421,7 +432,7 @@
                 characterSpeech.textContent = '"Benvenuto in Italia."';
                 characterTranslation.textContent = '(Welcome to Italy.)';
                 gameFeedback.innerHTML = `${appendFeedback}<br><br><span style="color: #ffc107; font-weight: bold;">➡️ Step 3 Target: Thank him and say goodbye ("Grazie, arrivederci").</span>`;
-            } else if (currentStep === 4) {
+            }  else if (currentStep === 4) {
                 characterSpeech.textContent = '"Buongiorno! Dove va?"';
                 characterTranslation.textContent = '(Good morning! Where are you going?)';
                 gameFeedback.innerHTML = `${appendFeedback}<br><br><span style="color: #ffc107; font-weight: bold;">➡️ Step 4 Target: Ask for a ticket to Rome ("Un biglietto per Roma, per favore").</span>`;
