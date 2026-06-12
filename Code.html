@@ -29,11 +29,12 @@
     </div>
 
     <script>
-        // --- 1. FILL THESE IN WITH YOUR SUPABASE SETTINGS ---
-        // Ensure the URL is just the base, like: https://your-id.supabase.co
+        // --- 1. FILL THESE IN ---
         const supabaseUrl = 'https://jhgcyiswxubqzqtbhain.supabase.co'; 
         const supabaseKey = 'sb_publishable_0j0PaDVT_pXMJawcf2W8fQ_Lz9B4KoW'; 
-          const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        
+        // Use a unique name to avoid conflicts
+        const mySupabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
         const container = document.getElementById('alphabet-container');
@@ -64,14 +65,14 @@
             const code = document.getElementById('cipherCode').value;
             let cipherData = {};
             letters.forEach(l => cipherData[l] = document.getElementById('canvas' + l).toDataURL());
-            const { error } = await supabase.from('ciphers').upsert([{ code: code, alphabet_data: cipherData }]);
+            const { error } = await mySupabase.from('ciphers').upsert([{ code: code, alphabet_data: cipherData }]);
             if (error) alert("Error: " + error.message); else alert("Saved!");
         }
 
         // Supabase Load Function
         async function loadAll() {
             const code = document.getElementById('cipherCode').value;
-            const { data } = await supabase.from('ciphers').select('alphabet_data').eq('code', code).single();
+            const { data } = await mySupabase.from('ciphers').select('alphabet_data').eq('code', code).single();
             if (data) {
                 letters.forEach(l => {
                     const canvas = document.getElementById('canvas' + l);
