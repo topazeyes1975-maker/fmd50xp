@@ -7,7 +7,7 @@
     <style>
         body { background: #1a0b2e; color: white; font-family: sans-serif; padding: 20px; }
         #alphabet-container { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
-        canvas { border: 1px solid #7c4dff; background: #2d1b4e; cursor: crosshair; }
+        canvas { border: 1px solid #7c4dff; background: #2d1b4e; cursor: crosshair; touch-action: none; }
         .controls { margin-top: 30px; border-top: 2px solid #7c4dff; padding-top: 20px; }
         textarea { resize: none; width: 100%; height: 100px; }
     </style>
@@ -30,10 +30,9 @@
 
     <script>
         // --- 1. FILL THESE IN ---
-        const supabaseUrl = 'https://jhgcyiswxubqzqtbhain.supabase.co'; 
-        const supabaseKey = 'sb_publishable_0j0PaDVT_pXMJawcf2W8fQ_Lz9B4KoW'; 
+        const supabaseUrl = 'PASTE_YOUR_PROJECT_URL_HERE'; 
+        const supabaseKey = 'PASTE_YOUR_ANON_PUBLIC_KEY_HERE'; 
         
-        // Use a unique name to avoid conflicts
         const mySupabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
@@ -44,53 +43,50 @@
             container.innerHTML += `<div><p>${letter}</p><canvas id="canvas${letter}" width="80" height="80"></canvas></div>`;
         });
 
-        // Updated Drawing Logic for both Mouse and Touch
-letters.forEach(letter => {
-    const canvas = document.getElementById('canvas' + letter);
-    const ctx = canvas.getContext('2d');
-    ctx.strokeStyle = 'white'; ctx.lineWidth = 3;
-    let drawing = false;
+        // Optimized Drawing Logic
+        letters.forEach(letter => {
+            const canvas = document.getElementById('canvas' + letter);
+            const ctx = canvas.getContext('2d');
+            ctx.strokeStyle = 'white'; ctx.lineWidth = 3;
+            let drawing = false;
 
-    // Helper to get coordinates
-    const getPos = (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        return { x: clientX - rect.left, y: clientY - rect.top };
-    };
+            const getPos = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return { x: clientX - rect.left, y: clientY - rect.top };
+            };
 
-    // Mouse Events
-    canvas.onmousedown = (e) => { drawing = true; ctx.beginPath(); };
-    canvas.onmouseup = () => drawing = false;
-    canvas.onmousemove = (e) => {
-        if (!drawing) return;
-        const pos = getPos(e);
-        ctx.lineTo(pos.x, pos.y); ctx.stroke();
-    };
+            const start = (e) => { drawing = true; ctx.beginPath(); };
+            const end = () => drawing = false;
+            const move = (e) => {
+                if (!drawing) return;
+                if (e.cancelable) e.preventDefault();
+                const pos = getPos(e);
+                ctx.lineTo(pos.x, pos.y); ctx.stroke();
+            };
 
-    // Touch Events (This is the magic fix for your finger)
-    canvas.ontouchstart = (e) => { e.preventDefault(); drawing = true; ctx.beginPath(); };
-    canvas.ontouchend = () => drawing = false;
-    canvas.ontouchmove = (e) => {
-        if (!drawing) return;
-        e.preventDefault(); // Prevents the screen from scrolling while you draw
-        const pos = getPos(e);
-        ctx.lineTo(pos.x, pos.y); ctx.stroke();
-    };
-});
+            canvas.addEventListener('mousedown', start);
+            canvas.addEventListener('mouseup', end);
+            canvas.addEventListener('mousemove', move);
+            canvas.addEventListener('touchstart', start, {passive: false});
+            canvas.addEventListener('touchend', end);
+            canvas.addEventListener('touchmove', move, {passive: false});
+        });
+
         // Supabase Save Function
         async function saveAll() {
             const code = document.getElementById('cipherCode').value;
             let cipherData = {};
             letters.forEach(l => cipherData[l] = document.getElementById('canvas' + l).toDataURL());
-            const { error } = await mySupabase.from('ciphers').upsert([{ code: code, alphabet_data: cipherData }]);
+            const { error } = await mySupabase.from('codelock').upsert([{ code: code, alphabet_data: cipherData }]);
             if (error) alert("Error: " + error.message); else alert("Saved!");
         }
 
         // Supabase Load Function
         async function loadAll() {
             const code = document.getElementById('cipherCode').value;
-            const { data } = await mySupabase.from('ciphers').select('alphabet_data').eq('code', code).single();
+            const { data } = await mySupabase.from('codelock').select('alphabet_data').eq('code', code).single();
             if (data) {
                 letters.forEach(l => {
                     const canvas = document.getElementById('canvas' + l);
