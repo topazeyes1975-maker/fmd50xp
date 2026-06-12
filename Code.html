@@ -2,11 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Cipher Codec Test</title>
+    <title>Cipher Codec</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { background: #1a0b2e; color: white; font-family: sans-serif; padding: 20px; }
         #alphabet-container { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
-        canvas { border: 1px solid #7c4dff; background: #2d1b4e; }
+        canvas { border: 1px solid #7c4dff; background: #2d1b4e; cursor: crosshair; }
+        .controls { margin-top: 30px; border-top: 2px solid #7c4dff; padding-top: 20px; }
+        textarea { resize: none; width: 100%; height: 100px; }
     </style>
 </head>
 <body>
@@ -14,15 +17,83 @@
     <h1>Cipher Codec</h1>
     <div id="alphabet-container"></div>
 
+    <div class="controls">
+        <input type="text" id="cipherCode" placeholder="Enter 6-digit code">
+        <button onclick="saveAll()">Save to Cloud</button>
+        <button onclick="loadAll()">Load from Cloud</button>
+        <hr>
+        <h3>Translator</h3>
+        <textarea id="messageInput" placeholder="Type text here..."></textarea>
+        <button onclick="encodeMessage()">Encode</button>
+        <div id="resultArea" style="margin-top:10px; border:1px solid #7c4dff; padding:10px; min-height: 50px;"></div>
+    </div>
+
     <script>
+        // --- 1. FILL THESE IN WITH YOUR SUPABASE SETTINGS ---
+        // Ensure the URL is just the base, like: https://your-id.supabase.co
+        const supabaseUrl = 'https://jhgcyiswxubqzqtbhain.supabase.com'; 
+        const supabaseKey = 'sb_publishable_0j0PaDVT_pXMJawcf2W8fQ_Lz9B4KoW'; 
+          const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
         const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
         const container = document.getElementById('alphabet-container');
 
+        // Build the drawing boxes
         letters.forEach(letter => {
             container.innerHTML += `<div><p>${letter}</p><canvas id="canvas${letter}" width="80" height="80"></canvas></div>`;
         });
-        
-        console.log("Canvas boxes should now be built!");
+
+        // Drawing Logic
+        letters.forEach(letter => {
+            const canvas = document.getElementById('canvas' + letter);
+            const ctx = canvas.getContext('2d');
+            ctx.strokeStyle = 'white'; ctx.lineWidth = 3;
+            let drawing = false;
+            canvas.onmousedown = () => { drawing = true; ctx.beginPath(); };
+            canvas.onmouseup = () => drawing = false;
+            canvas.onmousemove = (e) => {
+                if (!drawing) return;
+                const rect = canvas.getBoundingClientRect();
+                ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+                ctx.stroke();
+            };
+        });
+
+        // Supabase Save Function
+        async function saveAll() {
+            const code = document.getElementById('cipherCode').value;
+            let cipherData = {};
+            letters.forEach(l => cipherData[l] = document.getElementById('canvas' + l).toDataURL());
+            const { error } = await supabase.from('ciphers').upsert([{ code: code, alphabet_data: cipherData }]);
+            if (error) alert("Error: " + error.message); else alert("Saved!");
+        }
+
+        // Supabase Load Function
+        async function loadAll() {
+            const code = document.getElementById('cipherCode').value;
+            const { data } = await supabase.from('ciphers').select('alphabet_data').eq('code', code).single();
+            if (data) {
+                letters.forEach(l => {
+                    const canvas = document.getElementById('canvas' + l);
+                    const ctx = canvas.getContext('2d');
+                    const img = new Image();
+                    img.onload = () => { ctx.clearRect(0,0,80,80); ctx.drawImage(img, 0, 0); };
+                    img.src = data.alphabet_data[l];
+                });
+            } else { alert("Code not found."); }
+        }
+
+        // Translation Logic
+        function encodeMessage() {
+            const input = document.getElementById('messageInput').value.toUpperCase();
+            let html = "";
+            for (let char of input) {
+                if (letters.includes(char)) {
+                    html += `<img src="${document.getElementById('canvas' + char).toDataURL()}" width="30"> `;
+                }
+            }
+            document.getElementById('resultArea').innerHTML = html;
+        }
     </script>
 </body>
 </html>
