@@ -44,22 +44,40 @@
             container.innerHTML += `<div><p>${letter}</p><canvas id="canvas${letter}" width="80" height="80"></canvas></div>`;
         });
 
-        // Drawing Logic
-        letters.forEach(letter => {
-            const canvas = document.getElementById('canvas' + letter);
-            const ctx = canvas.getContext('2d');
-            ctx.strokeStyle = 'white'; ctx.lineWidth = 3;
-            let drawing = false;
-            canvas.onmousedown = () => { drawing = true; ctx.beginPath(); };
-            canvas.onmouseup = () => drawing = false;
-            canvas.onmousemove = (e) => {
-                if (!drawing) return;
-                const rect = canvas.getBoundingClientRect();
-                ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-                ctx.stroke();
-            };
-        });
+        // Updated Drawing Logic for both Mouse and Touch
+letters.forEach(letter => {
+    const canvas = document.getElementById('canvas' + letter);
+    const ctx = canvas.getContext('2d');
+    ctx.strokeStyle = 'white'; ctx.lineWidth = 3;
+    let drawing = false;
 
+    // Helper to get coordinates
+    const getPos = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - rect.left, y: clientY - rect.top };
+    };
+
+    // Mouse Events
+    canvas.onmousedown = (e) => { drawing = true; ctx.beginPath(); };
+    canvas.onmouseup = () => drawing = false;
+    canvas.onmousemove = (e) => {
+        if (!drawing) return;
+        const pos = getPos(e);
+        ctx.lineTo(pos.x, pos.y); ctx.stroke();
+    };
+
+    // Touch Events (This is the magic fix for your finger)
+    canvas.ontouchstart = (e) => { e.preventDefault(); drawing = true; ctx.beginPath(); };
+    canvas.ontouchend = () => drawing = false;
+    canvas.ontouchmove = (e) => {
+        if (!drawing) return;
+        e.preventDefault(); // Prevents the screen from scrolling while you draw
+        const pos = getPos(e);
+        ctx.lineTo(pos.x, pos.y); ctx.stroke();
+    };
+});
         // Supabase Save Function
         async function saveAll() {
             const code = document.getElementById('cipherCode').value;
