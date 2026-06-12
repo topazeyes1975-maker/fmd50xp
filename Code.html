@@ -82,7 +82,36 @@
             const { error } = await mySupabase.from('codelock').upsert([{ code: code, alphabet_data: cipherData }]);
             if (error) alert("Error: " + error.message); else alert("Saved!");
         }
+async function deleteCode() {
+    // 1. Get the code from the input box
+    const codeToDelete = document.getElementById('cipherCode').value;
 
+    // 2. Add a safety check: make sure they actually typed something
+    if (!codeToDelete) {
+        alert("Please enter the code you want to delete first!");
+        return;
+    }
+
+    // 3. Ask for final confirmation
+    if (!confirm("Are you sure you want to permanently delete code " + codeToDelete + "?")) {
+        return;
+    }
+    
+    // 4. Send the request to Supabase to delete ONLY that specific code
+    const { error } = await mySupabase
+        .from('codelock')
+        .delete()
+        .eq('code', codeToDelete);
+        
+    if (error) {
+        alert("Error: " + error.message);
+    } else {
+        alert("Success! Code " + codeToDelete + " has been deleted.");
+        // Optional: Clear the input box after successful deletion
+        document.getElementById('cipherCode').value = '';
+    }
+}
+        
         // Supabase Load Function
         async function loadAll() {
             const code = document.getElementById('cipherCode').value;
