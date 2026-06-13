@@ -71,19 +71,23 @@
             alert("Loaded!");
         } else { alert("Code not found."); }
     }
-
-    function visualizeWord() {
+function visualizeWord() {
     const word = document.getElementById('messageInput').value.toUpperCase();
     const viz = document.getElementById('messageVisualizer');
     viz.innerHTML = "";
     
-    // Create the master export canvas
+    // Each box is 60x60
+    const boxSize = 60;
+    const padding = 5; // <--- The "buffer zone" around your drawing
+    
     const exportCanvas = document.createElement('canvas');
     exportCanvas.id = "exportCanvas";
-    exportCanvas.width = word.length * 60; 
-    exportCanvas.height = 70;
+    exportCanvas.width = word.length * boxSize; 
+    exportCanvas.height = boxSize;
     const exportCtx = exportCanvas.getContext('2d');
-    exportCtx.fillStyle = '#1a0b2e'; 
+    
+    // Background
+    exportCtx.fillStyle = 'black'; 
     exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
     
     let foundAny = false;
@@ -96,22 +100,36 @@
         if (sourceCanvas) {
             foundAny = true;
             
-            // 1. Add to visualizer UI
+            // 1. Draw the Black Square container
+            exportCtx.fillStyle = 'black';
+            exportCtx.fillRect(xPos, 0, boxSize, boxSize);
+            
+            // 2. Draw the White Border
+            exportCtx.strokeStyle = 'white';
+            exportCtx.lineWidth = 2;
+            exportCtx.strokeRect(xPos, 0, boxSize, boxSize);
+            
+            // 3. Draw the symbol WITH PADDING 
+            // We shift it by 'padding' and scale it down slightly so it doesn't touch the edges
+            exportCtx.drawImage(
+                sourceCanvas, 
+                xPos + padding, 5 + padding, 
+                boxSize - (padding * 2), boxSize - (padding * 2)
+            );
+            
+            // UI Visualizer
             const displayCanvas = document.createElement('canvas');
-            displayCanvas.width = 60;
-            displayCanvas.height = 60;
-            displayCanvas.getContext('2d').drawImage(sourceCanvas, 0, 0);
+            displayCanvas.width = boxSize;
+            displayCanvas.height = boxSize;
+            const displayCtx = displayCanvas.getContext('2d');
+            displayCtx.fillStyle = 'black';
+            displayCtx.fillRect(0, 0, boxSize, boxSize);
+            displayCtx.strokeStyle = 'white';
+            displayCtx.strokeRect(0, 0, boxSize, boxSize);
+            displayCtx.drawImage(sourceCanvas, padding, padding, boxSize-(padding*2), boxSize-(padding*2));
             viz.appendChild(displayCanvas);
             
-            // 2. Draw border on master canvas
-            exportCtx.strokeStyle = '#7c4dff'; // Same color as your app borders
-            exportCtx.lineWidth = 2;
-            exportCtx.strokeRect(xPos, 5, 60, 60); // Draw the box
-            
-            // 3. Draw the symbol inside the box
-            exportCtx.drawImage(sourceCanvas, xPos, 5);
-            
-            xPos += 60; 
+            xPos += boxSize; 
         }
     }
     
@@ -120,13 +138,13 @@
         btn.innerText = "Download Visual Key";
         btn.onclick = downloadVisualKey;
         viz.appendChild(btn);
-        
         document.body.appendChild(exportCanvas);
         exportCanvas.style.display = "none";
     } else {
         alert("Alphabet not loaded! Click 'Load from Cloud' first.");
     }
 }
+
 
 
     function downloadVisualKey() {
