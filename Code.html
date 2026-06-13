@@ -80,16 +80,14 @@
     // Create the master export canvas
     const exportCanvas = document.createElement('canvas');
     exportCanvas.id = "exportCanvas";
-    exportCanvas.width = word.length * 60; // Set width based on word length
+    exportCanvas.width = word.length * 60; 
     exportCanvas.height = 70;
     const exportCtx = exportCanvas.getContext('2d');
     exportCtx.fillStyle = '#1a0b2e'; 
     exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-    exportCtx.strokeStyle = 'white'; 
-    exportCtx.lineWidth = 3;
-
+    
     let foundAny = false;
-    let xPos = 0; // <--- THIS IS THE KEY: We start at the left edge
+    let xPos = 0; 
 
     for (let i = 0; i < word.length; i++) {
         const char = word[i];
@@ -98,17 +96,21 @@
         if (sourceCanvas) {
             foundAny = true;
             
-            // 1. Add to visualizer UI (this part you said was working!)
+            // 1. Add to visualizer UI
             const displayCanvas = document.createElement('canvas');
             displayCanvas.width = 60;
             displayCanvas.height = 60;
             displayCanvas.getContext('2d').drawImage(sourceCanvas, 0, 0);
             viz.appendChild(displayCanvas);
             
-            // 2. Draw onto master export canvas at the current xPos
+            // 2. Draw border on master canvas
+            exportCtx.strokeStyle = '#7c4dff'; // Same color as your app borders
+            exportCtx.lineWidth = 2;
+            exportCtx.strokeRect(xPos, 5, 60, 60); // Draw the box
+            
+            // 3. Draw the symbol inside the box
             exportCtx.drawImage(sourceCanvas, xPos, 5);
             
-            // 3. Move the stamp to the right for the next letter
             xPos += 60; 
         }
     }
