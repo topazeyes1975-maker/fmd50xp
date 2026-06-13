@@ -42,7 +42,37 @@
         container.innerHTML += `<div><p>${letter}</p><canvas id="canvas${letter}"></canvas></div>`;
         drawingPaths[letter] = [];
     });
+// --- ADD THIS TO THE VERY TOP OF YOUR <SCRIPT> ---
 
+function setupCanvas(canvas) {
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+
+    canvas.onmousedown = (e) => { drawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); };
+    canvas.onmousemove = (e) => { if(drawing) { ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); } };
+    canvas.onmouseup = () => { drawing = false; };
+    
+    // Mobile Touch Support
+    canvas.ontouchstart = (e) => { drawing = true; e.preventDefault(); };
+    canvas.ontouchmove = (e) => { 
+        if(drawing) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.touches[0].clientX - rect.left;
+            const y = e.touches[0].clientY - rect.top;
+            ctx.lineTo(x, y); ctx.stroke();
+        }
+    };
+    canvas.ontouchend = () => { drawing = false; };
+}
+
+// Then update your loop to initialize the pens:
+letters.forEach(letter => {
+    container.innerHTML += `<div><p>${letter}</p><canvas id="canvas${letter}"></canvas></div>`;
+    drawingPaths[letter] = [];
+    // Initialize the pen!
+    setupCanvas(document.getElementById('canvas' + letter)); 
+});
+    
     function drawPathsToCtx(ctx, paths) {
         if (!paths || paths.length === 0) return;
         ctx.beginPath();
