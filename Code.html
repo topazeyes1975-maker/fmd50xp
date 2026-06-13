@@ -31,21 +31,21 @@
     </div>
 
     <script>
-        // --- 1. FILL THESE IN ---
         const supabaseUrl = 'https://jhgcyiswxubqzqtbhain.supabase.co'; 
         const supabaseKey = 'sb_publishable_0j0PaDVT_pXMJawcf2W8fQ_Lz9B4KoW'; 
-        
         const mySupabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
         const container = document.getElementById('alphabet-container');
+        let drawingPaths = {};
 
-        // Build the drawing boxes
+        // Build the drawing boxes and initialize path storage
         letters.forEach(letter => {
             container.innerHTML += `<div><p>${letter}</p><canvas id="canvas${letter}" width="80" height="80"></canvas></div>`;
+            drawingPaths[letter] = [];
         });
 
-        // Optimized Drawing Logic
+        // Drawing Logic with Path Recording
         letters.forEach(letter => {
             const canvas = document.getElementById('canvas' + letter);
             const ctx = canvas.getContext('2d');
@@ -59,13 +59,14 @@
                 return { x: clientX - rect.left, y: clientY - rect.top };
             };
 
-            const start = (e) => { drawing = true; ctx.beginPath(); };
+            const start = (e) => { drawing = true; ctx.beginPath(); ctx.moveTo(getPos(e).x, getPos(e).y); };
             const end = () => drawing = false;
             const move = (e) => {
                 if (!drawing) return;
                 if (e.cancelable) e.preventDefault();
                 const pos = getPos(e);
                 ctx.lineTo(pos.x, pos.y); ctx.stroke();
+                drawingPaths[letter].push({x: pos.x, y: pos.y});
             };
 
             canvas.addEventListener('mousedown', start);
@@ -76,79 +77,46 @@
             canvas.addEventListener('touchmove', move, {passive: false});
         });
 
-        async function loadAll() {
-    const code = document.getElementById('cipherCode').value;
-    const { data } = await mySupabase.from('codelock').select('alphabet_data').eq('code', code).single();
-    
-    if (data) {
-        // Update our local paths with what we got from the cloud
-        drawingPaths = data.alphabet_data;
-        
-        // Loop through each letter and draw its paths
-        letters.forEach(l => {
-            if (drawingPaths[l]) {
-                decodeDrawing(l, JSON.stringify(drawingPaths[l]));
-            }
-        });
-    } else { alert("Code not found."); }
-}
+        // Precise Decoder
+        function decodeDrawing(letter, paths) {
+            const canvas = document.getElementById('canvas' + letter);
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            paths.forEach((p, index) => {
+                if (index === 0) ctx.moveTo(p.x, p.y);
+                else ctx.lineTo(p.x, p.y);
+            });
+            ctx.stroke();
+        }
 
+        async function saveAll() {
+            const code = document.getElementById('cipherCode').value;
+            const { error } = await mySupabase.from('codelock').upsert([{ code: code, alphabet_data: drawingPaths }]);
+            if (error) alert("Error: " + error.message); else alert("Saved!");
+        }
 
-async function deleteCode() {
-    // 1. Get the code from the input box
-    const codeToDelete = document.getElementById('cipherCode').value;
-
-    // 2. Add a safety check: make sure they actually typed something
-    if (!codeToDelete) {
-        alert("Please enter the code you want to delete first!");
-        return;
-    }
-
-    // 3. Ask for final confirmation
-    if (!confirm("Are you sure you want to permanently delete code " + codeToDelete + "?")) {
-        return;
-    }
-    
-    // 4. Send the request to Supabase to delete ONLY that specific code
-    const { error } = await mySupabase
-        .from('codelock')
-        .delete()
-        .eq('code', codeToDelete);
-        
-    if (error) {
-        alert("Error: " + error.message);
-    } else {
-        alert("Success! Code " + codeToDelete + " has been deleted.");
-        // Optional: Clear the input box after successful deletion
-        document.getElementById('cipherCode').value = '';
-    }
-}
-        
-        // Supabase Load Function
         async function loadAll() {
             const code = document.getElementById('cipherCode').value;
             const { data } = await mySupabase.from('codelock').select('alphabet_data').eq('code', code).single();
             if (data) {
-                letters.forEach(l => {
-                    const canvas = document.getElementById('canvas' + l);
-                    const ctx = canvas.getContext('2d');
-                    const img = new Image();
-                    img.onload = () => { ctx.clearRect(0,0,80,80); ctx.drawImage(img, 0, 0); };
-                    img.src = data.alphabet_data[l];
-                });
+                drawingPaths = data.alphabet_data;
+                letters.forEach(l => { if (drawingPaths[l]) decodeDrawing(l, drawingPaths[l]); });
             } else { alert("Code not found."); }
         }
 
-        // Translation Logic
+        async function deleteCode() {
+            const codeToDelete = document.getElementById('cipherCode').value;
+            if (!codeToDelete) return;
+            if (!confirm("Delete code " + codeToDelete + "?")) return;
+            const { error } = await mySupabase.from('codelock').delete().eq('code', codeToDelete);
+            if (error) alert("Error: " + error.message); else alert("Deleted!");
+        }
+
         function encodeMessage() {
-            const input = document.getElementById('messageInput').value.toUpperCase();
-            let html = "";
-            for (let char of input) {
-                if (letters.includes(char)) {
-                    html += `<img src="${document.getElementById('canvas' + char).toDataURL()}" width="30"> `;
-                }
-            }
-            document.getElementById('resultArea').innerHTML = html;
+            // Note: This needs the image-based URLs for the 'Translator' section 
+            // but the drawing logic is now path-based. 
+            alert("This translator currently uses image snapshots. We can update this next!");
         }
     </script>
 </body>
