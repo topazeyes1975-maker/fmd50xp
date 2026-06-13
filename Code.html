@@ -72,45 +72,52 @@
             } else { alert("Code not found."); }
         }
 
-        function visualizeWord() {
-            const word = document.getElementById('messageInput').value.toUpperCase();
-            const viz = document.getElementById('messageVisualizer');
-            viz.innerHTML = "";
-            
-            const exportCanvas = document.createElement('canvas');
-            exportCanvas.id = "exportCanvas";
-            exportCanvas.width = word.length * 65;
-            exportCanvas.height = 70;
-            const exportCtx = exportCanvas.getContext('2d');
-            exportCtx.strokeStyle = 'white'; 
-            exportCtx.lineWidth = 3;
+function visualizeWord() {
+    const word = document.getElementById('messageInput').value.toUpperCase();
+    const viz = document.getElementById('messageVisualizer');
+    viz.innerHTML = "";
+    
+    // Create the master export canvas
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.id = "exportCanvas";
+    exportCanvas.width = word.length * 65;
+    exportCanvas.height = 70;
+    const exportCtx = exportCanvas.getContext('2d');
+    exportCtx.fillStyle = '#2d1b4e'; // Background color
+    exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+    exportCtx.strokeStyle = 'white'; 
+    exportCtx.lineWidth = 3;
 
-            let foundAny = false;
+    let foundAny = false;
 
-            for (let i = 0; i < word.length; i++) {
-                const char = word[i];
-                if (drawingPaths[char] && drawingPaths[char].length > 0) {
-                    foundAny = true;
-                    const canvas = document.createElement('canvas');
-                    canvas.width = 60; canvas.height = 60;
-                    const ctx = canvas.getContext('2d');
-                    ctx.strokeStyle = 'white'; 
-                    ctx.lineWidth = 3;
-                    drawPathsToCtx(ctx, drawingPaths[char]);
-                    viz.appendChild(canvas);
-                    
-                    const shiftedPaths = drawingPaths[char].map(p => ({x: p.x + (i * 65), y: p.y + 5}));
-                    drawPathsToCtx(exportCtx, shiftedPaths);
-                }
-            }
+    for (let i = 0; i < word.length; i++) {
+        const char = word[i];
+        // FIND THE CANVAS ON THE SCREEN THAT MATCHES THE LETTER
+        const canvas = document.getElementById('canvas' + char);
+        
+        if (canvas) {
+            foundAny = true;
             
-            if (foundAny) {
-                viz.innerHTML += `<br><button onclick="downloadVisualKey()">Download Visual Key</button>`;
-            } else {
-                alert("No drawings found. Did you load your alphabet?");
-            }
+            // 1. Add a copy of this letter's canvas to the visualizer
+            const displayCanvas = document.createElement('canvas');
+            displayCanvas.width = 60;
+            displayCanvas.height = 60;
+            const displayCtx = displayCanvas.getContext('2d');
+            displayCtx.drawImage(canvas, 0, 0); // Copy the drawing!
+            viz.appendChild(displayCanvas);
+            
+            // 2. Add to master export canvas
+            exportCtx.drawImage(canvas, i * 65, 5);
         }
-
+    }
+    
+    if (foundAny) {
+        viz.innerHTML += `<br><button onclick="downloadVisualKey()">Download Visual Key</button>`;
+        window.currentExportCanvas = exportCanvas;
+    } else {
+        alert("Make sure you have your alphabet drawn on the screen first!");
+    }
+}
         function downloadVisualKey() {
             const canvas = document.getElementById('exportCanvas');
             const link = document.createElement('a');
