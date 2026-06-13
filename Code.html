@@ -30,7 +30,7 @@
     </div>
 
     <script>
-    const supabaseUrl = 'https://jhgcyiswxubqzqtbhain.supabase.co'; 
+        const supabaseUrl = 'https://jhgcyiswxubqzqtbhain.supabase.co'; 
     const supabaseKey = 'sb_publishable_0j0PaDVT_pXMJawcf2W8fQ_Lz9B4KoW'; 
     const mySupabase = supabase.createClient(supabaseUrl, supabaseKey);
 
@@ -79,7 +79,7 @@
         
         const exportCanvas = document.createElement('canvas');
         exportCanvas.id = "exportCanvas";
-        exportCanvas.width = Math.max(word.length * 65, 100);
+        exportCanvas.width = word.length * 65; 
         exportCanvas.height = 70;
         const exportCtx = exportCanvas.getContext('2d');
         exportCtx.fillStyle = '#1a0b2e';
@@ -88,46 +88,49 @@
         exportCtx.lineWidth = 3;
 
         let foundAny = false;
+        let horizontalOffset = 0;
 
         for (let i = 0; i < word.length; i++) {
             const char = word[i];
             const sourceCanvas = document.getElementById('canvas' + char);
+            
             if (sourceCanvas) {
                 foundAny = true;
+                
+                // Add to visualizer UI
                 const displayCanvas = document.createElement('canvas');
                 displayCanvas.width = 60;
                 displayCanvas.height = 60;
                 displayCanvas.getContext('2d').drawImage(sourceCanvas, 0, 0);
                 viz.appendChild(displayCanvas);
-                exportCtx.drawImage(sourceCanvas, i * 65, 5);
+                
+                // Draw onto master export canvas
+                exportCtx.drawImage(sourceCanvas, horizontalOffset, 5);
+                horizontalOffset += 60; 
             }
         }
         
         if (foundAny) {
-            // Add the button
             const btn = document.createElement('button');
             btn.innerText = "Download Visual Key";
             btn.onclick = downloadVisualKey;
             viz.appendChild(btn);
-            // Append the hidden canvas to the body so it can be found
             document.body.appendChild(exportCanvas);
             exportCanvas.style.display = "none";
         } else {
-            alert("Alphabet not loaded!");
+            alert("Alphabet not loaded! Click 'Load from Cloud' first.");
         }
     }
 
     function downloadVisualKey() {
         const canvas = document.getElementById('exportCanvas');
-        if (!canvas) {
-            alert("Visual key not found. Please click 'Generate' first.");
-            return;
-        }
+        if (!canvas) return;
         const link = document.createElement('a');
         link.download = "secret-key.png";
         link.href = canvas.toDataURL("image/png");
         link.click();
     }
+
 </script>
 
 </body>
