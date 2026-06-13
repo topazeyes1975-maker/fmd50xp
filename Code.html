@@ -76,14 +76,24 @@
             canvas.addEventListener('touchmove', move, {passive: false});
         });
 
-        // Supabase Save Function
-        async function saveAll() {
-            const code = document.getElementById('cipherCode').value;
-            let cipherData = {};
-            letters.forEach(l => cipherData[l] = document.getElementById('canvas' + l).toDataURL());
-            const { error } = await mySupabase.from('codelock').upsert([{ code: code, alphabet_data: cipherData }]);
-            if (error) alert("Error: " + error.message); else alert("Saved!");
-        }
+        async function loadAll() {
+    const code = document.getElementById('cipherCode').value;
+    const { data } = await mySupabase.from('codelock').select('alphabet_data').eq('code', code).single();
+    
+    if (data) {
+        // Update our local paths with what we got from the cloud
+        drawingPaths = data.alphabet_data;
+        
+        // Loop through each letter and draw its paths
+        letters.forEach(l => {
+            if (drawingPaths[l]) {
+                decodeDrawing(l, JSON.stringify(drawingPaths[l]));
+            }
+        });
+    } else { alert("Code not found."); }
+}
+
+
 async function deleteCode() {
     // 1. Get the code from the input box
     const codeToDelete = document.getElementById('cipherCode').value;
