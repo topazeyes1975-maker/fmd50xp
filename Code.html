@@ -7,9 +7,9 @@
     <style>
         body { background: #1a0b2e; color: white; font-family: sans-serif; padding: 20px; }
         #alphabet-container { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
-        canvas { border: 1px solid #7c4dff; background: #2d1b4e; cursor: crosshair; touch-action: none; }
+        canvas { border: 1px solid #7c4dff; background: #2d1b4e; cursor: crosshair; touch-action: none; width: 60px; height: 60px; }
         .controls { margin-top: 30px; border-top: 2px solid #7c4dff; padding-top: 20px; }
-        textarea { resize: none; width: 100%; height: 100px; }
+        textarea { resize: none; width: 100%; height: 60px; margin: 10px 0; }
     </style>
 </head>
 <body>
@@ -19,15 +19,17 @@
 
     <div class="controls">
         <input type="text" id="cipherCode" placeholder="Enter 6-digit code">
-        <button onclick="saveAll()">Save to Cloud</button>
-        <button onclick="loadAll()">Load from Cloud</button>
-        <button onclick="deleteCode()">Delete Code</button>
+        <button onclick="saveAll()">Save Alphabet</button>
+        <button onclick="loadAll()">Load Alphabet</button>
         
         <hr>
-        <h3>Translator</h3>
-        <textarea id="messageInput" placeholder="Type text here..."></textarea>
-        <button onclick="encodeMessage()">Encode</button>
-        <div id="resultArea" style="margin-top:10px; border:1px solid #7c4dff; padding:10px; min-height: 50px;"></div>
+        <h3>Message Transformer</h3>
+        <textarea id="messageInput" placeholder="Type word to encode..."></textarea>
+        <button onclick="encodeWord()">Encode Word</button>
+        
+        <textarea id="outputKey" placeholder="Copy/Paste your encoded drawing data here..."></textarea>
+        <button onclick="decodeWord()">Decode Word</button>
+        <div id="resultArea" style="margin-top:10px; border:1px solid #7c4dff; padding:10px; font-size: 20px;"></div>
     </div>
 
     <script>
@@ -39,13 +41,13 @@
         const container = document.getElementById('alphabet-container');
         let drawingPaths = {};
 
-        // Build the drawing boxes and initialize path storage
+        // Setup Alphabet Canvases
         letters.forEach(letter => {
-            container.innerHTML += `<div><p>${letter}</p><canvas id="canvas${letter}" width="80" height="80"></canvas></div>`;
+            container.innerHTML += `<div><p>${letter}</p><canvas id="canvas${letter}"></canvas></div>`;
             drawingPaths[letter] = [];
         });
 
-        // Drawing Logic with Path Recording
+        // Initialize drawing logic for alphabet
         letters.forEach(letter => {
             const canvas = document.getElementById('canvas' + letter);
             const ctx = canvas.getContext('2d');
@@ -77,7 +79,6 @@
             canvas.addEventListener('touchmove', move, {passive: false});
         });
 
-        // Precise Decoder
         function decodeDrawing(letter, paths) {
             const canvas = document.getElementById('canvas' + letter);
             const ctx = canvas.getContext('2d');
@@ -90,36 +91,46 @@
             ctx.stroke();
         }
 
+        // Database Functions
         async function saveAll() {
             const code = document.getElementById('cipherCode').value;
-            // Using 'Code' with capital C to match your database column
             const { error } = await mySupabase.from('codelock').upsert([{ Code: code, alphabet_data: drawingPaths }]);
-            if (error) alert("Error: " + error.message); else alert("Saved!");
+            if (error) alert("Error: " + error.message); else alert("Alphabet Saved!");
         }
 
         async function loadAll() {
             const code = document.getElementById('cipherCode').value;
-            // Using 'Code' with capital C
             const { data } = await mySupabase.from('codelock').select('alphabet_data').eq('Code', code).single();
             if (data) {
                 drawingPaths = data.alphabet_data;
                 letters.forEach(l => { if (drawingPaths[l]) decodeDrawing(l, drawingPaths[l]); });
+                alert("Alphabet Loaded!");
             } else { alert("Code not found."); }
         }
 
-        async function deleteCode() {
-            const codeToDelete = document.getElementById('cipherCode').value;
-            if (!codeToDelete) return;
-            if (!confirm("Delete code " + codeToDelete + "?")) return;
-            // Using 'Code' with capital C
-            const { error } = await mySupabase.from('codelock').delete().eq('Code', codeToDelete);
-            if (error) alert("Error: " + error.message); else alert("Deleted!");
+        // Encoder / Decoder
+        function encodeWord() {
+            const word = document.getElementById('messageInput').value.toUpperCase();
+            let encodedData = [];
+            for (let char of word) {
+                if (drawingPaths[char]) {
+                    encodedData.push({ letter: char, paths: drawingPaths[char] });
+                }
+            }
+            document.getElementById('outputKey').value = JSON.stringify(encodedData);
         }
 
-        function encodeMessage() {
-            alert("This translator currently uses image snapshots. We can update this next!");
+        function decodeWord() {
+            const rawData = document.getElementById('outputKey').value;
+            try {
+                const encodedData = JSON.parse(rawData);
+                let result = "";
+                encodedData.forEach(item => { result += item.letter; });
+                document.getElementById('resultArea').innerText = "Decoded: " + result;
+            } catch(e) {
+                alert("Invalid code format!");
+            }
         }
     </script>
 </body>
 </html>
-
