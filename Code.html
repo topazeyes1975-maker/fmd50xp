@@ -109,28 +109,35 @@
         }
 
         // Encoder / Decoder
-        function encodeWord() {
-            const word = document.getElementById('messageInput').value.toUpperCase();
-            let encodedData = [];
-            for (let char of word) {
-                if (drawingPaths[char]) {
-                    encodedData.push({ letter: char, paths: drawingPaths[char] });
-                }
-            }
-            document.getElementById('outputKey').value = JSON.stringify(encodedData);
-        }
-
         function decodeWord() {
-            const rawData = document.getElementById('outputKey').value;
-            try {
-                const encodedData = JSON.parse(rawData);
-                let result = "";
-                encodedData.forEach(item => { result += item.letter; });
-                document.getElementById('resultArea').innerText = "Decoded: " + result;
-            } catch(e) {
-                alert("Invalid code format!");
+    const rawData = document.getElementById('outputKey').value;
+    try {
+        const encodedData = JSON.parse(rawData);
+        let result = "";
+        
+        // Clear the result area first
+        document.getElementById('resultArea').innerHTML = "";
+        
+        encodedData.forEach(item => {
+            // 1. Add the letter to our text result
+            result += item.letter;
+            
+            // 2. IMPORTANT: Draw the actual symbol back onto the screen
+            // We use the same 'decodeDrawing' logic you use for the alphabet
+            if (item.paths) {
+                // This creates a visual representation of the symbol
+                const canvasId = 'canvas' + item.letter;
+                // If you want to show it in the results, we can draw it here!
+                decodeDrawing(item.letter, item.paths);
             }
-        }
+        });
+        
+        document.getElementById('resultArea').innerText = "Decoded: " + result;
+    } catch(e) {
+        alert("Invalid code format! Make sure you pasted the full string.");
+    }
+}
+
     </script>
 </body>
 </html>
