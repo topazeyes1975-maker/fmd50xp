@@ -92,13 +92,15 @@
 
         async function saveAll() {
             const code = document.getElementById('cipherCode').value;
-            const { error } = await mySupabase.from('codelock').upsert([{ code: code, alphabet_data: drawingPaths }]);
+            // Using 'Code' with capital C to match your database column
+            const { error } = await mySupabase.from('codelock').upsert([{ Code: code, alphabet_data: drawingPaths }]);
             if (error) alert("Error: " + error.message); else alert("Saved!");
         }
 
         async function loadAll() {
             const code = document.getElementById('cipherCode').value;
-            const { data } = await mySupabase.from('codelock').select('alphabet_data').eq('code', code).single();
+            // Using 'Code' with capital C
+            const { data } = await mySupabase.from('codelock').select('alphabet_data').eq('Code', code).single();
             if (data) {
                 drawingPaths = data.alphabet_data;
                 letters.forEach(l => { if (drawingPaths[l]) decodeDrawing(l, drawingPaths[l]); });
@@ -109,15 +111,15 @@
             const codeToDelete = document.getElementById('cipherCode').value;
             if (!codeToDelete) return;
             if (!confirm("Delete code " + codeToDelete + "?")) return;
-            const { error } = await mySupabase.from('codelock').delete().eq('code', codeToDelete);
+            // Using 'Code' with capital C
+            const { error } = await mySupabase.from('codelock').delete().eq('Code', codeToDelete);
             if (error) alert("Error: " + error.message); else alert("Deleted!");
         }
 
         function encodeMessage() {
-            // Note: This needs the image-based URLs for the 'Translator' section 
-            // but the drawing logic is now path-based. 
             alert("This translator currently uses image snapshots. We can update this next!");
         }
     </script>
 </body>
 </html>
+
