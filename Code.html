@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Cipher Visualizer</title>
+    <title>Cipher Codec</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { background: #1a0b2e; color: white; font-family: sans-serif; padding: 20px; }
@@ -14,13 +14,13 @@
 </head>
 <body>
 
-    <h1>Cipher Visualizer</h1>
+    <h1>Cipher Codec</h1>
     <div id="alphabet-container"></div>
 
     <div class="controls">
         <input type="text" id="cipherCode" placeholder="Enter 6-digit code">
-        <button onclick="saveAll()">Save Alphabet</button>
-        <button onclick="loadAll()">Load Alphabet</button>
+        <button onclick="saveAll()">Save to Cloud</button>
+        <button onclick="loadAll()">Load from Cloud</button>
         
         <hr>
         <h3>Message Visualizer</h3>
@@ -38,25 +38,23 @@
         const container = document.getElementById('alphabet-container');
         let drawingPaths = {};
 
-        // Setup Alphabet
         letters.forEach(letter => {
             container.innerHTML += `<div><p>${letter}</p><canvas id="canvas${letter}"></canvas></div>`;
             drawingPaths[letter] = [];
         });
 
-        // Simplified: Just draws a set of paths to a given context
+        // Drawing helper
         function drawPathsToCtx(ctx, paths) {
-            ctx.clearRect(0, 0, 60, 60);
+            if (!paths || paths.length === 0) return;
             ctx.beginPath();
             paths.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
             ctx.stroke();
         }
 
-        // Database logic remains the same (Save/Load)
         async function saveAll() {
             const code = document.getElementById('cipherCode').value;
             await mySupabase.from('codelock').upsert([{ Code: code, alphabet_data: drawingPaths }]);
-            alert("Alphabet Saved!");
+            alert("Saved!");
         }
 
         async function loadAll() {
@@ -65,56 +63,53 @@
             if (data) {
                 drawingPaths = data.alphabet_data;
                 letters.forEach(l => {
-                    const ctx = document.getElementById('canvas'+l).getContext('2d');
+                    const canvas = document.getElementById('canvas'+l);
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, 60, 60);
                     ctx.strokeStyle = 'white'; ctx.lineWidth = 3;
                     drawPathsToCtx(ctx, drawingPaths[l]);
                 });
+            } else { alert("Code not found."); }
+        }
+
+        function visualizeWord() {
+            const word = document.getElementById('messageInput').value.toUpperCase();
+            const viz = document.getElementById('messageVisualizer');
+            viz.innerHTML = "";
+            
+            const exportCanvas = document.createElement('canvas');
+            exportCanvas.id = "exportCanvas";
+            exportCanvas.width = word.length * 65;
+            exportCanvas.height = 70;
+            const exportCtx = exportCanvas.getContext('2d');
+            exportCtx.strokeStyle = 'white'; exportCtx.lineWidth = 3;
+
+            for (let i = 0; i < word.length; i++) {
+                const char = word[i];
+                if (drawingPaths[char] && drawingPaths[char].length > 0) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 60; canvas.height = 60;
+                    const ctx = canvas.getContext('2d');
+                    ctx.strokeStyle = 'white'; ctx.lineWidth = 3;
+                    drawPathsToCtx(ctx, drawingPaths[char]);
+                    viz.appendChild(canvas);
+                    
+                    const paths = drawingPaths[char].map(p => ({x: p.x + (i * 65), y: p.y + 5}));
+                    drawPathsToCtx(exportCtx, paths);
+                }
+            }
+            if (viz.children.length > 0) {
+                viz.innerHTML += `<br><button onclick="downloadVisualKey()">Download Visual Key</button>`;
             }
         }
 
-        // NEW: Visualizer
-        function visualizeWord() {
-    const word = document.getElementById('messageInput').value.toUpperCase();
-    const viz = document.getElementById('messageVisualizer');
-    viz.innerHTML = "";
-    
-    // Create the master export canvas
-    const exportCanvas = document.createElement('canvas');
-    exportCanvas.id = "exportCanvas";
-    exportCanvas.width = word.length * 65;
-    exportCanvas.height = 70;
-    const exportCtx = exportCanvas.getContext('2d');
-    exportCtx.strokeStyle = 'white'; exportCtx.lineWidth = 3;
-    
-    for (let i = 0; i < word.length; i++) {
-        const char = word[i];
-        if (drawingPaths[char]) {
-            // Add to screen
-            const canvas = document.createElement('canvas');
-            canvas.width = 60; canvas.height = 60;
-            const ctx = canvas.getContext('2d');
-            ctx.strokeStyle = 'white'; ctx.lineWidth = 3;
-            drawPathsToCtx(ctx, drawingPaths[char]);
-            viz.appendChild(canvas);
-            
-            // Add to master export canvas
-            drawPathsToCtx(exportCtx, drawingPaths[char].map(p => ({x: p.x + (i * 65), y: p.y + 5})));
+        function downloadVisualKey() {
+            const canvas = document.getElementById('exportCanvas');
+            const link = document.createElement('a');
+            link.download = "secret-key.png";
+            link.href = canvas.toDataURL("image/png");
+            link.click();
         }
-    }
-    
-    // Add the Download button
-    viz.innerHTML += `<br><button onclick="downloadVisualKey()">Download Visual Key</button>`;
-}
-
-function downloadVisualKey() {
-    const canvas = document.getElementById('exportCanvas');
-    const image = canvas.toDataURL("image/png");
-    const link = document.createElement('a');
-    link.download = "secret-message.png";
-    link.href = image;
-    link.click();
-}
-
     </script>
 </body>
 </html>
