@@ -73,54 +73,59 @@
     }
 
     function visualizeWord() {
-        const word = document.getElementById('messageInput').value.toUpperCase();
-        const viz = document.getElementById('messageVisualizer');
-        viz.innerHTML = "";
+    const word = document.getElementById('messageInput').value.toUpperCase();
+    const viz = document.getElementById('messageVisualizer');
+    viz.innerHTML = "";
+    
+    // Create the master export canvas
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.id = "exportCanvas";
+    exportCanvas.width = word.length * 60; // Set width based on word length
+    exportCanvas.height = 70;
+    const exportCtx = exportCanvas.getContext('2d');
+    exportCtx.fillStyle = '#1a0b2e'; 
+    exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+    exportCtx.strokeStyle = 'white'; 
+    exportCtx.lineWidth = 3;
+
+    let foundAny = false;
+    let xPos = 0; // <--- THIS IS THE KEY: We start at the left edge
+
+    for (let i = 0; i < word.length; i++) {
+        const char = word[i];
+        const sourceCanvas = document.getElementById('canvas' + char);
         
-        const exportCanvas = document.createElement('canvas');
-        exportCanvas.id = "exportCanvas";
-        exportCanvas.width = word.length * 65; 
-        exportCanvas.height = 70;
-        const exportCtx = exportCanvas.getContext('2d');
-        exportCtx.fillStyle = '#1a0b2e';
-        exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-        exportCtx.strokeStyle = 'white'; 
-        exportCtx.lineWidth = 3;
-
-        let foundAny = false;
-        let horizontalOffset = 0;
-
-        for (let i = 0; i < word.length; i++) {
-            const char = word[i];
-            const sourceCanvas = document.getElementById('canvas' + char);
+        if (sourceCanvas) {
+            foundAny = true;
             
-            if (sourceCanvas) {
-                foundAny = true;
-                
-                // Add to visualizer UI
-                const displayCanvas = document.createElement('canvas');
-                displayCanvas.width = 60;
-                displayCanvas.height = 60;
-                displayCanvas.getContext('2d').drawImage(sourceCanvas, 0, 0);
-                viz.appendChild(displayCanvas);
-                
-                // Draw onto master export canvas
-                exportCtx.drawImage(sourceCanvas, horizontalOffset, 5);
-                horizontalOffset += 60; 
-            }
-        }
-        
-        if (foundAny) {
-            const btn = document.createElement('button');
-            btn.innerText = "Download Visual Key";
-            btn.onclick = downloadVisualKey;
-            viz.appendChild(btn);
-            document.body.appendChild(exportCanvas);
-            exportCanvas.style.display = "none";
-        } else {
-            alert("Alphabet not loaded! Click 'Load from Cloud' first.");
+            // 1. Add to visualizer UI (this part you said was working!)
+            const displayCanvas = document.createElement('canvas');
+            displayCanvas.width = 60;
+            displayCanvas.height = 60;
+            displayCanvas.getContext('2d').drawImage(sourceCanvas, 0, 0);
+            viz.appendChild(displayCanvas);
+            
+            // 2. Draw onto master export canvas at the current xPos
+            exportCtx.drawImage(sourceCanvas, xPos, 5);
+            
+            // 3. Move the stamp to the right for the next letter
+            xPos += 60; 
         }
     }
+    
+    if (foundAny) {
+        const btn = document.createElement('button');
+        btn.innerText = "Download Visual Key";
+        btn.onclick = downloadVisualKey;
+        viz.appendChild(btn);
+        
+        document.body.appendChild(exportCanvas);
+        exportCanvas.style.display = "none";
+    } else {
+        alert("Alphabet not loaded! Click 'Load from Cloud' first.");
+    }
+}
+
 
     function downloadVisualKey() {
         const canvas = document.getElementById('exportCanvas');
