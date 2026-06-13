@@ -74,20 +74,47 @@
 
         // NEW: Visualizer
         function visualizeWord() {
-            const word = document.getElementById('messageInput').value.toUpperCase();
-            const viz = document.getElementById('messageVisualizer');
-            viz.innerHTML = "";
-            for (let char of word) {
-                if (drawingPaths[char]) {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = 60; canvas.height = 60;
-                    const ctx = canvas.getContext('2d');
-                    ctx.strokeStyle = 'white'; ctx.lineWidth = 3;
-                    drawPathsToCtx(ctx, drawingPaths[char]);
-                    viz.appendChild(canvas);
-                }
-            }
+    const word = document.getElementById('messageInput').value.toUpperCase();
+    const viz = document.getElementById('messageVisualizer');
+    viz.innerHTML = "";
+    
+    // Create the master export canvas
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.id = "exportCanvas";
+    exportCanvas.width = word.length * 65;
+    exportCanvas.height = 70;
+    const exportCtx = exportCanvas.getContext('2d');
+    exportCtx.strokeStyle = 'white'; exportCtx.lineWidth = 3;
+    
+    for (let i = 0; i < word.length; i++) {
+        const char = word[i];
+        if (drawingPaths[char]) {
+            // Add to screen
+            const canvas = document.createElement('canvas');
+            canvas.width = 60; canvas.height = 60;
+            const ctx = canvas.getContext('2d');
+            ctx.strokeStyle = 'white'; ctx.lineWidth = 3;
+            drawPathsToCtx(ctx, drawingPaths[char]);
+            viz.appendChild(canvas);
+            
+            // Add to master export canvas
+            drawPathsToCtx(exportCtx, drawingPaths[char].map(p => ({x: p.x + (i * 65), y: p.y + 5})));
         }
+    }
+    
+    // Add the Download button
+    viz.innerHTML += `<br><button onclick="downloadVisualKey()">Download Visual Key</button>`;
+}
+
+function downloadVisualKey() {
+    const canvas = document.getElementById('exportCanvas');
+    const image = canvas.toDataURL("image/png");
+    const link = document.createElement('a');
+    link.download = "secret-message.png";
+    link.href = image;
+    link.click();
+}
+
     </script>
 </body>
 </html>
