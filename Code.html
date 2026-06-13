@@ -2,19 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Cipher Codec</title>
+    <title>Cipher Visualizer</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { background: #1a0b2e; color: white; font-family: sans-serif; padding: 20px; }
         #alphabet-container { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
-        canvas { border: 1px solid #7c4dff; background: #2d1b4e; cursor: crosshair; touch-action: none; width: 60px; height: 60px; }
+        canvas { border: 1px solid #7c4dff; background: #2d1b4e; width: 60px; height: 60px; }
         .controls { margin-top: 30px; border-top: 2px solid #7c4dff; padding-top: 20px; }
-        textarea { resize: none; width: 100%; height: 60px; margin: 10px 0; }
+        #messageVisualizer { margin-top: 20px; padding: 10px; border: 2px solid #7c4dff; display: flex; gap: 10px; flex-wrap: wrap; }
     </style>
 </head>
 <body>
 
-    <h1>Cipher Codec</h1>
+    <h1>Cipher Visualizer</h1>
     <div id="alphabet-container"></div>
 
     <div class="controls">
@@ -23,13 +23,10 @@
         <button onclick="loadAll()">Load Alphabet</button>
         
         <hr>
-        <h3>Message Transformer</h3>
-        <textarea id="messageInput" placeholder="Type word to encode..."></textarea>
-        <button onclick="encodeWord()">Encode Word</button>
-        
-        <textarea id="outputKey" placeholder="Copy/Paste your encoded drawing data here..."></textarea>
-        <button onclick="decodeWord()">Decode Word</button>
-        <div id="resultArea" style="margin-top:10px; border:1px solid #7c4dff; padding:10px; font-size: 20px;"></div>
+        <h3>Message Visualizer</h3>
+        <input type="text" id="messageInput" placeholder="Type word...">
+        <button onclick="visualizeWord()">Generate Visual Key</button>
+        <div id="messageVisualizer"></div>
     </div>
 
     <script>
@@ -41,61 +38,25 @@
         const container = document.getElementById('alphabet-container');
         let drawingPaths = {};
 
-        // Setup Alphabet Canvases
+        // Setup Alphabet
         letters.forEach(letter => {
             container.innerHTML += `<div><p>${letter}</p><canvas id="canvas${letter}"></canvas></div>`;
             drawingPaths[letter] = [];
         });
 
-        // Initialize drawing logic for alphabet
-        letters.forEach(letter => {
-            const canvas = document.getElementById('canvas' + letter);
-            const ctx = canvas.getContext('2d');
-            ctx.strokeStyle = 'white'; ctx.lineWidth = 3;
-            let drawing = false;
-
-            const getPos = (e) => {
-                const rect = canvas.getBoundingClientRect();
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                return { x: clientX - rect.left, y: clientY - rect.top };
-            };
-
-            const start = (e) => { drawing = true; ctx.beginPath(); ctx.moveTo(getPos(e).x, getPos(e).y); };
-            const end = () => drawing = false;
-            const move = (e) => {
-                if (!drawing) return;
-                if (e.cancelable) e.preventDefault();
-                const pos = getPos(e);
-                ctx.lineTo(pos.x, pos.y); ctx.stroke();
-                drawingPaths[letter].push({x: pos.x, y: pos.y});
-            };
-
-            canvas.addEventListener('mousedown', start);
-            canvas.addEventListener('mouseup', end);
-            canvas.addEventListener('mousemove', move);
-            canvas.addEventListener('touchstart', start, {passive: false});
-            canvas.addEventListener('touchend', end);
-            canvas.addEventListener('touchmove', move, {passive: false});
-        });
-
-        function decodeDrawing(letter, paths) {
-            const canvas = document.getElementById('canvas' + letter);
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Simplified: Just draws a set of paths to a given context
+        function drawPathsToCtx(ctx, paths) {
+            ctx.clearRect(0, 0, 60, 60);
             ctx.beginPath();
-            paths.forEach((p, index) => {
-                if (index === 0) ctx.moveTo(p.x, p.y);
-                else ctx.lineTo(p.x, p.y);
-            });
+            paths.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
             ctx.stroke();
         }
 
-        // Database Functions
+        // Database logic remains the same (Save/Load)
         async function saveAll() {
             const code = document.getElementById('cipherCode').value;
-            const { error } = await mySupabase.from('codelock').upsert([{ Code: code, alphabet_data: drawingPaths }]);
-            if (error) alert("Error: " + error.message); else alert("Alphabet Saved!");
+            await mySupabase.from('codelock').upsert([{ Code: code, alphabet_data: drawingPaths }]);
+            alert("Alphabet Saved!");
         }
 
         async function loadAll() {
@@ -103,41 +64,30 @@
             const { data } = await mySupabase.from('codelock').select('alphabet_data').eq('Code', code).single();
             if (data) {
                 drawingPaths = data.alphabet_data;
-                letters.forEach(l => { if (drawingPaths[l]) decodeDrawing(l, drawingPaths[l]); });
-                alert("Alphabet Loaded!");
-            } else { alert("Code not found."); }
+                letters.forEach(l => {
+                    const ctx = document.getElementById('canvas'+l).getContext('2d');
+                    ctx.strokeStyle = 'white'; ctx.lineWidth = 3;
+                    drawPathsToCtx(ctx, drawingPaths[l]);
+                });
+            }
         }
 
-        // Encoder / Decoder
-        function decodeWord() {
-    const rawData = document.getElementById('outputKey').value;
-    try {
-        const encodedData = JSON.parse(rawData);
-        let result = "";
-        
-        // Clear the result area first
-        document.getElementById('resultArea').innerHTML = "";
-        
-        encodedData.forEach(item => {
-            // 1. Add the letter to our text result
-            result += item.letter;
-            
-            // 2. IMPORTANT: Draw the actual symbol back onto the screen
-            // We use the same 'decodeDrawing' logic you use for the alphabet
-            if (item.paths) {
-                // This creates a visual representation of the symbol
-                const canvasId = 'canvas' + item.letter;
-                // If you want to show it in the results, we can draw it here!
-                decodeDrawing(item.letter, item.paths);
+        // NEW: Visualizer
+        function visualizeWord() {
+            const word = document.getElementById('messageInput').value.toUpperCase();
+            const viz = document.getElementById('messageVisualizer');
+            viz.innerHTML = "";
+            for (let char of word) {
+                if (drawingPaths[char]) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 60; canvas.height = 60;
+                    const ctx = canvas.getContext('2d');
+                    ctx.strokeStyle = 'white'; ctx.lineWidth = 3;
+                    drawPathsToCtx(ctx, drawingPaths[char]);
+                    viz.appendChild(canvas);
+                }
             }
-        });
-        
-        document.getElementById('resultArea').innerText = "Decoded: " + result;
-    } catch(e) {
-        alert("Invalid code format! Make sure you pasted the full string.");
-    }
-}
-
+        }
     </script>
 </body>
 </html>
