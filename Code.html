@@ -48,14 +48,28 @@
     function getCoords(e) {
         const rect = canvas.getBoundingClientRect();
         // Check if it's a touch event or mouse event
+function setupCanvas(canvas) {
+    const ctx = canvas.getContext('2d');
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round'; // Makes the lines smoother
+    ctx.lineJoin = 'round';
+    let drawing = false;
+
+    // A more robust way to get coordinates relative to the canvas
+    function getCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        // Check for touch vs mouse
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        
         return {
             x: clientX - rect.left,
             y: clientY - rect.top
         };
     }
 
+    // --- MOUSE EVENTS ---
     canvas.onmousedown = (e) => { 
         drawing = true; 
         ctx.beginPath(); 
@@ -73,10 +87,9 @@
 
     canvas.onmouseup = () => { drawing = false; };
     
-    // Mobile Touch Support
+    // --- TOUCH EVENTS (No preventDefault, no errors!) ---
     canvas.ontouchstart = (e) => { 
         drawing = true; 
-        e.preventDefault(); 
         ctx.beginPath();
         const {x, y} = getCoords(e);
         ctx.moveTo(x, y);
@@ -84,7 +97,6 @@
 
     canvas.ontouchmove = (e) => { 
         if(drawing) { 
-            e.preventDefault();
             const {x, y} = getCoords(e);
             ctx.lineTo(x, y); 
             ctx.stroke(); 
