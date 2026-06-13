@@ -39,26 +39,61 @@
         let drawingPaths = {};
 
         function setupCanvas(canvas) {
-            const ctx = canvas.getContext('2d');
-            ctx.strokeStyle = 'white';
-            ctx.lineWidth = 3;
-            let drawing = false;
+    const ctx = canvas.getContext('2d');
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 3;
+    let drawing = false;
 
-            canvas.onmousedown = (e) => { drawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); };
-            canvas.onmousemove = (e) => { if(drawing) { ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); } };
-            canvas.onmouseup = () => { drawing = false; };
-            
-            canvas.ontouchstart = (e) => { drawing = true; e.preventDefault(); };
-            canvas.ontouchmove = (e) => { 
-                if(drawing) {
-                    const rect = canvas.getBoundingClientRect();
-                    const x = e.touches[0].clientX - rect.left;
-                    const y = e.touches[0].clientY - rect.top;
-                    ctx.lineTo(x, y); ctx.stroke();
-                }
-            };
-            canvas.ontouchend = () => { drawing = false; };
+    // Helper to get correct coordinates
+    function getCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        // Check if it's a touch event or mouse event
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+            x: clientX - rect.left,
+            y: clientY - rect.top
+        };
+    }
+
+    canvas.onmousedown = (e) => { 
+        drawing = true; 
+        ctx.beginPath(); 
+        const {x, y} = getCoords(e);
+        ctx.moveTo(x, y); 
+    };
+
+    canvas.onmousemove = (e) => { 
+        if(drawing) { 
+            const {x, y} = getCoords(e);
+            ctx.lineTo(x, y); 
+            ctx.stroke(); 
+        } 
+    };
+
+    canvas.onmouseup = () => { drawing = false; };
+    
+    // Mobile Touch Support
+    canvas.ontouchstart = (e) => { 
+        drawing = true; 
+        e.preventDefault(); 
+        ctx.beginPath();
+        const {x, y} = getCoords(e);
+        ctx.moveTo(x, y);
+    };
+
+    canvas.ontouchmove = (e) => { 
+        if(drawing) { 
+            e.preventDefault();
+            const {x, y} = getCoords(e);
+            ctx.lineTo(x, y); 
+            ctx.stroke(); 
         }
+    };
+    
+    canvas.ontouchend = () => { drawing = false; };
+}
+
 
         letters.forEach(letter => {
             container.innerHTML += `<div><p>${letter}</p><canvas id="canvas${letter}"></canvas></div>`;
