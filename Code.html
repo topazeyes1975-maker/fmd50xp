@@ -8,7 +8,14 @@
     <style>
         body { background: #1a0b2e; color: white; font-family: sans-serif; padding: 10px; }
         #alphabet-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
-        canvas { border: 1px solid #7c4dff; background: #2d1b4e; width: 100%; aspect-ratio: 1; touch-action: none; }
+        canvas { 
+            border: 1px solid #7c4dff; 
+            background: #2d1b4e; 
+            width: 60px; 
+            height: 60px; 
+            display: block;
+            touch-action: none; 
+        }
         .controls { border-top: 2px solid #7c4dff; padding-top: 20px; }
         #messageVisualizer { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 5px; }
     </style>
@@ -36,9 +43,9 @@
         const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
         const container = document.getElementById('alphabet-container');
 
-        // Create the drawing pads
+        // Create the drawing pads with explicit 60x60 internal resolution
         letters.forEach(letter => {
-            container.innerHTML += `<div><small>${letter}</small><canvas id="canvas${letter}"></canvas></div>`;
+            container.innerHTML += `<div><small>${letter}</small><canvas id="canvas${letter}" width="60" height="60"></canvas></div>`;
         });
 
         // Initialize drawing for each
@@ -53,7 +60,13 @@
                 const rect = canvas.getBoundingClientRect();
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                return { x: clientX - rect.left, y: clientY - rect.top };
+                // Calculate scale to ensure touch matches pixel grid
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                return { 
+                    x: (clientX - rect.left) * scaleX, 
+                    y: (clientY - rect.top) * scaleY 
+                };
             }
 
             canvas.onmousedown = (e) => { drawing = true; ctx.beginPath(); const {x,y} = getCoords(e); ctx.moveTo(x,y); };
