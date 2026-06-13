@@ -2,14 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cipher Codec</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background: #1a0b2e; color: white; font-family: sans-serif; padding: 20px; }
-        #alphabet-container { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
-        canvas { border: 1px solid #7c4dff; background: #2d1b4e; width: 60px; height: 60px; touch-action: none; }
-        .controls { margin-top: 30px; border-top: 2px solid #7c4dff; padding-top: 20px; }
-        #messageVisualizer { margin-top: 20px; padding: 10px; border: 2px solid #7c4dff; display: flex; gap: 10px; flex-wrap: wrap; }
+        body { background: #1a0b2e; color: white; font-family: sans-serif; padding: 10px; }
+        #alphabet-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
+        canvas { border: 1px solid #7c4dff; background: #2d1b4e; width: 100%; aspect-ratio: 1; touch-action: none; }
+        .controls { border-top: 2px solid #7c4dff; padding-top: 20px; }
+        #messageVisualizer { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 5px; }
     </style>
 </head>
 <body>
@@ -19,13 +20,11 @@
 
     <div class="controls">
         <input type="text" id="cipherCode" placeholder="Enter 6-digit code">
-        <button onclick="saveAll()">Save to Cloud</button>
-        <button onclick="loadAll()">Load from Cloud</button>
-        
+        <button onclick="saveAll()">Save</button>
+        <button onclick="loadAll()">Load</button>
         <hr>
-        <h3>Message Visualizer</h3>
         <input type="text" id="messageInput" placeholder="Type word...">
-        <button onclick="visualizeWord()">Generate Visual Key</button>
+        <button onclick="visualizeWord()">Generate</button>
         <div id="messageVisualizer"></div>
     </div>
 
@@ -36,94 +35,41 @@
 
         const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
         const container = document.getElementById('alphabet-container');
-        let drawingPaths = {};
+
+        // Create the drawing pads
+        letters.forEach(letter => {
+            container.innerHTML += `<div><small>${letter}</small><canvas id="canvas${letter}"></canvas></div>`;
+        });
+
+        // Initialize drawing for each
+        letters.forEach(letter => setupCanvas(document.getElementById('canvas' + letter)));
 
         function setupCanvas(canvas) {
-    const ctx = canvas.getContext('2d');
-    ctx.strokeStyle = 'white';
-    ctx.lineWidth = 3;
-    let drawing = false;
+            const ctx = canvas.getContext('2d');
+            ctx.strokeStyle = 'white'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+            let drawing = false;
 
-    // Helper to get correct coordinates
-    function getCoords(e) {
-        const rect = canvas.getBoundingClientRect();
-        // Check if it's a touch event or mouse event
-function setupCanvas(canvas) {
-    const ctx = canvas.getContext('2d');
-    ctx.strokeStyle = 'white';
-    ctx.lineWidth = 3;
-    ctx.lineCap = 'round'; // Makes the lines smoother
-    ctx.lineJoin = 'round';
-    let drawing = false;
+            function getCoords(e) {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return { x: clientX - rect.left, y: clientY - rect.top };
+            }
 
-    // A more robust way to get coordinates relative to the canvas
-    function getCoords(e) {
-        const rect = canvas.getBoundingClientRect();
-        // Check for touch vs mouse
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        
-        return {
-            x: clientX - rect.left,
-            y: clientY - rect.top
-        };
-    }
-
-    // --- MOUSE EVENTS ---
-    canvas.onmousedown = (e) => { 
-        drawing = true; 
-        ctx.beginPath(); 
-        const {x, y} = getCoords(e);
-        ctx.moveTo(x, y); 
-    };
-
-    canvas.onmousemove = (e) => { 
-        if(drawing) { 
-            const {x, y} = getCoords(e);
-            ctx.lineTo(x, y); 
-            ctx.stroke(); 
-        } 
-    };
-
-    canvas.onmouseup = () => { drawing = false; };
-    
-    // --- TOUCH EVENTS (No preventDefault, no errors!) ---
-    canvas.ontouchstart = (e) => { 
-        drawing = true; 
-        ctx.beginPath();
-        const {x, y} = getCoords(e);
-        ctx.moveTo(x, y);
-    };
-
-    canvas.ontouchmove = (e) => { 
-        if(drawing) { 
-            const {x, y} = getCoords(e);
-            ctx.lineTo(x, y); 
-            ctx.stroke(); 
+            canvas.onmousedown = (e) => { drawing = true; ctx.beginPath(); const {x,y} = getCoords(e); ctx.moveTo(x,y); };
+            canvas.onmousemove = (e) => { if(drawing) { const {x,y} = getCoords(e); ctx.lineTo(x,y); ctx.stroke(); } };
+            canvas.onmouseup = () => { drawing = false; };
+            
+            canvas.ontouchstart = (e) => { drawing = true; ctx.beginPath(); const {x,y} = getCoords(e); ctx.moveTo(x,y); };
+            canvas.ontouchmove = (e) => { if(drawing) { const {x,y} = getCoords(e); ctx.lineTo(x,y); ctx.stroke(); } };
+            canvas.ontouchend = () => { drawing = false; };
         }
-    };
-    
-    canvas.ontouchend = () => { drawing = false; };
-}
-
-
-        letters.forEach(letter => {
-            container.innerHTML += `<div><p>${letter}</p><canvas id="canvas${letter}"></canvas></div>`;
-        });
-        
-        letters.forEach(letter => {
-            setupCanvas(document.getElementById('canvas' + letter));
-        });
 
         async function saveAll() {
             const code = document.getElementById('cipherCode').value;
-            // Simplified save: we grab current drawings from the canvases
-            let currentData = {};
-            letters.forEach(l => {
-                const canvas = document.getElementById('canvas' + l);
-                currentData[l] = canvas.toDataURL();
-            });
-            await mySupabase.from('codelock').upsert([{ Code: code, alphabet_data: currentData }]);
+            let dataToSave = {};
+            letters.forEach(l => dataToSave[l] = document.getElementById('canvas' + l).toDataURL());
+            await mySupabase.from('codelock').upsert([{ Code: code, alphabet_data: dataToSave }]);
             alert("Saved!");
         }
 
@@ -135,13 +81,9 @@ function setupCanvas(canvas) {
                     const canvas = document.getElementById('canvas'+l);
                     const ctx = canvas.getContext('2d');
                     const img = new Image();
-                    img.onload = () => {
-                        ctx.clearRect(0, 0, 60, 60);
-                        ctx.drawImage(img, 0, 0);
-                    };
+                    img.onload = () => { ctx.clearRect(0,0,60,60); ctx.drawImage(img,0,0); };
                     img.src = data.alphabet_data[l];
                 });
-                alert("Loaded!");
             } else { alert("Code not found."); }
         }
 
@@ -149,81 +91,42 @@ function setupCanvas(canvas) {
             const word = document.getElementById('messageInput').value.toUpperCase();
             const viz = document.getElementById('messageVisualizer');
             viz.innerHTML = "";
-            
-            const oldCanvas = document.getElementById('exportCanvas');
-            if (oldCanvas) oldCanvas.remove();
+            const old = document.getElementById('exportCanvas');
+            if (old) old.remove();
 
-            const boxSize = 60;
-            const padding = 8; 
-            
-            const exportCanvas = document.createElement('canvas');
-            exportCanvas.id = "exportCanvas";
-            exportCanvas.width = word.length * boxSize; 
-            exportCanvas.height = boxSize;
-            const exportCtx = exportCanvas.getContext('2d');
-            
-            exportCtx.fillStyle = 'black'; 
-            exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-            
-            let foundAny = false;
-            let xPos = 0; 
+            const box = 60;
+            const exp = document.createElement('canvas');
+            exp.id = "exportCanvas";
+            exp.width = word.length * box; exp.height = box;
+            const ctx = exp.getContext('2d');
+            ctx.fillStyle = 'black'; ctx.fillRect(0,0,exp.width,exp.height);
 
             for (let i = 0; i < word.length; i++) {
-                const char = word[i];
-                const sourceCanvas = document.getElementById('canvas' + char);
-                
-                if (sourceCanvas) {
-                    foundAny = true;
+                const src = document.getElementById('canvas' + word[i]);
+                if (src) {
+                    ctx.strokeStyle = 'white'; ctx.strokeRect(i*box, 0, box, box);
+                    ctx.drawImage(src, i*box + 8, 8, box-16, box-16);
                     
-                    exportCtx.strokeStyle = '#ffffff';
-                    exportCtx.lineWidth = 2;
-                    exportCtx.strokeRect(xPos, 0, boxSize, boxSize);
-                    
-                    exportCtx.drawImage(
-                        sourceCanvas, 
-                        xPos + padding, padding, 
-                        boxSize - (padding * 2), boxSize - (padding * 2)
-                    );
-                    
-                    const displayCanvas = document.createElement('canvas');
-                    displayCanvas.width = boxSize;
-                    displayCanvas.height = boxSize;
-                    const dCtx = displayCanvas.getContext('2d');
-                    dCtx.fillStyle = 'black';
-                    dCtx.fillRect(0, 0, boxSize, boxSize);
-                    dCtx.strokeStyle = 'white';
-                    dCtx.strokeRect(0, 0, boxSize, boxSize);
-                    dCtx.drawImage(sourceCanvas, padding, padding, boxSize-(padding*2), boxSize-(padding*2));
-                    viz.appendChild(displayCanvas);
-                    
-                    xPos += boxSize; 
+                    const copy = document.createElement('canvas');
+                    copy.width = box; copy.height = box;
+                    copy.getContext('2d').drawImage(src, 0, 0);
+                    viz.appendChild(copy);
                 }
             }
-            
-            if (foundAny) {
-                const btn = document.createElement('button');
-                btn.innerText = "Download Visual Key";
-                btn.onclick = downloadVisualKey;
-                viz.appendChild(btn);
-                document.body.appendChild(exportCanvas);
-                exportCanvas.style.display = "none";
-            } else {
-                alert("Alphabet not loaded!");
-            }
-        }
-
-        function downloadVisualKey() {
-            const canvas = document.getElementById('exportCanvas');
-            if (!canvas) return;
-
-            let fileName = prompt("What would you like to name your secret key?", "my-cipher-key");
-            if (fileName !== null) {
-                if (!fileName.endsWith('.png')) fileName += '.png';
-                const link = document.createElement('a');
-                link.download = fileName;
-                link.href = canvas.toDataURL("image/png");
-                link.click();
-            }
+            const btn = document.createElement('button');
+            btn.innerText = "Download";
+            btn.onclick = () => {
+                let name = prompt("Name this key?", "my-key");
+                if (name) {
+                    const link = document.createElement('a');
+                    link.download = name + ".png";
+                    link.href = exp.toDataURL("image/png");
+                    link.click();
+                }
+            };
+            viz.appendChild(btn);
+            document.body.appendChild(exp);
+            exp.style.display = "none";
         }
     </script>
 </body>
