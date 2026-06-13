@@ -43,7 +43,6 @@
             drawingPaths[letter] = [];
         });
 
-        // Drawing helper
         function drawPathsToCtx(ctx, paths) {
             if (!paths || paths.length === 0) return;
             ctx.beginPath();
@@ -69,64 +68,56 @@
                     ctx.strokeStyle = 'white'; ctx.lineWidth = 3;
                     drawPathsToCtx(ctx, drawingPaths[l]);
                 });
+                alert("Loaded!");
             } else { alert("Code not found."); }
         }
 
         function visualizeWord() {
-    // Force everything to uppercase so it matches your 'A-Z' keys
-    const word = document.getElementById('messageInput').value.toUpperCase();
-    const viz = document.getElementById('messageVisualizer');
-    
-    // Clear previous results
-    viz.innerHTML = "";
-    
-    // Create the master export canvas (hidden, for the download)
-    const exportCanvas = document.createElement('canvas');
-    exportCanvas.id = "exportCanvas";
-    exportCanvas.width = word.length * 65;
-    exportCanvas.height = 70;
-    const exportCtx = exportCanvas.getContext('2d');
-    exportCtx.strokeStyle = 'white'; 
-    exportCtx.lineWidth = 3;
+            const word = document.getElementById('messageInput').value.toUpperCase();
+            const viz = document.getElementById('messageVisualizer');
+            viz.innerHTML = "";
+            
+            const exportCanvas = document.createElement('canvas');
+            exportCanvas.id = "exportCanvas";
+            exportCanvas.width = word.length * 65;
+            exportCanvas.height = 70;
+            const exportCtx = exportCanvas.getContext('2d');
+            exportCtx.strokeStyle = 'white'; 
+            exportCtx.lineWidth = 3;
 
-    let foundAny = false;
+            let foundAny = false;
 
-    for (let i = 0; i < word.length; i++) {
-        const char = word[i];
-        
-        // Debugging check: Does this letter exist in your alphabet?
-        if (drawingPaths[char] && drawingPaths[char].length > 0) {
-            foundAny = true;
+            for (let i = 0; i < word.length; i++) {
+                const char = word[i];
+                if (drawingPaths[char] && drawingPaths[char].length > 0) {
+                    foundAny = true;
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 60; canvas.height = 60;
+                    const ctx = canvas.getContext('2d');
+                    ctx.strokeStyle = 'white'; 
+                    ctx.lineWidth = 3;
+                    drawPathsToCtx(ctx, drawingPaths[char]);
+                    viz.appendChild(canvas);
+                    
+                    const shiftedPaths = drawingPaths[char].map(p => ({x: p.x + (i * 65), y: p.y + 5}));
+                    drawPathsToCtx(exportCtx, shiftedPaths);
+                }
+            }
             
-            // 1. Create the small canvas for the screen
-            const canvas = document.createElement('canvas');
-            canvas.width = 60; 
-            canvas.height = 60;
-            const ctx = canvas.getContext('2d');
-            ctx.strokeStyle = 'white'; 
-            ctx.lineWidth = 3;
-            
-            // 2. Draw the path
-            drawPathsToCtx(ctx, drawingPaths[char]);
-            viz.appendChild(canvas);
-            
-            // 3. Add to the hidden master export canvas (shifted by i * 65)
-            const shiftedPaths = drawingPaths[char].map(p => ({x: p.x + (i * 65), y: p.y + 5}));
-            drawPathsToCtx(exportCtx, shiftedPaths);
-            
-        } else {
-            // If it's a space or a character you didn't draw, skip it or add a gap
-            console.log("No drawing for: " + char);
+            if (foundAny) {
+                viz.innerHTML += `<br><button onclick="downloadVisualKey()">Download Visual Key</button>`;
+            } else {
+                alert("No drawings found. Did you load your alphabet?");
+            }
         }
-    }
-    
-    if (foundAny) {
-        viz.innerHTML += `<br><button onclick="downloadVisualKey()">Download Visual Key</button>`;
-    } else {
-        alert("No drawings found for that word. Check your spelling or ensure Alphabet is loaded!");
-    }
-}
 
+        function downloadVisualKey() {
+            const canvas = document.getElementById('exportCanvas');
+            const link = document.createElement('a');
+            link.download = "secret-key.png";
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        }
     </script>
 </body>
 </html>
