@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hex Protocol: Full Strategic AI</title>
+    <title>Hex Protocol: Network Multiplayer</title>
     <style>
         * { box-sizing: border-box; touch-action: manipulation; -webkit-user-select: none; }
         body {
@@ -90,11 +90,8 @@
 </head>
 <body>
 
-    <h2>HEX PROTOCOL</h2>
-    <h6><p>how to play the game: Each opponent takes a turn. One opponent 
-    tries to go horizontal line. While the other opponent goes 
-    vertical line. The first one to complete their line wins.
-    The object of the game is to prevent the other one from making a line but also make your line.</p></h6>
+    <h2>HEX PROTOCOL: ONLINE MAP</h2>
+    <h6><p>how to play the game: Take turns globally. Red lines up horizontally (top to bottom goal boundaries). Blue lines up vertically (left to right goal boundaries). First unbroken chain across the canvas wins.</p></h6>
     
     <div id="canvas-container">
         <div id="winNotification" class="win-overlay"></div>
@@ -102,8 +99,8 @@
     </div>
 
     <div id="controls">
-        <p>Active Frequency: <span id="currentTurn" class="red-t">RED (YOUR TURN)</span></p>
-        <button onclick="initGame()">RESET SYSTEM</button>
+        <p>Active Transmission: <span id="currentTurn" class="red-t">LOADING NETWORK...</span></p>
+        <button onclick="resetNetworkGame()">RESET GLOBAL SYSTEM</button>
     </div>
 
     <script>
@@ -121,7 +118,7 @@
         const startX = 60;
         const startY = 60;
 
-        let board = [];
+        let board = Array(boardSize).fill(null).map(() => Array(boardSize).fill(null));
         let currentPlayer = 'Red'; 
         let gameActive = true;
 
@@ -133,22 +130,13 @@
         redImg.onload = drawBoard;
         blueImg.onload = drawBoard;
 
-        function initGame() {
-            board = Array(boardSize).fill(null).map(() => Array(boardSize).fill(null));
-            currentPlayer = 'Red';
-            gameActive = true;
-            winNotification.style.display = 'none'; 
-            winNotification.className = 'win-overlay'; 
-            updateUI();
-            drawBoard();
-        }
-
         function updateUI() {
+            if (!gameActive) return;
             if (currentPlayer === 'Red') {
-                turnText.innerText = "RED (YOUR TURN)";
+                turnText.innerText = "RED FREQUENCY ACTIVE";
                 turnText.className = 'red-t';
             } else {
-                turnText.innerText = "BLUE (COMPUTER THINKING...)";
+                turnText.innerText = "BLUE FREQUENCY ACTIVE";
                 turnText.className = 'blue-t';
             }
         }
@@ -236,112 +224,8 @@
             return list.filter(n => n.q >= 0 && n.q < boardSize && n.r >= 0 && n.r < boardSize);
         }
 
-        // CALCULATE SHORTEST PATHS TO EVALUATE DEFENSE VS OFFENSE
-        function getPathDistance(player, tempBoard) {
-            let distance = Array(boardSize).fill(null).map(() => Array(boardSize).fill(Infinity));
-            let queue = [];
-
-            for (let i = 0; i < boardSize; i++) {
-                if (player === 'Red') {
-                    if (tempBoard[i][0] === 'Red' || tempBoard[i][0] === null) {
-                        distance[i][0] = tempBoard[i][0] === 'Red' ? 0 : 1;
-                        queue.push({q: i, r: 0});
-                    }
-                } else {
-                    if (tempBoard[0][i] === 'Blue' || tempBoard[0][i] === null) {
-                        distance[0][i] = tempBoard[0][i] === 'Blue' ? 0 : 1;
-                        queue.push({q: 0, r: i});
-                    }
-                }
-            }
-
-            while (queue.length > 0) {
-                let {q, r} = queue.shift();
-                let currentDist = distance[q][r];
-
-                let neighbors = getNeighbors(q, r);
-                for (let n of neighbors) {
-                    let cell = tempBoard[n.q][n.r];
-                    if (cell === (player === 'Red' ? 'Blue' : 'Red')) continue; // Path blocked
-
-                    let cost = (cell === player) ? 0 : 1;
-                    if (currentDist + cost < distance[n.q][n.r]) {
-                        distance[n.q][n.r] = currentDist + cost;
-                        queue.push({q: n.q, r: n.r});
-                    }
-                }
-            }
-
-            let minPath = Infinity;
-            for (let i = 0; i < boardSize; i++) {
-                let endDist = player === 'Red' ? distance[i][boardSize - 1] : distance[boardSize - 1][i];
-                if (endDist < minPath) minPath = endDist;
-            }
-            return minPath;
-        }
-
-        function triggerComputerMove() {
-            if (!gameActive) return;
-
-            let bestMove = null;
-            let bestScore = -Infinity;
-
-            // Global simulation to find the most high-value cell
-            for (let q = 0; q < boardSize; q++) {
-                for (let r = 0; r < boardSize; r++) {
-                    if (board[q][r] !== null) continue;
-
-                    // Simulate playing a Blue piece here
-                    board[q][r] = 'Blue';
-                    let blueOffensePath = getPathDistance('Blue', board);
-                    board[q][r] = null; // Revert
-
-                    // Simulate if Red were to play here to see how vital it is for blocking
-                    board[q][r] = 'Red';
-                    let redDefensePath = getPathDistance('Red', board);
-                    board[q][r] = null; // Revert
-
-                    // Scores: We want to shorten Blue's path and lengthen Red's path
-                    // If a move heavily cripples Red's progress, redDefensePath becomes a large number
-                    let offenseScore = (blueOffensePath === Infinity) ? 0 : (100 - blueOffensePath * 8);
-                    let defenseScore = (redDefensePath === Infinity) ? 500 : (redDefensePath * 12);
-
-                    // If Red is close to winning (short path distance left), prioritize defense massively
-                    if (redDefensePath <= 3) {
-                        defenseScore *= 3;
-                    }
-
-                    let totalScore = offenseScore + defenseScore;
-
-                    // Tie-breaker bias toward the center of the vertical axis
-                    totalScore += (5 - Math.abs(5 - q)) * 1.5;
-
-                    if (totalScore > bestScore) {
-                        bestScore = totalScore;
-                        bestMove = {q, r};
-                    }
-                }
-            }
-
-            if (bestMove) {
-                board[bestMove.q][bestMove.r] = 'Blue';
-                drawBoard();
-
-                if (checkWin('Blue')) {
-                    gameActive = false;
-                    winNotification.innerText = "BLUE SYSTEM BRIDGE SECURED!";
-                    winNotification.className += ' blue-win';
-                    winNotification.style.display = 'block';
-                    setTimeout(initGame, 4000);
-                } else {
-                    currentPlayer = 'Red';
-                    updateUI();
-                }
-            }
-        }
-
         canvas.addEventListener('click', (e) => {
-            if (!gameActive || currentPlayer !== 'Red') return;
+            if (!gameActive) return;
 
             const rect = canvas.getBoundingClientRect();
             const sx = canvas.width / rect.width;
@@ -356,19 +240,17 @@
                     const dist = Math.sqrt((mx - hx)**2 + (my - hy)**2);
 
                     if (dist < hexRadius && !board[q][r]) {
-                        board[q][r] = 'Red';
+                        // Place piece for current global player
+                        board[q][r] = currentPlayer;
                         drawBoard();
                         
-                        if (checkWin('Red')) {
-                            gameActive = false;
-                            winNotification.innerText = "RED FREQUENCY BRIDGE SECURED!";
-                            winNotification.className += ' red-win';
-                            winNotification.style.display = 'block';
-                            setTimeout(initGame, 4000);
+                        if (checkWin(currentPlayer)) {
+                            declareWinner(currentPlayer);
                         } else {
-                            currentPlayer = 'Blue';
+                            // Switch player turn and sync to Soba cloud backend
+                            currentPlayer = (currentPlayer === 'Red') ? 'Blue' : 'Red';
                             updateUI();
-                            setTimeout(triggerComputerMove, 600);
+                            saveGameToSoba();
                         }
                         return;
                     }
@@ -376,7 +258,73 @@
             }
         });
 
-        initGame();
+        function declareWinner(player) {
+            gameActive = false;
+            winNotification.innerText = `${player.toUpperCase()} BRIDGE SECURED!`;
+            winNotification.className = `win-overlay ${player.toLowerCase()}-win`;
+            winNotification.style.display = 'block';
+            saveGameToSoba();
+        }
+
+        function resetNetworkGame() {
+            board = Array(boardSize).fill(null).map(() => Array(boardSize).fill(null));
+            currentPlayer = 'Red';
+            gameActive = true;
+            winNotification.style.display = 'none';
+            updateUI();
+            drawBoard();
+            saveGameToSoba(); // Wipe server data back to start state
+        }
+
+        // ==========================================
+        // SOBA CLOUD SYNCHRONIZATION BACKEND
+        // ==========================================
+
+        function saveGameToSoba() {
+            const gameState = {
+                board: board,
+                currentPlayer: currentPlayer,
+                gameActive: gameActive
+            };
+            
+            // SOBA INTEGRATION POINT: 
+            // Replace console.log with your specific Soba database saving function.
+            // Example: soba.set("hex_game_state", JSON.stringify(gameState));
+            console.log("Saving state to Soba database...", gameState);
+        }
+
+        function loadGameFromSoba() {
+            // SOBA INTEGRATION POINT:
+            // Fetch the layout string state saved in your database here.
+            // Example: let data = soba.get("hex_game_state");
+            
+            let data = null; // Replace with server read data string
+
+            if (data) {
+                const state = JSON.parse(data);
+                board = state.board;
+                currentPlayer = state.currentPlayer;
+                gameActive = state.gameActive;
+                
+                if (!gameActive) {
+                    // Check who won from data
+                    const dynamicWin = checkWin('Red') ? 'Red' : 'Blue';
+                    declareWinner(dynamicWin);
+                } else {
+                    winNotification.style.display = 'none';
+                }
+                
+                updateUI();
+                drawBoard();
+            }
+        }
+
+        // Check for updates automatically every 3 seconds (3000ms)
+        setInterval(loadGameFromSoba, 3000);
+
+        // Initial launch configuration
+        updateUI();
+        loadGameFromSoba();
     </script>
 </body>
 </html>
