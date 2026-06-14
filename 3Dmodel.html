@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Model Vault | FMD50XP</title>
     
-    <!-- Stable Model-Viewer script for interactive 3D files -->
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
 
     <style>
@@ -14,36 +13,8 @@
             --primary: #00f0ff;  /* Neon Cyan */
             --accent: #ff007a;   /* Neon Pink */
             --bg: #050505;       /* Pure Deep Black */
-            --card-bg: #111;     /* Dark Card Gray */
-        }/* This ensures all cards wrap into nice columns instead of stretching */
-.card-grid-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
-}
-
-/* This forces every single card—whether a superhero or a space alien—to stay identical */
-.character-card {
-    width: 100%;
-    max-width: 340px; /* Forces the long, card-like boundary */
-    background: #080f14;
-    border: 2px solid #00e5ff;
-    padding: 15px;
-    border-radius: 8px;
-    box-sizing: border-box;
-}
-
-/* This stops the embedded 3D models from expanding past the card edges */
-.character-card canvas, 
-.character-card iframe,
-.character-card img {
-    width: 100%;
-    height: auto;
-    max-height: 400px; /* Keeps the top model section proportioned */
-    object-fit: contain;
-}
-        
+            --card-bg: #080f14;   /* Dark Theme Card Background */
+        }
 
         body { 
             background-color: var(--bg); 
@@ -104,6 +75,18 @@
             margin-bottom: 10px; 
         }
 
+        .emoji-key-box {
+            text-align: center;
+            margin: 15px 0;
+            padding: 10px;
+        }
+
+        .key-item {
+            margin: 0 10px;
+            font-size: 0.9em;
+            color: #aaa;
+        }
+
         /* Direct Link Button to your Standalone Comment Page */
         .comment-hub-btn {
             display: inline-block;
@@ -134,7 +117,9 @@
             padding: 20px;
         }
 
-        .genre-section { margin-bottom: 60px; }
+        .genre-section { 
+            margin-bottom: 60px; 
+        }
         
         .genre-title { 
             color: var(--primary); 
@@ -146,20 +131,22 @@
             letter-spacing: 1px;
         }
 
-        /* 5. 3D MODEL CARDS GRID */
+        /* 5. 3D MODEL BASEBALL CARDS GRID */
         .gallery-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 30px;
+            align-items: start;
         }
 
         .model-card {
             background: var(--card-bg);
-            border: 1px solid #222;
+            border: 2px solid #00e5ff;
             border-radius: 18px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            box-sizing: border-box;
             transition: transform 0.3s ease, border-color 0.3s ease;
         }
 
@@ -174,30 +161,42 @@
             background-color: #151515;
         }
 
+        /* Lists clean inside cards */
+        .model-card ul {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+
+        .model-card li {
+            margin-bottom: 4px;
+        }
+
         /* 6. REACTION BAR */
         .interaction-bar { 
             display: flex; 
             justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 5px;
             padding: 15px;
             border-top: 1px solid #222;
             background: rgba(0,0,0,0.2);
         }
 
-        .like-btn { 
+        .emoji-btn { 
             background: #222; 
             border: 1px solid #333; 
             color: #eee; 
-            padding: 8px 16px; 
+            padding: 8px 12px; 
             border-radius: 20px; 
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: 0.85em;
             transition: 0.2s;
         }
 
-        .like-btn:hover {
+        .emoji-btn:hover {
             border-color: var(--primary);
             color: var(--primary);
         }
@@ -211,7 +210,6 @@
 </head>
 <body>
 
-    <!-- PORTFOLIO NAVIGATION -->
     <nav>
         <ul>
             <li><a href="index.html">HOME</a></li>
@@ -228,278 +226,413 @@
         <h1>3D Character Vault</h1>
         <p style="color:#888; margin: 0;">Exploring Lore, Myths, and Experimental Concepts</p>
         
-        <!-- COMMENT HUB LINK (Points to your standalone comment page) -->
         <a href="contact.html" class="comment-hub-btn">💬 Open Archive Comments</a>
+
+        <div class="emoji-key-box">
+            <span class="key-item">🧠 Smart</span>
+            <span class="key-item">🔮 Imaginative</span>
+            <span class="key-item">❤️ Love</span>
+            <span class="key-item">👍 Like</span>
+            <span class="key-item">😂 Funny</span>
+            <span class="key-item">😐 Neutral</span>
+            <span class="key-item">👎 Dislike</span>
+            <span class="key-item">😡 Hate</span>
+        </div>
     </div>
-    <div class="emoji-key-box">
-        <span class="key-item">🧠 Smart</span>
-        <span class="key-item">🔮 Imaginative</span>
-        <span class="key-item">❤️ Love</span>
-        <span class="key-item">👍 Like</span>
-        <span class="key-item">😂 Funny</span>
-        <span class="key-item">😐 Neutral</span>
-        <span class="key-item">👎 Dislike</span>
-        <span class="key-item">😡 Hate</span>
-    </div>
-</div>
-    
 
     <div class="main-content">
 
-        <!-- CATEGORY 1: TRAGIC HEROES -->
         <div class="genre-section">
             <h2 class="genre-title">Tragic or Heroes</h2>
             <div class="gallery-grid">
                 
                 <div class="model-card">
-                    <!-- Swap src placeholder with your actual GLB file name -->
                     <model-viewer src="Meshy_AI_Abyssal_Guardian_0509141700_texture.glb" auto-rotate camera-controls shadow-intensity="1"></model-viewer>
                     <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white">AQUALON </span>
-                        <p style="font-size:0.85rem; color:#aaa; margin: 5px 0 0 0;"><ul><strong> CHARACTER BASEBALL CARD: AQUALON</strong>
-<li>Category: Doctor Who Universe (Fan Fiction)</li>
-<li>Classification: Time-Fracturing Aqualumian Warrior</li>
-<li>Origin Planet: Aqualumia's Veil (The Bioluminescent Trench)</li></ul>
-<ul><strong>CORE ATTRIBUTES</strong>
-<li>Height: 6' 5" (Terrestrial Armor Scaling)</li>
-<li>Weight: 310 lbs (High-Density Chitin & Hydro-Regulated Plating)</li>
-<li>Armor/Attire: Iridescent Teal Shell with Polished Deep-Sea Alloys</li>
-<li>Signature Tell: Flash of Multichannel Polarized Eye Light</li></ul>
-<ul><strong>PRIMARY ABILITIES</strong>
-<li>The Chronos-Punch: A physical strike delivered with such extreme, concentrated velocity that it fractures the local spacetime fabric, dropping raw kinetic shockwaves into the timeline.</li>
-<li>Temporal Morse-Rhythm: Weaponizes his high-impact striking capability to send rhythmic, vibrational code backwards and forwards through history to alert allies.</li>
-<li>Armored Hydro-Venting: Specialized terrestrial gill filtration units that convert moisture in the air into a high-pressure cooling loop, keeping his internal muscle fibers from overheating outside of water.</li></ul>
-<ul><strong>PLAYER STATS</strong>
-<li>Stealth: 40/100 (Heavy, armored frame is built for front-line impact, not shadows)</li>
-<li>Durability: 85/100 (Layered bio-chitin protects against deep-sea pressure and heavy laser fire)</li>
-<li>Firepower: 90/100 (Spacetime shattering shockwaves bypass traditional energy shields)</li>
-<li>Tragedy Level: MAX (Ensnared by a mad tycoon's schemes, sacrificing his own future to send a warning across the stars)</li></ul>
-<strong>CARD BIO / FLAVOR TEXT</strong>
-"A noble guardian born from the deep shimmering currents of Aqualumia's Veil.
-                            When the tyrannical Klineman Halpen threatened to harvest his people's legacy,
-                            Aqualon struck a blow that echoed through the ages. 
-He doesn't just punch through steel—he punches straight through time."</p>
+                        <span style="font-weight:bold; font-size:1.2em; color:white">AQUALON</span>
+                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;">
+                            <ul><strong>CHARACTER BASEBALL CARD: AQUALON</strong>
+                                <li>Category: Doctor Who Universe (Fan Fiction)</li>
+                                <li>Classification: Time-Fracturing Aqualumian Warrior</li>
+                                <li>Origin Planet: Aqualumia's Veil (The Bioluminescent Trench)</li>
+                            </ul>
+                            <ul><strong>CORE ATTRIBUTES</strong>
+                                <li>Height: 6' 5"</li>
+                                <li>Weight: 310 lbs</li>
+                                <li>Armor/Attire: Iridescent Teal Shell with Polished Deep-Sea Alloys</li>
+                                <li>Signature Tell: Flash of Multichannel Polarized Eye Light</li>
+                            </ul>
+                            <ul><strong>PRIMARY ABILITIES</strong>
+                                <li>The Chronos-Punch: Spacetime fracturing kinetic strikes.</li>
+                                <li>Temporal Morse-Rhythm: Sends back-and-forth communication codes through history.</li>
+                                <li>Armored Hydro-Venting: Terrestrial gill filtration units preventing overheating.</li>
+                            </ul>
+                            <ul><strong>PLAYER STATS</strong>
+                                <li>Stealth: 40/100</li>
+                                <li>Durability: 85/100</li>
+                                <li>Firepower: 90/100</li>
+                                <li>Tragedy Level: MAX</li>
+                            </ul>
+                            <strong>CARD BIO / FLAVOR TEXT</strong>
+                            <p>"A noble guardian born from deep shimmering currents... He doesn't just punch through steel—he punches straight through time."</p>
+                        </div>
                     </div>
                     <div class="interaction-bar">
-                    <button class="emoji-btn" onclick="addCount(this)">🧠 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">🔮 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">❤️ <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👍 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😂 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😐 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👎 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😡 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">🧠 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">🔮 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">❤️ <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👍 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😡 <span class="count-num">0</span></button>
                     </div>
-                    
                 </div>
                 
                 <div class="model-card">
-                    <!-- Swap src placeholder with your actual GLB file name -->
                     <model-viewer src="Meshy_AI_Emberbound Paladin_1780570653_image-to-3d-texture-compressed.glb" auto-rotate camera-controls shadow-intensity="1"></model-viewer>
                     <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white"> Crimson Viril </span>
-                        <p style="font-size:0.85rem; color:#aaa; margin: 5px 0 0 0;"><ul><strong> CHARACTER BASEBALL CARD:</strong> CRIMSON VIGIL
-<li>Category: Crimson Vigil Universe (Original Fiction)</li>
-<li>Classification: Jovian-Enhanced Solar Guardian</li>
-<li>Origin: Earth (Empowered by a Jovian Fragment)</li></ul>
-<ul><strong>CORE ATTRIBUTES</strong>
-<li>Height: 5' 9" (Human Stature)</li>
-<li>Weight: 150 lbs (Enhanced by celestial density)</li>
-<li>Armor/Attire: White and crimson armor featuring a knight-themed chest plate and a flowing cape, adorned with a custom heraldic symbol.</li>
-<li>Signature Tell: The hum of solar energy building, followed by a brilliant golden glow radiating from her palms.</li></ul>
-<ul><strong>PRIMARY ABILITIES</strong>
-<li>Solar-Palm Discharge: Channels intense, superheated solar plasma energy through her hands, capable of searing heat or focused blasts.</li>
-<li>Flower-Blade Barrage: Conjures and launches razor-sharp, white-outlined crimson floral blades that move with lethal precision.</li>
-<li>Jovian Resilience: Possesses the immense physical strength and durability granted by the Jovian fragment she cracked open as a child.</li></ul>
-<ul><strong>PLAYER STATS</strong>
-<li>Stealth: 30/100 (Built to stand tall as a guardian; not designed for hiding)</li>
-<li>Durability: 90/100 (Resilient enough to withstand extreme pressure and combat damage)</li>
-<li>Firepower: 95/100 (High-intensity solar energy and projectile blade mastery)</li>
-<li>Tragedy Level: MAX (The burden of wielding god-like power while trying to save a sister who no longer recognizes her)</li></ul>
-<strong>CARD BIO / FLAVOR TEXT</strong>
-"Born from a broken fragment of a giant planet and a curious child's discovery. She is the light of the sun and the strength of the stars. She battles not for glory, but to find the sister lost to the shadows—the thorn in her side that she hopes to one day bring home."</p>
+                        <span style="font-weight:bold; font-size:1.2em; color:white">Crimson Vigil</span>
+                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;">
+                            <ul><strong>CHARACTER BASEBALL CARD: CRIMSON VIGIL</strong>
+                                <li>Category: Crimson Vigil Universe (Original Fiction)</li>
+                                <li>Classification: Jovian-Enhanced Solar Guardian</li>
+                                <li>Origin: Earth (Empowered by a Jovian Fragment)</li>
+                            </ul>
+                            <ul><strong>CORE ATTRIBUTES</strong>
+                                <li>Height: 5' 2"</li>
+                                <li>Weight: 150 lbs</li>
+                                <li>Armor/Attire: White and crimson armor with flowing cape</li>
+                                <li>Signature Tell: Brilliant golden glow radiating from her palms</li>
+                            </ul>
+                            <ul><strong>PRIMARY ABILITIES</strong>
+                                <li>Solar-Palm Discharge: Channels superheated plasma energy.</li>
+                                <li>Flower-Blade Barrage: Launches razor-sharp floral blades.</li>
+                                <li>Jovian Resilience: Immense planetary physical protection.</li>
+                            </ul>
+                            <ul><strong>PLAYER STATS</strong>
+                                <li>Stealth: 30/100</li>
+                                <li>Durability: 90/100</li>
+                                <li>Firepower: 95/100</li>
+                                <li>Tragedy Level: MAX</li>
+                            </ul>
+                            <strong>CARD BIO / FLAVOR TEXT</strong>
+                            <p>"Born from a broken fragment of a giant planet... She battles not for glory, but to find the sister lost to the shadows."</p>
+                        </div>
                     </div>
                     <div class="interaction-bar">
-                    <button class="emoji-btn" onclick="addCount(this)">🧠 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">🔮 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">❤️ <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👍 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😂 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😐 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👎 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😡 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">🧠 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">🔮 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">❤️ <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👍 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😡 <span class="count-num">0</span></button>
                     </div>
-                    
                 </div>
+
                 <div class="model-card">
-                    <!-- Swap src placeholder with your actual GLB file name -->
                     <model-viewer src="Meshy_AI_Crimson_Core_0502004451_texture.glb" auto-rotate camera-controls shadow-intensity="1"></model-viewer>
                     <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white"> Boom Belly Baby</span>
-                        <p style="font-size:0.85rem; color:#aaa; margin: 5px 0 0 0;"> <ul><strong>CHARACTER BASEBALL CARD: BOOM BELLY</strong>
-<li>Category: Puppet Master Universe (Fan Fiction)</li>
-<li>Classification: Soul-Infused Wooden Automaton</li>
-<li>Manufacturer: André Toulon / The Puppet Master (1940s Era)</li></ul>  
-<ul><strong>CORE ATTRIBUTES</strong>
-<li>Height: 2' 4" (Standard Toulon Puppet Scale)</li>
-<li>Weight: 14 lbs (Mahogany Wood & Brass Clockwork)</li>
-<li>Armor/Attire: Weathered Brown Leather Jacket</li>
-<li>Signature Tell: Fire-Opal Red Eye Glow</li></ul>
-<ul><strong>PRIMARY ABILITIES</strong>
-<li>The Bomb Bay Unfold: Her central surgical scar mechanically splits open to deploy a red jewel.
-<li>Gem Generation: Manifests smooth, perfectly spherical red "Stones of the Secret Fire" from her hollow core.</li>
-<li>The Snap: A sharp snap of her jointed wooden fingers serves as the timed detonator for any deployed gems.</li></ul>
-<ul><strong>PLAYER STATS</strong>
-<li>Stealth: 75/100 (Blends perfectly with inanimate dolls until the trap is set)</li>
-<li>Durability: 60/100 (Sturdy wood-grain frame, but susceptible to extreme impact)</li>
-<li>Firepower: 95/100 (High-yield explosive radius compressed into small jewelry)</li>
-<li>Tragedy Level: MAX (Driven by the haunting memory of the workshop explosion) </li></ul>
-<strong>CARD BIO / FLAVOR TEXT</strong>
-"Rebuilt from the ashes of a tragic workshop accident, 
-she is Toulon's most explosive creation. Where a heartbeat should be, 
-a ticking drum countdowns the seconds. When the fingers snap, 
-the wish is granted—and the room goes boom."</p>
+                        <span style="font-weight:bold; font-size:1.2em; color:white">Boom Belly Baby</span>
+                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;"> 
+                            <ul><strong>CHARACTER BASEBALL CARD: BOOM BELLY</strong>
+                                <li>Category: Puppet Master Universe (Fan Fiction)</li>
+                                <li>Classification: Soul-Infused Wooden Automaton</li>
+                                <li>Manufacturer: André Toulon (1940s Era)</li>
+                            </ul>  
+                            <ul><strong>CORE ATTRIBUTES</strong>
+                                <li>Height: 2' 4"</li>
+                                <li>Weight: 14 lbs</li>
+                                <li>Armor/Attire: Weathered Brown Leather Jacket</li>
+                                <li>Signature Tell: Fire-Opal Red Eye Glow</li>
+                            </ul>
+                            <ul><strong>PRIMARY ABILITIES</strong>
+                                <li>The Bomb Bay Unfold: Structural splitting to deploy core payload.</li>
+                                <li>Gem Generation: Manifests explosive "Stones of the Secret Fire."</li>
+                                <li>The Snap: Sharp jointed click serving as timed detonator.</li>
+                            </ul>
+                            <ul><strong>PLAYER STATS</strong>
+                                <li>Stealth: 75/100</li>
+                                <li>Durability: 60/100</li>
+                                <li>Firepower: 95/100</li>
+                                <li>Tragedy Level: MAX</li>
+                            </ul>
+                            <strong>CARD BIO / FLAVOR TEXT</strong>
+                            <p>"Rebuilt from the ashes of a tragic workshop accident... When the fingers snap, the wish is granted—and the room goes boom."</p>
+                        </div>
                     </div>
                     <div class="interaction-bar">
-                    <button class="emoji-btn" onclick="addCount(this)">🧠 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">🔮 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">❤️ <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👍 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😂 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😐 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👎 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😡 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">🧠 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">🔮 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">❤️ <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👍 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😡 <span class="count-num">0</span></button>
                     </div>
-                    
                 </div>
+
                 <div class="model-card">
                     <model-viewer src="Meshy_AI_Icebound_Warden_0514112758_texture-compressed.glb" auto-rotate camera-controls></model-viewer>
                     <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white"> Atlantis Warrior</span>
-                        <p style="font-size:0.85rem; color:#aaa; margin: 5px 0 0 0;"> <ul> <strong>NOCTULUC ETHEREAL</strong>
-<li>Classification: Immortal Atlantean Guardian / Bio-Genetic Nightmare</li>
-<li>Origin: The Deep-Sea Atlantean Caverns </li></ul>
-<ul><strong>CORE ATTRIBUTES</strong>
-<li>Height: 5' 2" (Calculated at stance)</li>
-<li>Weight: 185 lbs (Denser than human bone due to bio-metallic plating)</li>
-<li>Armor: Shifting Atlantean Chitin & Bio-Metallic Alloy</li>
-<li>Signature Tell: Permanent, Unsettling Axolotl Smile & Multichannel Blue Star Glow</li></ul>
-<ul><strong>PLAYER STATS</strong>
-<li>Stealth: 80/100</li>
-<li>Durability: 95/100 (Axolotl-level rapid cellular regeneration)</li>
-<li>Firepower: 90/100</li>
-<li>Tragedy Level: MAX (An immortal guardian trapped for millennia, driven by ancient instinct)</li></ul>
-<ul><strong>PRIMARY ABILITIES</strong>
-<li>Axolotl Regeneration: Near-instant cellular repair; limbs, tissues, and plating regrow fully in seconds after damage.</li>
-<li>The Wombat Butt (Armored Ram): A concentrated, high-density kinetic strike using the creature's armored posterior to shatter bulkheads and structural steel.</li>
-<li>Neuro-Toxic Venom: Highly potent venom derived from Blue Glaucus-like traits; lethal on contact through skin or blood.</li>
-<li>Razor-Sharp Dentition: Rows of needle-like teeth designed for piercing reinforced diving suits and crushing alloys.</li></ul>
-<strong>CARD BIO:</strong> 
-    "Born from the ancient, sunken city of Atlantis,
-this immortal guardian was never meant to be disturbed. With a grin that defies the darkness and a physiology that refuses to break,
-                            it protects the secrets of the deep. It doesn't just hunt its prey—it toys with them until the final 'zoom, zoom, boom, splat.'"</p>
+                        <span style="font-weight:bold; font-size:1.2em; color:white">Atlantis Warrior</span>
+                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;"> 
+                            <ul><strong>CHARACTER BASEBALL CARD: NOCTULUC ETHEREAL</strong>
+                                <li>Classification: Immortal Atlantean Guardian</li>
+                                <li>Origin: Deep-Sea Atlantean Caverns</li>
+                            </ul>
+                            <ul><strong>CORE ATTRIBUTES</strong>
+                                <li>Height: 5' 2"</li>
+                                <li>Weight: 185 lbs</li>
+                                <li>Armor: Shifting Atlantean Chitin Alloy</li>
+                                <li>Signature Tell: Unsettling Axolotl Smile & Blue Glow</li>
+                            </ul>
+                            <ul><strong>PRIMARY ABILITIES</strong>
+                                <li>Axolotl Regeneration: Near-instant cellular matrix repair.</li>
+                                <li>The Wombat Butt: Concentrated, high-density armored posterior ram strike.</li>
+                                <li>Neuro-Toxic Venom: Lethal Blue Glaucus predatory toxin contact.</li>
+                            </ul>
+                            <ul><strong>PLAYER STATS</strong>
+                                <li>Stealth: 80/100</li>
+                                <li>Durability: 95/100</li>
+                                <li>Firepower: 90/100</li>
+                                <li>Tragedy Level: MAX</li>
+                            </ul>
+                            <strong>CARD BIO:</strong> 
+                            <p>"Born from the ancient, sunken city of Atlantis... It doesn't just hunt its prey—it toys with them until the final 'zoom, zoom, boom, splat.'"</p>
+                        </div>
                     </div>
                     <div class="interaction-bar">
-                    <button class="emoji-btn" onclick="addCount(this)">🧠 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">🔮 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">❤️ <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👍 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😂 <span class="count-num">0</span></button>
-                     <button class="emoji-btn" onclick="addCount(this)">😐 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👎 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😡 <span class="count-num">0</span></button>
-                   
+                        <button class="emoji-btn" onclick="addLike(this)">🧠 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">🔮 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">❤️ <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👍 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😡 <span class="count-num">0</span></button>
                     </div>
-
                 </div>
+                
+                <div class="model-card">
+                    <model-viewer src="Meshy_AI_Emberbound Paladin_1780570653_image-to-3d-texture-compressed.glb" auto-rotate camera-controls shadow-intensity="1"></model-viewer>
+                    <div style="padding:20px">
+                        <span style="font-weight:bold; font-size:1.2em; color:white">Crimson Vigil</span>
+                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;">
+                            <ul><strong>CHARACTER BASEBALL CARD: CRIMSON VIGIL</strong>
+                                <li>Category: Crimson Vigil Universe (Original Fiction)</li>
+                                <li>Classification: Jovian-Enhanced Solar Guardian</li>
+                                <li>Origin: Earth (Empowered by a Jovian Fragment)</li>
+                            </ul>
+                            <ul><strong>CORE ATTRIBUTES</strong>
+                                <li>Height: 5' 2"</li>
+                                <li>Weight: 150 lbs</li>
+                                <li>Armor/Attire: White and crimson armor with flowing cape</li>
+                                <li>Signature Tell: Brilliant golden glow radiating from her palms</li>
+                            </ul>
+                            <ul><strong>PRIMARY ABILITIES</strong>
+                                <li>Solar-Palm Discharge: Channels superheated plasma energy.</li>
+                                <li>Flower-Blade Barrage: Launches razor-sharp floral blades.</li>
+                                <li>Jovian Resilience: Immense planetary physical protection.</li>
+                            </ul>
+                            <ul><strong>PLAYER STATS</strong>
+                                <li>Stealth: 30/100</li>
+                                <li>Durability: 90/100</li>
+                                <li>Firepower: 95/100</li>
+                                <li>Tragedy Level: MAX</li>
+                            </ul>
+                            <strong>CARD BIO / FLAVOR TEXT</strong>
+                            <p>"Born from a broken fragment of a giant planet... She battles not for glory, but to find the sister lost to the shadows."</p>
+                        </div>
+                    </div>
+                    <div class="interaction-bar">
+                        <button class="emoji-btn" onclick="addLike(this)">🧠 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">🔮 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">❤️ <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👍 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😡 <span class="count-num">0</span></button>
+                    </div>
+                </div>
+
+                <div class="model-card">
+                    <model-viewer src="Meshy_AI_Crimson_Core_0502004451_texture.glb" auto-rotate camera-controls shadow-intensity="1"></model-viewer>
+                    <div style="padding:20px">
+                        <span style="font-weight:bold; font-size:1.2em; color:white">Boom Belly Baby</span>
+                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;"> 
+                            <ul><strong>CHARACTER BASEBALL CARD: BOOM BELLY</strong>
+                                <li>Category: Puppet Master Universe (Fan Fiction)</li>
+                                <li>Classification: Soul-Infused Wooden Automaton</li>
+                                <li>Manufacturer: André Toulon (1940s Era)</li>
+                            </ul>  
+                            <ul><strong>CORE ATTRIBUTES</strong>
+                                <li>Height: 2' 4"</li>
+                                <li>Weight: 14 lbs</li>
+                                <li>Armor/Attire: Weathered Brown Leather Jacket</li>
+                                <li>Signature Tell: Fire-Opal Red Eye Glow</li>
+                            </ul>
+                            <ul><strong>PRIMARY ABILITIES</strong>
+                                <li>The Bomb Bay Unfold: Structural splitting to deploy core payload.</li>
+                                <li>Gem Generation: Manifests explosive "Stones of the Secret Fire."</li>
+                                <li>The Snap: Sharp jointed click serving as timed detonator.</li>
+                            </ul>
+                            <ul><strong>PLAYER STATS</strong>
+                                <li>Stealth: 75/100</li>
+                                <li>Durability: 60/100</li>
+                                <li>Firepower: 95/100</li>
+                                <li>Tragedy Level: MAX</li>
+                            </ul>
+                            <strong>CARD BIO / FLAVOR TEXT</strong>
+                            <p>"Rebuilt from the ashes of a tragic workshop accident... When the fingers snap, the wish is granted—and the room goes boom."</p>
+                        </div>
+                    </div>
+                    <div class="interaction-bar">
+                        <button class="emoji-btn" onclick="addLike(this)">🧠 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">🔮 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">❤️ <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👍 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😡 <span class="count-num">0</span></button>
+                    </div>
+                </div>
+
+                <div class="model-card">
+                    <model-viewer src="Meshy_AI_Icebound_Warden_0514112758_texture-compressed.glb" auto-rotate camera-controls></model-viewer>
+                    <div style="padding:20px">
+                        <span style="font-weight:bold; font-size:1.2em; color:white">Atlantis Warrior</span>
+                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;"> 
+                            <ul><strong>CHARACTER BASEBALL CARD: NOCTULUC ETHEREAL</strong>
+                                <li>Classification: Immortal Atlantean Guardian</li>
+                                <li>Origin: Deep-Sea Atlantean Caverns</li>
+                            </ul>
+                            <ul><strong>CORE ATTRIBUTES</strong>
+                                <li>Height: 5' 2"</li>
+                                <li>Weight: 185 lbs</li>
+                                <li>Armor: Shifting Atlantean Chitin Alloy</li>
+                                <li>Signature Tell: Unsettling Axolotl Smile & Blue Glow</li>
+                            </ul>
+                            <ul><strong>PRIMARY ABILITIES</strong>
+                                <li>Axolotl Regeneration: Near-instant cellular matrix repair.</li>
+                                <li>The Wombat Butt: Concentrated, high-density armored posterior ram strike.</li>
+                                <li>Neuro-Toxic Venom: Lethal Blue Glaucus predatory toxin contact.</li>
+                            </ul>
+                            <ul><strong>PLAYER STATS</strong>
+                                <li>Stealth: 80/100</li>
+                                <li>Durability: 95/100</li>
+                                <li>Firepower: 90/100</li>
+                                <li>Tragedy Level: MAX</li>
+                            </ul>
+                            <strong>CARD BIO:</strong> 
+                            <p>"Born from the ancient, sunken city of Atlantis... It doesn't just hunt its prey—it toys with them until the final 'zoom, zoom, boom, splat.'"</p>
+                        </div>
+                    </div>
+                    <div class="interaction-bar">
+                        <button class="emoji-btn" onclick="addLike(this)">🧠 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">🔮 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">❤️ <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👍 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😡 <span class="count-num">0</span></button>
+                    </div>
+                </div>
+
             </div>
         </div>
 
-        <!-- CATEGORY 2: MYTHOLOGICAL CREATURES OF ALL COUNTRIES -->
         <div class="genre-section">
-            <h2 class="genre-title">Merging Mythological Creatures of Countries all over the world</h2>
+            <h2 class="genre-title">Merging Mythological Creatures Across The World</h2>
             <div class="gallery-grid">
                 
                 <div class="model-card">
                     <model-viewer src="Meshy_AI_The Piper of the Cavern_1779948739_image-to-3d-texture-compressed.glb" auto-rotate camera-controls></model-viewer>
                     <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white">The merging of mythological of Afghan Amalgam </span>
-                        <p style="font-size:0.85rem; color:#aaa; margin: 5px 0 0 0;"><ul><strong>Chimeric Entity: The Afghan Amalgam</strong>
-<strong>General Overview</strong>
-<li>Origin: Afghanistan (A synthetic amalgamation of classic regional folklore and mythology).</li>
-<li>Classification: Mythological Hybrid / Chimeric Guardian.</li>
-<li>Core Philosophy: A physical manifestation of contrasting regional tales—blending ancient Zoroastrian terrors, trickster Jinns, musical predators, and benevolent celestial protectors into a single unified form.</li>
-<ul><strong>Anatomical Breakdown (The Merge)</strong>
-<li>Core Framework: The massive, stone-textured, and hyper-muscular body of a Div (Ancient Giant Demon).</li>
-<li>Stance & Foundation: The spherical, hoof-like "round feet" of the Pai Girdak (Hammam Jinn).</li>
-<li>Olfactory & Vocal Apparatus: The long, multi-perforated flute-snout of the Siwānis (Musical Beast of Kabul).</li>
-<li>Facial Features: The weathered, striking countenance and fiery-red mane of the Madar-i-Al (Mother Al).</li>
-<li>Appendages: The radiant, peacock-feathered wings and loyal canine ears of the majestic Simurgh (The Wise Guardian Bird).</li></ul>
-<ul><strong>Attributes & Abilities</strong>
-<li>Continuity Matrix: Much like a perfect circle where all points are equal, this entity functions as a balanced ecosystem, utilizing every distinct anatomical feature in tandem.
-<li>Resonance Haunting: Uses its Siwānis nose to blow air through its multi-channeled snout, generating an enchanting, hypnotic melody that lures targets into a trance before they even see its monstrous form.</li>
-<li>Grounded Paradox: The heavy, low-center-of-gravity Div body combined with the circular Pai Girdak feet allows it to remain absolutely unmovable on any terrain, though its movements defy standard bipedal physics.</li>
-<li>Celestial Lift & Aegis: Despite its heavy, subterranean stone chassis, the glowing Simurgh wings grant it effortless, magical flight and high-altitude mobility.</li>
-<li>Primal Acute Awareness: The Simurgh dog ears offer hyper-sensitive acoustic tracking, ensuring it can never be ambushed, while the intimidating gaze of the Madar-i-Al face evokes natural psychological dread.</li></ul></p>
-                  </div>
-                    <div class="interaction-bar">
-                    <button class="emoji-btn" onclick="addCount(this)">🧠 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">🔮 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">❤️ <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👍 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😂 <span class="count-num">0</span></button>
-                     <button class="emoji-btn" onclick="addCount(this)">😐 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👎 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😡 <span class="count-num">0</span></button>
-                   
+                        <span style="font-weight:bold; font-size:1.2em; color:white">Afghan Amalgam</span>
+                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;">
+                            <ul><strong>Chimeric Entity: The Afghan Amalgam</strong>
+                                <li>Origin: Afghanistan Hybrid</li>
+                                <li>Classification: Mythological Hybrid Guardian</li>
+                            </ul>
+                            <ul><strong>ANATOMICAL BREAKDOWN</strong>
+                                <li>Core Framework: Stone-textured giant chassis of a Div.</li>
+                                <li>Foundation: Spherical hoof-like round feet of the Pai Girdak.</li>
+                                <li>Vocal Apparatus: Multi-perforated flute-snout of the Siwānis.</li>
+                                <li>Wings/Ears: Peacock feathered wings and loyal hound ears of the Simurgh.</li>
+                            </ul>
+                            <ul><strong>ATTRIBUTES & ABILITIES</strong>
+                                <li>Resonance Haunting: Generates enchanting, hypnotic melodies via flute-snout.</li>
+                                <li>Grounded Paradox: Circular foundation provides unmovable terrain stability.</li>
+                                <li>Celestial Lift: Simurgh wings grant effortless flight capabilities.</li>
+                            </ul>
+                        </div>
                     </div>
-
+                    <div class="interaction-bar">
+                        <button class="emoji-btn" onclick="addLike(this)">🧠 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">🔮 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">❤️ <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👍 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😡 <span class="count-num">0</span></button>
+                    </div>
                 </div>
 
-            </div><div class="model-card">
+                <div class="model-card">
                     <model-viewer src="Meshy_AI_Five-Headed Dragon_1780304430_image-to-3d-texture-compressed.glb" auto-rotate camera-controls></model-viewer>
                     <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white">The merging of mythological of Alabama</span>
-                        <p style="font-size:0.85rem; color:#aaa; margin: 5px 0 0 0;"> <ul><strong>CHARACTER BASEBALL CARD: THE ALBANIAN </strong>
-<li>Category: Albanian Mythology Universe (Original Fiction)</li>
-<li>Classification: Multi-Headed Chimeric Leviathan / Draconic Amalgam</li>
-<li>Origin: The Peaks and Caverns of the Albanian Wilderness</li></ul>
-<ul><strong>CORE ATTRIBUTES</strong>
-<li>Height: 18' 4" (Massive draconic and multi-headed scale)</li>
-<li>Weight: 2,450 lbs (Denser than mountain stone due to fortified draconic hide)</li>
-<li>Armor/Attire: High-altitude, multi-layered Himshila crag-skin armor plating</li>
-<li>Signature Tell: A radiant, blinding golden Ora aura flashing right before a multi-headed strike</li></ul>
-<ul><strong>PRIMARY ABILITIES</strong>
-<li>Four-Fold Mythic Strike: Weaponizes a terrifying row of elemental heads, swapping its traditional draconic focus for the unique curses of the Xhvitnea, Xhindia Detit, and Dhombi.</li>
-<li>Zanat-Claw Onslaught: Utilizes multiple pairs of powerful, swift fairy-warrior arms to fiercely swing its devastating heavy club in rapid succession.</li>
-<li>Shpella E ORAVE Tail-Whip: A heavy, crushing serpentine tail action capable of sweeping away entire battle lines or shattering cave openings with a single back-swing.</li>
-<li>Dhia E Egër Aerial Ascent: Defies its massive, heavy ground weight by deploying massive, goat-fiend wings to lift seamlessly into storm clouds.</li></ul>
-<ul><strong>PLAYER STATS</strong>
-<li>Stealth: 15/100 (A glowing, multi-headed dragon wielding a giant club is impossible to miss)</li>
-<li>Durability: 98/100 (Fortified by rigid, mountainous Himshila stone-skin and constant Ora regeneration)</li>
-<li>Firepower: 95/100 (Combines sea curses, elemental bites, and massive kinetic club force)</li>
-<li>Tragedy Level: MAX (A chaotic fusion of Albania’s greatest protectors and deepest terrors, forced into one roaring shell)</li></ul>
-<ul><strong>CARD BIO / FLAVOR TEXT</strong>
-<li>"Born from a chaotic convergence deep within the mountain crevasses, this shifting titan is Albanian folklore given terrifying, singular life. It commands the skies with fiendish wings, cracks the earth with a giant's club, and glares through a terrifying row of mythic heads. It doesn't just haunt the old trails—it rules them with a brilliant, blinding fury."</li></ul> </p>  
+                        <span style="font-weight:bold; font-size:1.2em; color:white">Albanian Amalgam</span>
+                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;"> 
+                            <ul><strong>CHARACTER BASEBALL CARD: THE ALBANIAN</strong>
+                                <li>Category: Albanian Mythology Universe</li>
+                                <li>Classification: Multi-Headed Draconic Amalgam</li>
+                                <li>Origin: Peaks and Caverns of Albanian Wilderness</li>
+                            </ul>
+                            <ul><strong>CORE ATTRIBUTES</strong>
+                                <li>Height: 18' 4"</li>
+                                <li>Weight: 2,450 lbs</li>
+                                <li>Armor: High-altitude Himshila crag-skin plates</li>
+                                <li>Signature Tell: Blinding golden Ora aura flashes</li>
+                            </ul>
+                            <ul><strong>PRIMARY ABILITIES</strong>
+                                <li>Four-Fold Strike: Alternates focus with Xhvitnea and Dhombi curses.</li>
+                                <li>Zanat-Claw Onslaught: Fairy-warrior arms swing heavy clubs in sync.</li>
+                                <li>Dhia E Egër Ascent: Giant wings lifting heavy stone chassis into clouds.</li>
+                            </ul>
+                            <ul><strong>PLAYER STATS</strong>
+                                <li>Stealth: 15/100</li>
+                                <li>Durability: 98/100</li>
+                                <li>Firepower: 95/100</li>
+                                <li>Tragedy Level: MAX</li>
+                            </ul>
+                        </div>
                     </div>
                     <div class="interaction-bar">
-                    <button class="emoji-btn" onclick="addCount(this)">🧠 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">🔮 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">❤️ <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👍 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😂 <span class="count-num">0</span></button>
-                     <button class="emoji-btn" onclick="addCount(this)">😐 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👎 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😡 <span class="count-num">0</span></button>
-                   
+                        <button class="emoji-btn" onclick="addLike(this)">🧠 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">🔮 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">❤️ <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👍 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😡 <span class="count-num">0</span></button>
                     </div>
-
                 </div>
 
-        </div>
+            </div>
         </div>
 
-        <!-- CATEGORY 3: HOROSCOPES & HAIRSTYLES -->
         <div class="genre-section">
             <h2 class="genre-title">Horoscopes & Hairstyles</h2>
             <div class="gallery-grid">
@@ -507,133 +640,117 @@ this immortal guardian was never meant to be disturbed. With a grin that defies 
                 <div class="model-card">
                     <model-viewer src="Meshy_AI_Azure Cascade_1780024665_image-to-3d-texture-compressed.glb" auto-rotate camera-controls></model-viewer>
                     <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white"> Aquarius hairstyle </span>
-                        <p style="font-size:0.85rem; color:#aaa; margin: 5px 0 0 0;"><ul><strong> VITAL STATS</strong>
-<li>Style Name: The Torrential Bearer Updo</li>
-<li>Element: Air (with a Water-mimicking aesthetic)</li>
-<li>Ruler Planet: Uranus</li>
-<li>Primary Geometry: Sinuous S-curves & Stepped Zig-Zags</li>
-<li>Material Accents: Burnished Copper & Aquamarine Sheen</li></ul>
-<ul><strong>📊 CORE ATTRIBUTES (Scale of 1–100)</strong>
-<li>FLOW / AERODYNAMICS: 96/100
-The massive S-curve of the high ponytail has incredible fluid motion. It literally looks like a frozen wave pouring out of a vase, giving it a near-perfect aerodynamic rating.</li>
-<li>GEOMETRIC SHARPNESS: 88/100
-Those layered, blocky bangs are cut into incredibly precise, jagged zig-zag steps. It balances out the smooth curves of the ponytail with a stark, calculated edge.</li>
-<li>STRUCTURAL RIGIDITY: 45/100
-Aside from the heavy copper braided cuff holding the entire mass together at the apex, the hair itself is designed to look dynamic, soft, and constantly in motion rather than stiff.</li>
-<li>COSMIC AURA: 91/100
-The subtle gradient color shift—moving from a deep oceanic teal at the roots to a bright, glowing ice-blue at the tips—gives it a highly charged, ethereal energy.</li></ul>
-<ul><strong>⚡ SPECIAL TRAITS & ABILITIES</strong>
-<li>"The Water Bearer's Conduit"
-The engraved copper cuff acts as a central grounding point, channeling the cosmic energy of the sign and increasing Aura output by +20% when the ponytail is in full motion.
-"Waveform Continuity"
-Because the flowing lines of the ponytail mimic a continuous, undulating current, this style grants a perfect balance trait, allowing the character to redirect any opposing kinetic force seamlessly.
-"Frequency Cut"
-The sharp, wave-like zig-zags at the bottom of the front bangs are styled to look like literal audio or energy frequencies. It gives the character an intellectual, analytical perk that pierces through illusions.The Ponytail "Water" </li>
-<li>Cascade: Because you sculpted the ponytail to look exactly like water pouring out of a bucket, that high Flow & Aerodynamics rating (96/100) is locked in. It represents the fluid, rushing motion of the current you created.</li>
-<li>The Bun "Bucket": The wrapped bun acting as the container provides the structure for the whole look. This anchors the Geometric Sharpness (88/100) and gives a reason for the heavy copper cuff to be there as a grounding point.</li>
-<li>The Zig-Zag Bangs: Cutting the exact parallel zig-zag glyph of the Aquarius symbol directly into the bangs perfectly justifies the "Frequency Cut" Special Trait. Those sharp, clean edges represent the precise, analytical energy of the sign.</li></ul></p>
+                        <span style="font-weight:bold; font-size:1.2em; color:white">Aquarius Hairstyle</span>
+                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;">
+                            <ul><strong>VITAL STATS</strong>
+                                <li>Style Name: The Torrential Bearer Updo</li>
+                                <li>Element: Air (Water-mimicking look)</li>
+                                <li>Ruler Planet: Uranus</li>
+                            </ul>
+                            <ul><strong>📊 CORE ATTRIBUTES</strong>
+                                <li>Flow/Aerodynamics: 96/100</li>
+                                <li>Geometric Sharpness: 88/100</li>
+                                <li>Structural Rigidity: 45/100</li>
+                                <li>Cosmic Aura: 91/100</li>
+                            </ul>
+                            <ul><strong>⚡ SPECIAL TRAITS</strong>
+                                <li>Water Bearer's Conduit: Copper braided cuff anchors aura by +20%.</li>
+                                <li>Frequency Cut: Parallel zig-zag bangs cut through target illusions.</li>
+                            </ul>
+                        </div>
                     </div>
                     <div class="interaction-bar">
-                    <button class="emoji-btn" onclick="addCount(this)">🧠 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">🔮 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">❤️ <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👍 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😂 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😐 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👎 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😡 <span class="count-num">0</span></button>
-                   
+                        <button class="emoji-btn" onclick="addLike(this)">🧠 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">🔮 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">❤️ <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👍 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😡 <span class="count-num">0</span></button>
                     </div>
-
                 </div>
-                </div><div class="model-card">
-                    <model-viewer src=" Meshy_AI_Coiled Crown_1780629312_image-to-3d-texture.glb" auto-rotate camera-controls></model-viewer>
+
+                <div class="model-card">
+                    <model-viewer src="Meshy_AI_Coiled Crown_1780629312_image-to-3d-texture.glb" auto-rotate camera-controls></model-viewer>
                     <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white"> Scorpio hairstyle</span>
-                        <p style="font-size:0.85rem; color:#aaa; margin: 5px 0 0 0;"> <ul><strong> VITAL STATS</strong>
-<li>Style Name: The Symmetrical Stinger Arc</li>
-<li>Element: Water</li>
-<li>Ruler Planet: Pluto / Mars</li>
-<li>Primary Geometry: Symmetrical Triple-Weaves & Arching Parabolas</li>
-<li>Material Accents: Onyx Pendulum Stinger & Pastel Prism Strands</li></ul>
-<ul><strong>📊 CORE ATTRIBUTES (Scale of 1–100)</strong>
-<li>STRUCTURAL RIGIDITY: 99/100 (+1 Upgrade)</li>
-<li>Those extra side braids act like structural buttresses leading right up into the bun. Combined with the internal wire armature needed for the main loop, this style is virtually indestructible and completely locked down.</li>
-<li>FLOW / AERODYNAMICS: 30/100 (-5 Adjustment) With tight, intricate braids now securing both sides of the head, there are zero loose strands to catch the wind. It sacrifices raw speed for total armor and control.</li>
-<li>STRIKE POTENTIAL: 95/100 The center mass of the arching tail braid remains perfectly primed for a forward strike, with the onyx pendulum focusing all her offensive energy right between the eyes.</li>
-<li>COSMIC AURA: 92/100 (+3 Upgrade) Weaving the pastel rainbow highlights through the side braids creates a hypnotic, rhythmic pattern on both profiles, pulling enemies into a false sense of security before the stinger drops.</li></ul>
-<ul><strong>⚡ SPECIAL TRAITS & ABILITIES</strong>
-<li>"Internal Armature" (The Support System)
-Thanks to the hidden structural core inside the main braid, the character is completely immune to impact-based staggering. The hair acts as a secondary helmet or shield.
-"Chitinous Symmetry" (NEW TRAIT)
-The six total side braids (three on each side) mimic the defensive leg structure of a scorpion. This flawless symmetry grants the character +20 Grounded Stability, making it impossible for opponents to knock her off balance from the side.
-"Vanguard Pendulum"
-The onyx spade jewel hanging over the forehead tracks enemy movements, granting the character a +15 bonus to precision, counter-attacks, and sensing danger before it strikes.</li></ul> </p>  
+                        <span style="font-weight:bold; font-size:1.2em; color:white">Scorpio Hairstyle</span>
+                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;"> 
+                            <ul><strong>VITAL STATS</strong>
+                                <li>Style Name: The Symmetrical Stinger Arc</li>
+                                <li>Element: Water</li>
+                                <li>Ruler Planet: Pluto / Mars</li>
+                            </ul>
+                            <ul><strong>📊 CORE ATTRIBUTES</strong>
+                                       <li>Structural Rigidity: 99/100</li>
+                                <li>Flow/Aerodynamics: 30/100</li>
+                                <li>Strike Potential: 95/100</li>
+                                <li>Cosmic Aura: 92/100</li>
+                            </ul>
+                            <ul><strong>⚡ SPECIAL TRAITS</strong>
+                                <li>Internal Armature: Stiff inner cabling prevents staggering hits.</li>
+                                <li>Chitinous Symmetry: Flawless braiding links add stability.</li>
+                            </ul>
+                        </div>
                     </div>
                     <div class="interaction-bar">
-                    <button class="emoji-btn" onclick="addCount(this)">🧠 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">🔮 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">❤️ <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👍 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😂 <span class="count-num">0</span></button>
-                     <button class="emoji-btn" onclick="addCount(this)">😐 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👎 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😡 <span class="count-num">0</span></button>
-                   
+                        <button class="emoji-btn" onclick="addLike(this)">🧠 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">🔮 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">❤️ <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👍 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😡 <span class="count-num">0</span></button>
                     </div>
-
                 </div>
-            
 
             </div>
         </div>     
     
-    <h2 class="genre-title">Human Furry</h2>
+        <div class="genre-section">
+            <h2 class="genre-title">Human Furry</h2>
             <div class="gallery-grid">
                 
                 <div class="model-card">
                     <model-viewer src="Meshy_AI_Serpentbound Huntress_1780577433_image-to-3d-texture-compressed.glb" auto-rotate camera-controls></model-viewer>
                     <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white"> </span>
-                        <p style="font-size:0.85rem; color:#aaa; margin: 5px 0 0 0;"></p>
-</div>
-                    <div class="interaction-bar">
-                    <button class="emoji-btn" onclick="addCount(this)">🧠 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">🔮 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">❤️ <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👍 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😂 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😐 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👎 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😡 <span class="count-num">0</span></button>
-                   
+                        <span style="font-weight:bold; font-size:1.2em; color:white">Serpentbound Huntress</span>
+                        <p style="font-size:0.85rem; color:#aaa; margin-top: 10px;">Dossier pending statistical updates.</p>
                     </div>
+                    <div class="interaction-bar">
+                        <button class="emoji-btn" onclick="addLike(this)">🧠 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">🔮 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">❤️ <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👍 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😡 <span class="count-num">0</span></button>
+                    </div>
+                </div>
 
-                </div><div class="model-card">
-                    <model-viewer src=" Meshy_AI_Flame_Breathing_Gryph_0605153522_image-to-3d-texture-compressed.glb" auto-rotate camera-controls></model-viewer>
+                <div class="model-card">
+                    <model-viewer src="Meshy_AI_Flame_Breathing_Gryph_0605153522_image-to-3d-texture-compressed.glb" auto-rotate camera-controls></model-viewer>
                     <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white"> </span>
-                        <p style="font-size:0.85rem; color:#aaa; margin: 5px 0 0 0;"></p>
-</div>
-                    <div class="interaction-bar">
-                    <button class="emoji-btn" onclick="addCount(this)">🧠 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">🔮 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">❤️ <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👍 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😂 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😐 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👎 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😡 <span class="count-num">0</span></button>
-                   
+                        <span style="font-weight:bold; font-size:1.2em; color:white">Flame-Breathing Gryph</span>
+                        <p style="font-size:0.85rem; color:#aaa; margin-top: 10px;">Dossier pending statistical updates.</p>
                     </div>
-
+                    <div class="interaction-bar">
+                        <button class="emoji-btn" onclick="addLike(this)">🧠 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">🔮 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">❤️ <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👍 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😡 <span class="count-num">0</span></button>
+                    </div>
                 </div>
 
             </div>
-</div>
+        </div>
 
-        <!-- CATEGORY 4: UNIQUE ANIMALS (UN-CATEGORIZED EXPERIMENTS) -->
         <div class="genre-section">
             <h2 class="genre-title">Unique Animals</h2>
             <div class="gallery-grid">
@@ -641,195 +758,177 @@ The onyx spade jewel hanging over the forehead tracks enemy movements, granting 
                 <div class="model-card">
                     <model-viewer src="Meshy_AI_Dusk_Howler_0606144929_image-to-3d-texture-compressed.glb" auto-rotate camera-controls></model-viewer>
                     <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white">Merged Specimen</span>
-                        <p style="font-size:0.85rem; color:#aaa; margin: 5px 0 0 0;">Experimental animal combinations and rare biological concept sculpts.</p>
+                        <span style="font-weight:bold; font-size:1.2em; color:white">Dusk Howler Specimen</span>
+                        <p style="font-size:0.85rem; color:#aaa; margin-top: 10px;">Experimental animal combinations and rare biological concept sculpts.</p>
                     </div>
                     <div class="interaction-bar">
-                    <button class="emoji-btn" onclick="addCount(this)">🧠 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">🔮 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">❤️ <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👍 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😂 <span class="count-num">0</span></button>
-               <button class="emoji-btn" onclick="addCount(this)">😐 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👎 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😡 <span class="count-num">0</span></button>
-                   
+                        <button class="emoji-btn" onclick="addLike(this)">🧠 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">🔮 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">❤️ <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👍 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😡 <span class="count-num">0</span></button>
                     </div>
-
                 </div>
 
             </div>
         </div>
         
-    </div>
-    <div class="genre-section">
-            <h2 class="genre-title"> Object and Places </h2>
+        <div class="genre-section">
+            <h2 class="genre-title">Objects and Places</h2>
             <div class="gallery-grid">
                 
                 <div class="model-card">
-                    <model-viewer src=" Meshy_AI_Crimson Skull Pyramid_1779707169_texture-compressed.glb" auto-rotate camera-controls></model-viewer>
+                    <model-viewer src="Meshy_AI_Crimson Skull Pyramid_1779707169_texture-compressed.glb" auto-rotate camera-controls></model-viewer>
                     <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white">Merged Specimen</span>
-                        <p style="font-size:0.85rem; color:#aaa; margin: 5px 0 0 0;">Experimental animal combinations and rare biological concept sculpts.</p>
+                        <span style="font-weight:bold; font-size:1.2em; color:white">Crimson Skull Pyramid</span>
+                        <p style="font-size:0.85rem; color:#aaa; margin-top: 10px;">Experimental architectural scans and rare structural builds.</p>
                     </div>
                     <div class="interaction-bar">
-                    <button class="emoji-btn" onclick="addCount(this)">🧠 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">🔮 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">❤️ <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👍 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😂 <span class="count-num">0</span></button>
-               <button class="emoji-btn" onclick="addCount(this)">😐 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👎 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😡 <span class="count-num">0</span></button>
-                   
+                        <button class="emoji-btn" onclick="addLike(this)">🧠 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">🔮 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">❤️ <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👍 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😡 <span class="count-num">0</span></button>
                     </div>
-
                 </div>
-</div>
-        <div class="model-card">
+
+                <div class="model-card">
                     <model-viewer src="Meshy_AI_Crimson Tally Wheel Pendant_1780717028_image-to-3d-texture.glb" auto-rotate camera-controls></model-viewer>
                     <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white"> </span>
-                        <p style="font-size:0.85rem; color:#aaa; margin: 5px 0 0 0;"></p>
-</div>
-                    <div class="interaction-bar">
-                    <button class="emoji-btn" onclick="addCount(this)">🧠 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">🔮 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">❤️ <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👍 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😂 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😐 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👎 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😡 <span class="count-num">0</span></button>
-                   
+                        <span style="font-weight:bold; font-size:1.2em; color:white">Crimson Tally Wheel Pendant</span>
+                        <p style="font-size:0.85rem; color:#aaa; margin-top: 10px;">Custom 3D model heirloom blueprints.</p>
                     </div>
+                    <div class="interaction-bar">
+                        <button class="emoji-btn" onclick="addLike(this)">🧠 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">🔮 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">❤️ <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👍 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😡 <span class="count-num">0</span></button>
+                    </div>
+                </div>
 
-</div>
-        
             </div>
         </div>
         
-</div>
-    <div class="genre-section">
-            <h2 class="genre-title"> Real Planet "What If-?" Planet, Aliens, and Animals </h2>
+        <div class="genre-section">
+            <h2 class="genre-title">Real Planet "What If-?" Planet, Aliens, and Animals</h2>
             <div class="gallery-grid">
                 
                 <div class="model-card">
                     <model-viewer src="Meshy_AI_Crimson_Bristlehog_0605153643_image-to-3d-texture-compressed.glb" auto-rotate camera-controls></model-viewer>
                     <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white"> The Berry-Back</span>
-                        <p style="font-size:0.85rem; color:#aaa; margin: 5px 0 0 0;"> <ul><strong>VITAL STATS</strong>
-<li>Category: Solpe Pulseco Universe (Original Fiction)</li>
-<li>Classification: Primal Subterranean Scavenger (Wild Form)</li>
-<li>Origin Planet: X-734 (The Geothermal Obsidian Labyrinths)</li></ul>
-<ul><strong>CORE ATTRIBUTES</strong>
-<li>Height: 1' 5" (Low-Profile Subterranean Stature)</li>
-<li>Weight: 25 lbs (Compact, High-Density Agility Core)</li>
-<li>Armor/Attire: Vibrant, shifting purple hide lined with protective, crystal-like spiky growths across the dorsal ridge; features adaptive, glowing bioluminescent "Ghost" stripes.</li>
-<li>Signature Tell: A high-speed, localized distortion in the air as their iridescent stripes rapidly cycle colors to mimic flickering cavern moss.</li></ul>
-<ul><strong>PRIMARY ABILITIES</strong>
-<li>Toxin-Tipped Scurry: Coordinates lightning-fast forward movements with four ultra-sharp, bird-like claw points that secrete a concentrated mineral toxin. A single strike can induce temporary "vibration-blindness" in apex predators, completely blinding them to the planet's tectonic shifts and tracking frequencies.</li>
-<li>Atmospheric Hydration: Utilizes an advanced external absorption process, allowing the creature to stay fully hydrated at top speeds simply by sprinting through the high-density, mineral-rich purple Spirit-Fog that hangs in the deep caverns.</li>
-<li>Clutter Disorientation: Harnesses acute pack-hunting instincts when traveling in wild "clutters" of 20 to 30. They execute high-velocity "buzzing" maneuvers, running frantic, tight circles around surface intruders until the target becomes entirely dizzy and trapped in total disorientation.</li></ul>
-<ul><strong>PLAYER STATS</strong>
-<li>Stealth: 95/100 (Blends flawlessly with native Prism-Moss; near-impossible to spot in the deep dark when stationary)</li>
-<li>Durability: 40/100 (Built for evasion and extreme speed rather than absorbing heavy physical impact or rockfalls)</li>
-<li>Speed: 98/100 (Unmatched hyper-agility that makes them the legendary wild baseline for the subterranean Obsidian Derby circuits)</li>
-<li>Resonance Discord: MAX (Possesses a sharp, un-tuned, and incredibly skittish vibration profile that rings as a harsh warning to any nearby Solpe Pulseco guardians) </li></ul></p>
+                        <span style="font-weight:bold; font-size:1.2em; color:white">The Berry-Back</span>
+                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;"> 
+                            <ul><strong>VITAL STATS</strong>
+                                <li>Category: Solpe Pulseco Universe (Original Fiction)</li>
+                                <li>Classification: Primal Subterranean Scavenger (Wild Form)</li>
+                                <li>Origin Planet: X-734 (Geothermal Obsidian Labyrinths)</li>
+                            </ul>
+                            <ul><strong>CORE ATTRIBUTES</strong>
+                                <li>Height: 1' 5"</li>
+                                <li>Weight: 25 lbs</li>
+                                <li>Armor/Attire: Shifting purple hide with crystal growths</li>
+                                <li>Signature Tell: Adaptive bioluminescent Ghost stripes color cycles</li>
+                            </ul>
+                            <ul><strong>PRIMARY ABILITIES</strong>
+                                <li>Toxin-Tipped Scurry: Strikes trigger vibration blindness.</li>
+                                <li>Atmospheric Hydration: Absorbs moisture directly out of purple Spirit-Fog.</li>
+                                <li>Clutter Disorientation: Circulates tight patterns to cause predator dizziness.</li>
+                            </ul>
+                            <ul><strong>PLAYER STATS</strong>
+                                <li>Stealth: 95/100</li>
+                                <li>Durability: 40/100</li>
+                                <li>Speed: 98/100</li>
+                                <li>Resonance Discord: MAX</li>
+                            </ul>
+                        </div>
                     </div>
                     <div class="interaction-bar">
-                    <button class="emoji-btn" onclick="addCount(this)">🧠 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">🔮 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">❤️ <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👍 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😂 <span class="count-num">0</span></button>
-               <button class="emoji-btn" onclick="addCount(this)">😐 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👎 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😡 <span class="count-num">0</span></button>
-                   
+                        <button class="emoji-btn" onclick="addLike(this)">🧠 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">🔮 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">❤️ <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👍 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😡 <span class="count-num">0</span></button>
                     </div>
+                </div>
 
-                </div><div class="model-card">
+                <div class="model-card">
                     <model-viewer src="Meshy_AI_Embermaw_Dreadwyrm_0605153727_image-to-3d-texture.glb" auto-rotate camera-controls></model-viewer>
                     <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white"> </span>
-                        <p style="font-size:0.85rem; color:#aaa; margin: 5px 0 0 0;"></p>
-</div>
-                    <div class="interaction-bar">
-                    <button class="emoji-btn" onclick="addCount(this)">🧠 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">🔮 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">❤️ <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👍 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😂 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😐 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👎 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😡 <span class="count-num">0</span></button>
-                   
+                        <span style="font-weight:bold; font-size:1.2em; color:white">Embermaw Dreadwyrm</span>
+                        <p style="font-size:0.85rem; color:#aaa; margin-top: 10px;">Dossier stats pending structural classification inputs.</p>
                     </div>
-
+                    <div class="interaction-bar">
+                        <button class="emoji-btn" onclick="addLike(this)">🧠 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">🔮 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">❤️ <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👍 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😡 <span class="count-num">0</span></button>
+                    </div>
                 </div>
-</div>
-        <div class="model-card">
-                    <model-viewer src=""></model-viewer>
-                    <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white"> </span>
-                        <p style="font-size:0.85rem; color:#aaa; margin: 5px 0 0 0;"></p>
-</div>
-                    <div class="interaction-bar">
-                    <button class="emoji-btn" onclick="addCount(this)">🧠 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">🔮 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">❤️ <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👍 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😂 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😐 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👎 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😡 <span class="count-num">0</span></button>
-                   
-                    </div>
 
-</div>
-        
-    
-    <div class="model-card">
+                <div class="model-card">
                     <model-viewer src="Meshy_AI_Lunar_Emberwyrm_0606144858_image-to-3d-texture-compressed.glb" auto-rotate camera-controls></model-viewer>
                     <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white"> The Obsidian Crush</span>
-                        <p style="font-size:0.85rem; color:#aaa; margin: 5px 0 0 0;"><ul><strong>VITAL STATS</strong>
-<li>Category: Solpe Pulseco Universe (Original Fiction)</li>
-<li>Classification: Apex Subterranean Juggernaut (Wild Form)</li>
-<li>Origin Planet: X-734 (The Geothermal Obsidian Labyrinths)</li></ul>
-<ul><strong>CORE ATTRIBUTES</strong>
-<li>Height: 8' 6" (Heavy-Set Tectonic Stature)</li>
-<li>Weight: 1,200 lbs (High-Density Silica & Crystalline Armor)</li>
-<li>Armor/Attire: Mirror-polished, deep orange and red glassy body with jagged, raw obsidian shards; every defensive scale is meticulously outlined in a striking, rainbow-pearl iridescence.</li>
-<li>Signature Tell: An intense, pulsing magma-orange core radiance that flares violently from within its chest whenever a territorial threat is detected.</li></ul>
-<ul><strong>PRIMARY ABILITIES</strong>
-<li>Tectonic Smasher: Channels its massive weight into its wide, V-shaped crystalline paws to strike the cave floors with extreme force. This impact triggers localized, tactical cave-ins that instantly trap fleeing prey beneath heavy rubble.</li>
-<li>Infrasonic Warning: Emits a crushing, low-frequency seismic hum capable of vibrating the very air. This territorial song causes intense physical discomfort and phantom aches in surface intruders, acting as a brutal acoustic barrier to turn back.</li>
-<li>Silica Reclamation: Utilizes a specialized external repair mechanism by bathing in the planet's hidden Glass-Pools. The silica-heavy water seamlessly fuses with its fractured scales, rapidly cooling and polishing its broken armor back to a mirror finish.</li></ul>
-<ul><strong>PLAYER STATS</strong>
-<li>Stealth: 20/100 (Its massive size and heavy footsteps echo through the caves, though its matte-black wild shards offer brief ambush camouflage in dead-end tunnels)</li>
-<li>Durability: 95/100 (An almost impenetrable living fortress built to withstand crushing rockfalls, high-pressure magma vents, and heavy impact)</li>
-<li>Speed: 50/100 (Slow and deliberate while tracking, but capable of devastating, unstoppable straight-line charging bursts when closing in on a target)</li>
-<li>Resonance Discord: 85/100 (Radiates a jagged, icy vibration profile that registers as sharp pins and needles to any nearby human mark, making them formidable challenges for even the most patient Master Trainer)</li></ul></p>
-                
+                        <span style="font-weight:bold; font-size:1.2em; color:white">The Obsidian Crush</span>
+                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;">
+                            <ul><strong>VITAL STATS</strong>
+                                <li>Category: Solpe Pulseco Universe (Original Fiction)</li>
+                                <li>Classification: Apex Subterranean Juggernaut (Wild Form)</li>
+                                <li>Origin Planet: X-734 (Geothermal Obsidian Labyrinths)</li>
+                            </ul>
+                            <ul><strong>CORE ATTRIBUTES</strong>
+                                <li>Height: 8' 6"</li>
+                                <li>Weight: 1,200 lbs</li>
+                                <li>Armor: Mirror-polished silica and crystalline raw shards</li>
+                                <li>Signature Tell: Magma-orange chest core flash</li>
+                            </ul>
+                            <ul><strong>PRIMARY ABILITIES</strong>
+                                <li>Tectonic Smasher: V-shaped paws trigger structural cave-ins.</li>
+                                <li>Infrasonic Warning: Low frequency hum causing severe acoustic blocks.</li>
+                                <li>Silica Reclamation: Heals fractured carapace via volcanic pools.</li>
+                            </ul>
+                            <ul><strong>PLAYER STATS</strong>
+                                <li>Stealth: 20/100</li>
+                                <li>Durability: 95/100</li>
+                                <li>Speed: 50/100</li>
+                                <li>Resonance Discord: 85/100</li>
+                            </ul>
+                        </div>
                     </div>
                     <div class="interaction-bar">
-                    <button class="emoji-btn" onclick="addCount(this)">🧠 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">🔮 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">❤️ <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👍 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😂 <span class="count-num">0</span></button>
-                     <button class="emoji-btn" onclick="addCount(this)">😐 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">👎 <span class="count-num">0</span></button>
-                    <button class="emoji-btn" onclick="addCount(this)">😡 <span class="count-num">0</span></button>
-                   
+                        <button class="emoji-btn" onclick="addLike(this)">🧠 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">🔮 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">❤️ <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👍 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" onclick="addLike(this)">😡 <span class="count-num">0</span></button>
                     </div>
+                </div>
 
+            </div>
+        </div>
+        
     </div>
-    </div>
+
     <script>
-        // Local counter click flash function
         function addLike(btn) {
             let counter = btn.querySelector('.count-num');
             let current = parseInt(counter.innerText);
