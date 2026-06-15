@@ -104,14 +104,33 @@
             const code = document.getElementById('cipherCode').value;
             if (!code) { alert("Please enter a code to load!"); return; }
             const { data, error } = await mySupabase.from('codelock').select('alphabet_data').eq('Code', code).single();
-            if (error) { alert("Could not find that code!"); } else if (data) {
-                letters.forEach(l => {
-                    const canvas = document.getElementById('canvas'+l);
-                    const ctx = canvas.getContext('2d');
-                    const img = new Image();
-                    img.onload = () => { ctx.clearRect(0,0,60,60); ctx.drawImage(img,0,0); };
-                    img.src = data.alphabet_data[l];
+            if (error) { 
+                alert("Could not find that code!"); 
+            } else if (data) {
+                // Keep track of image loadings to ensure they all finish safely
+                const loadPromises = letters.map(l => {
+                    return new Promise((resolve) => {
+                        const canvas = document.getElementById('canvas' + l);
+                        const ctx = canvas.getContext('2d');
+                        ctx.clearRect(0, 0, 60, 60);
+                        
+                        if (data.alphabet_data && data.alphabet_data[l]) {
+                            const img = new Image();
+                            img.crossOrigin = "anonymous"; 
+                            img.onload = () => { 
+                                ctx.drawImage(img, 0, 0, 60, 60); 
+                                resolve();
+                            };
+                            img.onerror = () => resolve(); // skip errors gracefully
+                            img.src = data.alphabet_data[l];
+                        } else {
+                            resolve();
+                        }
+                    });
                 });
+                
+                // Wait until every single canvas is completely painted before showing the alert
+                await Promise.all(loadPromises);
                 alert("Loaded from cloud!");
             }
         }
