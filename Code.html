@@ -8,28 +8,10 @@
     <style>
         body { background: #1a0b2e; color: white; font-family: sans-serif; padding: 10px; }
         #alphabet-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
-        canvas { 
-            border: 1px solid #7c4dff; 
-            background: #2d1b4e; 
-            width: 60px; 
-            height: 60px; 
-            display: block;
-            touch-action: none; 
-        }
+        canvas { border: 1px solid #7c4dff; background: #2d1b4e; width: 60px; height: 60px; display: block; touch-action: none; cursor: pointer; }
         .controls { border-top: 2px solid #7c4dff; padding-top: 20px; }
         #messageVisualizer { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 5px; }
-        #magnifierOverlay {
-    display: none; 
-    position: fixed; 
-    top: 0; left: 0; 
-    width: 100%; height: 100%; 
-    background: rgba(0,0,0,0.95); 
-    z-index: 1000; 
-    flex-direction: column; 
-    align-items: center; 
-    justify-content: center;
-        }
-        
+        #magnifierOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
@@ -46,11 +28,12 @@
         <button onclick="visualizeWord()">Generate</button>
         <div id="messageVisualizer"></div>
     </div>
-<div id="magnifierOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; text-align:center; padding-top:50px;">
-    <canvas id="bigCanvas" width="300" height="300" style="width:300px; height:300px; border:2px solid white;"></canvas>
-    <br><br>
-    <button onclick="closeMagnifier()" style="padding:15px 30px; font-size:20px;">Save & Close</button>
-</div>
+
+    <div id="magnifierOverlay">
+        <canvas id="bigCanvas" width="300" height="300" style="width:300px; height:300px; border:2px solid white; background:#2d1b4e;"></canvas>
+        <br><br>
+        <button onclick="closeMagnifier()" style="padding:15px 30px; font-size:20px;">Save & Close</button>
+    </div>
     
     <script>
         const supabaseUrl = 'https://jhgcyiswxubqzqtbhain.supabase.co'; 
@@ -59,68 +42,23 @@
 
         const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
         const container = document.getElementById('alphabet-container');
+        let currentTargetId = "";
 
-        // Create the drawing pads with explicit 60x60 internal resolution
         letters.forEach(letter => {
-            container.innerHTML += `<div><small>${letter}</small><canvas id="canvas${letter}" width="60" height="60"></canvas></div>`;
+            container.innerHTML += `<div><small>${letter}</small><canvas id="canvas${letter}" width="60" height="60" onclick="openMagnifier('canvas${letter}')"></canvas></div>`;
         });
-
-        // Initialize drawing for each
-        letters.forEach(letter => setupCanvas(document.getElementById('canvas' + letter)));
 
         function setupCanvas(canvas) {
             const ctx = canvas.getContext('2d');
-            ctx.strokeStyle = 'white'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+            ctx.strokeStyle = 'white'; ctx.lineWidth = (canvas.width > 100) ? 8 : 3; ctx.lineCap = 'round';
             let drawing = false;
 
             function getCoords(e) {
                 const rect = canvas.getBoundingClientRect();
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                // Calculate scale to ensure touch matches pixel grid
-                const scaleX = canvas.width / rect.width;
-                const scaleY = canvas.height / rect.height;
-                return { 
-                    x: (clientX - rect.left) * scaleX, 
-                    y: (clientY - rect.top) * scaleY 
-                };
+                return { x: (clientX - rect.left) * (canvas.width / rect.width), y: (clientY - rect.top) * (canvas.height / rect.height) };
             }
-let currentTargetId = "";
-
-function openMagnifier(canvasId) {
-    currentTargetId = canvasId;
-    const overlay = document.getElementById('magnifierOverlay');
-    const bigCanvas = document.getElementById('bigCanvas');
-    const bigCtx = bigCanvas.getContext('2d');
-    const source = document.getElementById(canvasId);
-    
-    // Set background
-    bigCtx.fillStyle = '#2d1b4e';
-    bigCtx.fillRect(0,0,300,300);
-    
-    // Draw the existing letter into the big box
-    bigCtx.drawImage(source, 0, 0, 300, 300);
-    
-    overlay.style.display = 'block';
-    
-    // Re-initialize the drawing for this big canvas specifically
-    setupCanvas(bigCanvas);
-});
-
-
-// 2. Save and Close
-function closeMagnifier() {
-    const bigCanvas = document.getElementById('bigCanvas');
-    const target = document.getElementById(currentTargetId);
-    const targetCtx = target.getContext('2d');
-    
-    // Clear the small box and draw the big one into it
-    targetCtx.clearRect(0,0,60,60);
-    targetCtx.drawImage(bigCanvas, 0, 0, 60, 60);
-    
-    // Hide overlay
-    document.getElementById('magnifierOverlay').style.display = 'none';
-});
 
             canvas.onmousedown = (e) => { drawing = true; ctx.beginPath(); const {x,y} = getCoords(e); ctx.moveTo(x,y); };
             canvas.onmousemove = (e) => { if(drawing) { const {x,y} = getCoords(e); ctx.lineTo(x,y); ctx.stroke(); } };
@@ -129,6 +67,29 @@ function closeMagnifier() {
             canvas.ontouchstart = (e) => { drawing = true; ctx.beginPath(); const {x,y} = getCoords(e); ctx.moveTo(x,y); };
             canvas.ontouchmove = (e) => { if(drawing) { const {x,y} = getCoords(e); ctx.lineTo(x,y); ctx.stroke(); } };
             canvas.ontouchend = () => { drawing = false; };
+        }
+
+        // Initialize grid canvases
+        letters.forEach(l => setupCanvas(document.getElementById('canvas' + l)));
+
+        function openMagnifier(canvasId) {
+            currentTargetId = canvasId;
+            const overlay = document.getElementById('magnifierOverlay');
+            const bigCanvas = document.getElementById('bigCanvas');
+            const bigCtx = bigCanvas.getContext('2d');
+            const source = document.getElementById(canvasId);
+            bigCtx.fillStyle = '#2d1b4e'; bigCtx.fillRect(0,0,300,300);
+            bigCtx.drawImage(source, 0, 0, 60, 60, 0, 0, 300, 300);
+            overlay.style.display = 'flex';
+            setupCanvas(bigCanvas);
+        }
+
+        function closeMagnifier() {
+            const bigCanvas = document.getElementById('bigCanvas');
+            const target = document.getElementById(currentTargetId);
+            target.getContext('2d').clearRect(0,0,60,60);
+            target.getContext('2d').drawImage(bigCanvas, 0, 0, 300, 300, 0, 0, 60, 60);
+            document.getElementById('magnifierOverlay').style.display = 'none';
         }
 
         async function saveAll() {
@@ -159,11 +120,9 @@ function closeMagnifier() {
             viz.innerHTML = "";
             const old = document.getElementById('exportCanvas');
             if (old) old.remove();
-
             const box = 60;
             const exp = document.createElement('canvas');
-            exp.id = "exportCanvas";
-            exp.width = word.length * box; exp.height = box;
+            exp.id = "exportCanvas"; exp.width = word.length * box; exp.height = box;
             const ctx = exp.getContext('2d');
             ctx.fillStyle = 'black'; ctx.fillRect(0,0,exp.width,exp.height);
 
@@ -172,7 +131,6 @@ function closeMagnifier() {
                 if (src) {
                     ctx.strokeStyle = 'white'; ctx.strokeRect(i*box, 0, box, box);
                     ctx.drawImage(src, i*box + 8, 8, box-16, box-16);
-                    
                     const copy = document.createElement('canvas');
                     copy.width = box; copy.height = box;
                     copy.getContext('2d').drawImage(src, 0, 0);
