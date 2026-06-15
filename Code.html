@@ -35,7 +35,7 @@
         <button onclick="closeMagnifier()" style="padding:15px 30px; font-size:20px;">Save & Close</button>
     </div>
     
-    <script>
+        <script>
         const supabaseUrl = 'https://jhgcyiswxubqzqtbhain.supabase.co'; 
         const supabaseKey = 'sb_publishable_0j0PaDVT_pXMJawcf2W8fQ_Lz9B4KoW'; 
         const mySupabase = supabase.createClient(supabaseUrl, supabaseKey);
@@ -107,7 +107,6 @@
             if (error) { 
                 alert("Could not find that code!"); 
             } else if (data) {
-                // Keep track of image loadings to ensure they all finish safely
                 const loadPromises = letters.map(l => {
                     return new Promise((resolve) => {
                         const canvas = document.getElementById('canvas' + l);
@@ -118,10 +117,11 @@
                             const img = new Image();
                             img.crossOrigin = "anonymous"; 
                             img.onload = () => { 
-                                ctx.drawImage(img, 0, 0, 60, 60); 
+                                // FIX: Draw the full image directly without any weird cropping math
+                                ctx.drawImage(img, 0, 0); 
                                 resolve();
                             };
-                            img.onerror = () => resolve(); // skip errors gracefully
+                            img.onerror = () => resolve();
                             img.src = data.alphabet_data[l];
                         } else {
                             resolve();
@@ -129,7 +129,6 @@
                     });
                 });
                 
-                // Wait until every single canvas is completely painted before showing the alert
                 await Promise.all(loadPromises);
                 alert("Loaded from cloud!");
             }
@@ -173,5 +172,6 @@
             exp.style.display = "none";
         }
     </script>
+
 </body>
 </html>
