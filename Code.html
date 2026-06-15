@@ -18,6 +18,18 @@
         }
         .controls { border-top: 2px solid #7c4dff; padding-top: 20px; }
         #messageVisualizer { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 5px; }
+        #magnifierOverlay {
+    display: none; 
+    position: fixed; 
+    top: 0; left: 0; 
+    width: 100%; height: 100%; 
+    background: rgba(0,0,0,0.95); 
+    z-index: 1000; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center;
+        }
+        
     </style>
 </head>
 <body>
@@ -75,35 +87,41 @@
             }
 let currentTargetId = "";
 
-// 1. Open the magnifier
 function openMagnifier(canvasId) {
     currentTargetId = canvasId;
     const overlay = document.getElementById('magnifierOverlay');
-    const bigCtx = document.getElementById('bigCanvas').getContext('2d');
+    const bigCanvas = document.getElementById('bigCanvas');
+    const bigCtx = bigCanvas.getContext('2d');
     const source = document.getElementById(canvasId);
     
-    // Clear and draw the current content onto the big canvas
+    // Set background
     bigCtx.fillStyle = '#2d1b4e';
     bigCtx.fillRect(0,0,300,300);
+    
+    // Draw the existing letter into the big box
     bigCtx.drawImage(source, 0, 0, 300, 300);
     
     overlay.style.display = 'block';
-    setupCanvas(document.getElementById('bigCanvas'));
-}
+    
+    // Re-initialize the drawing for this big canvas specifically
+    setupCanvas(bigCanvas);
+});
+
 
 // 2. Save and Close
 function closeMagnifier() {
     const bigCanvas = document.getElementById('bigCanvas');
     const target = document.getElementById(currentTargetId);
-    target.getContext('2d').clearRect(0,0,60,60);
-    target.getContext('2d').drawImage(bigCanvas, 0, 0, 60, 60);
+    const targetCtx = target.getContext('2d');
+    
+    // Clear the small box and draw the big one into it
+    targetCtx.clearRect(0,0,60,60);
+    targetCtx.drawImage(bigCanvas, 0, 0, 60, 60);
+    
+    // Hide overlay
     document.getElementById('magnifierOverlay').style.display = 'none';
-}
-            letters.forEach(letter => {
-    const canvas = document.getElementById('canvas' + letter);
-    canvas.onclick = () => openMagnifier('canvas' + letter);
 });
-            
+
             canvas.onmousedown = (e) => { drawing = true; ctx.beginPath(); const {x,y} = getCoords(e); ctx.moveTo(x,y); };
             canvas.onmousemove = (e) => { if(drawing) { const {x,y} = getCoords(e); ctx.lineTo(x,y); ctx.stroke(); } };
             canvas.onmouseup = () => { drawing = false; };
