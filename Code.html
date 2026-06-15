@@ -69,7 +69,6 @@
             canvas.ontouchend = () => { drawing = false; };
         }
 
-        // Initialize grid canvases
         letters.forEach(l => setupCanvas(document.getElementById('canvas' + l)));
 
         function openMagnifier(canvasId) {
@@ -94,16 +93,18 @@
 
         async function saveAll() {
             const code = document.getElementById('cipherCode').value;
+            if (!code) { alert("Please enter a 6-digit code first!"); return; }
             let dataToSave = {};
             letters.forEach(l => dataToSave[l] = document.getElementById('canvas' + l).toDataURL());
-            await mySupabase.from('codelock').upsert([{ Code: code, alphabet_data: dataToSave }]);
-            alert("Saved!");
+            const { error } = await mySupabase.from('codelock').upsert([{ Code: code, alphabet_data: dataToSave }]);
+            error ? alert("Error: " + error.message) : alert("Saved to cloud!");
         }
 
         async function loadAll() {
             const code = document.getElementById('cipherCode').value;
-            const { data } = await mySupabase.from('codelock').select('alphabet_data').eq('Code', code).single();
-            if (data) {
+            if (!code) { alert("Please enter a code to load!"); return; }
+            const { data, error } = await mySupabase.from('codelock').select('alphabet_data').eq('Code', code).single();
+            if (error) { alert("Could not find that code!"); } else if (data) {
                 letters.forEach(l => {
                     const canvas = document.getElementById('canvas'+l);
                     const ctx = canvas.getContext('2d');
@@ -111,7 +112,8 @@
                     img.onload = () => { ctx.clearRect(0,0,60,60); ctx.drawImage(img,0,0); };
                     img.src = data.alphabet_data[l];
                 });
-            } else { alert("Code not found."); }
+                alert("Loaded from cloud!");
+            }
         }
 
         function visualizeWord() {
@@ -125,7 +127,6 @@
             exp.id = "exportCanvas"; exp.width = word.length * box; exp.height = box;
             const ctx = exp.getContext('2d');
             ctx.fillStyle = 'black'; ctx.fillRect(0,0,exp.width,exp.height);
-
             for (let i = 0; i < word.length; i++) {
                 const src = document.getElementById('canvas' + word[i]);
                 if (src) {
