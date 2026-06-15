@@ -34,7 +34,12 @@
         <button onclick="visualizeWord()">Generate</button>
         <div id="messageVisualizer"></div>
     </div>
-
+<div id="magnifierOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; text-align:center; padding-top:50px;">
+    <canvas id="bigCanvas" width="300" height="300" style="width:300px; height:300px; border:2px solid white;"></canvas>
+    <br><br>
+    <button onclick="closeMagnifier()" style="padding:15px 30px; font-size:20px;">Save & Close</button>
+</div>
+    
     <script>
         const supabaseUrl = 'https://jhgcyiswxubqzqtbhain.supabase.co'; 
         const supabaseKey = 'sb_publishable_0j0PaDVT_pXMJawcf2W8fQ_Lz9B4KoW'; 
@@ -68,7 +73,37 @@
                     y: (clientY - rect.top) * scaleY 
                 };
             }
+let currentTargetId = "";
 
+// 1. Open the magnifier
+function openMagnifier(canvasId) {
+    currentTargetId = canvasId;
+    const overlay = document.getElementById('magnifierOverlay');
+    const bigCtx = document.getElementById('bigCanvas').getContext('2d');
+    const source = document.getElementById(canvasId);
+    
+    // Clear and draw the current content onto the big canvas
+    bigCtx.fillStyle = '#2d1b4e';
+    bigCtx.fillRect(0,0,300,300);
+    bigCtx.drawImage(source, 0, 0, 300, 300);
+    
+    overlay.style.display = 'block';
+    setupCanvas(document.getElementById('bigCanvas'));
+}
+
+// 2. Save and Close
+function closeMagnifier() {
+    const bigCanvas = document.getElementById('bigCanvas');
+    const target = document.getElementById(currentTargetId);
+    target.getContext('2d').clearRect(0,0,60,60);
+    target.getContext('2d').drawImage(bigCanvas, 0, 0, 60, 60);
+    document.getElementById('magnifierOverlay').style.display = 'none';
+}
+            letters.forEach(letter => {
+    const canvas = document.getElementById('canvas' + letter);
+    canvas.onclick = () => openMagnifier('canvas' + letter);
+});
+            
             canvas.onmousedown = (e) => { drawing = true; ctx.beginPath(); const {x,y} = getCoords(e); ctx.moveTo(x,y); };
             canvas.onmousemove = (e) => { if(drawing) { const {x,y} = getCoords(e); ctx.lineTo(x,y); ctx.stroke(); } };
             canvas.onmouseup = () => { drawing = false; };
