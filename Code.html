@@ -8,16 +8,10 @@
     <style>
         body { background: #1a0b2e; color: white; font-family: sans-serif; padding: 10px; }
         #alphabet-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
-        canvas { 
-            border: 1px solid #7c4dff; 
-            background: #2d1b4e; 
-            width: 60px; 
-            height: 60px; 
-            display: block;
-            touch-action: none; 
-        }
+        canvas { border: 1px solid #7c4dff; background: #2d1b4e; width: 60px; height: 60px; display: block; touch-action: none; cursor: pointer; }
         .controls { border-top: 2px solid #7c4dff; padding-top: 20px; }
         #messageVisualizer { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 5px; }
+        #magnifierOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
@@ -35,6 +29,12 @@
         <div id="messageVisualizer"></div>
     </div>
 
+    <div id="magnifierOverlay">
+        <canvas id="bigCanvas" width="300" height="300" style="width:300px; height:300px; border:2px solid white; background:#2d1b4e;"></canvas>
+        <br><br>
+        <button onclick="closeMagnifier()" style="padding:15px 30px; font-size:20px;">Save & Close</button>
+    </div>
+    
     <script>
         const supabaseUrl = 'https://jhgcyiswxubqzqtbhain.supabase.co'; 
         const supabaseKey = 'sb_publishable_0j0PaDVT_pXMJawcf2W8fQ_Lz9B4KoW'; 
@@ -42,31 +42,22 @@
 
         const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
         const container = document.getElementById('alphabet-container');
+        let currentTargetId = "";
 
-        // Create the drawing pads with explicit 60x60 internal resolution
         letters.forEach(letter => {
-            container.innerHTML += `<div><small>${letter}</small><canvas id="canvas${letter}" width="60" height="60"></canvas></div>`;
+            container.innerHTML += `<div><small>${letter}</small><canvas id="canvas${letter}" width="60" height="60" onclick="openMagnifier('canvas${letter}')"></canvas></div>`;
         });
-
-        // Initialize drawing for each
-        letters.forEach(letter => setupCanvas(document.getElementById('canvas' + letter)));
 
         function setupCanvas(canvas) {
             const ctx = canvas.getContext('2d');
-            ctx.strokeStyle = 'white'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+            ctx.strokeStyle = 'white'; ctx.lineWidth = (canvas.width > 100) ? 8 : 3; ctx.lineCap = 'round';
             let drawing = false;
 
             function getCoords(e) {
                 const rect = canvas.getBoundingClientRect();
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                // Calculate scale to ensure touch matches pixel grid
-                const scaleX = canvas.width / rect.width;
-                const scaleY = canvas.height / rect.height;
-                return { 
-                    x: (clientX - rect.left) * scaleX, 
-                    y: (clientY - rect.top) * scaleY 
-                };
+                return { x: (clientX - rect.left) * (canvas.width / rect.width), y: (clientY - rect.top) * (canvas.height / rect.height) };
             }
 
             canvas.onmousedown = (e) => { drawing = true; ctx.beginPath(); const {x,y} = getCoords(e); ctx.moveTo(x,y); };
@@ -78,26 +69,68 @@
             canvas.ontouchend = () => { drawing = false; };
         }
 
+        letters.forEach(l => setupCanvas(document.getElementById('canvas' + l)));
+
+        function openMagnifier(canvasId) {
+            currentTargetId = canvasId;
+            const overlay = document.getElementById('magnifierOverlay');
+            const bigCanvas = document.getElementById('bigCanvas');
+            const bigCtx = bigCanvas.getContext('2d');
+            const source = document.getElementById(canvasId);
+            bigCtx.fillStyle = '#2d1b4e'; bigCtx.fillRect(0,0,300,300);
+            bigCtx.drawImage(source, 0, 0, 60, 60, 0, 0, 300, 300);
+            overlay.style.display = 'flex';
+            setupCanvas(bigCanvas);
+        }
+
+        function closeMagnifier() {
+            const bigCanvas = document.getElementById('bigCanvas');
+            const target = document.getElementById(currentTargetId);
+            target.getContext('2d').clearRect(0,0,60,60);
+            target.getContext('2d').drawImage(bigCanvas, 0, 0, 300, 300, 0, 0, 60, 60);
+            document.getElementById('magnifierOverlay').style.display = 'none';
+        }
+
         async function saveAll() {
             const code = document.getElementById('cipherCode').value;
+            if (!code) { alert("Please enter a 6-digit code first!"); return; }
             let dataToSave = {};
             letters.forEach(l => dataToSave[l] = document.getElementById('canvas' + l).toDataURL());
-            await mySupabase.from('codelock').upsert([{ Code: code, alphabet_data: dataToSave }]);
-            alert("Saved!");
+            const { error } = await mySupabase.from('codelock').upsert([{ Code: code, alphabet_data: dataToSave }]);
+            error ? alert("Error: " + error.message) : alert("Saved to cloud!");
         }
 
         async function loadAll() {
             const code = document.getElementById('cipherCode').value;
-            const { data } = await mySupabase.from('codelock').select('alphabet_data').eq('Code', code).single();
-            if (data) {
-                letters.forEach(l => {
-                    const canvas = document.getElementById('canvas'+l);
-                    const ctx = canvas.getContext('2d');
-                    const img = new Image();
-                    img.onload = () => { ctx.clearRect(0,0,60,60); ctx.drawImage(img,0,0); };
-                    img.src = data.alphabet_data[l];
+            if (!code) { alert("Please enter a code to load!"); return; }
+            const { data, error } = await mySupabase.from('codelock').select('alphabet_data').eq('Code', code).single();
+            if (error) { 
+                alert("Could not find that code!"); 
+            } else if (data) {
+                const loadPromises = letters.map(l => {
+                    return new Promise((resolve) => {
+                        const canvas = document.getElementById('canvas' + l);
+                        const ctx = canvas.getContext('2d');
+                        ctx.clearRect(0, 0, 60, 60);
+                        
+                        if (data.alphabet_data && data.alphabet_data[l]) {
+                            const img = new Image();
+                            img.crossOrigin = "anonymous"; 
+                            img.onload = () => { 
+                                ctx.drawImage(img, 0, 0); 
+                                resolve();
+                            };
+                            img.onerror = () => resolve();
+                            img.src = data.alphabet_data[l];
+                        } else {
+                            resolve();
+                        }
+                    });
                 });
-            } else { alert("Code not found."); }
+                
+                await Promise.all(loadPromises);
+                alert("Loaded from cloud!");
+            }
         }
 
         function visualizeWord() {
@@ -106,20 +139,16 @@
             viz.innerHTML = "";
             const old = document.getElementById('exportCanvas');
             if (old) old.remove();
-
             const box = 60;
             const exp = document.createElement('canvas');
-            exp.id = "exportCanvas";
-            exp.width = word.length * box; exp.height = box;
+            exp.id = "exportCanvas"; exp.width = word.length * box; exp.height = box;
             const ctx = exp.getContext('2d');
             ctx.fillStyle = 'black'; ctx.fillRect(0,0,exp.width,exp.height);
-
             for (let i = 0; i < word.length; i++) {
                 const src = document.getElementById('canvas' + word[i]);
                 if (src) {
                     ctx.strokeStyle = 'white'; ctx.strokeRect(i*box, 0, box, box);
                     ctx.drawImage(src, i*box + 8, 8, box-16, box-16);
-                    
                     const copy = document.createElement('canvas');
                     copy.width = box; copy.height = box;
                     copy.getContext('2d').drawImage(src, 0, 0);
@@ -144,3 +173,4 @@
     </script>
 </body>
 </html>
+
