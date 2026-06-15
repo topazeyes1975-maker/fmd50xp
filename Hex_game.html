@@ -87,6 +87,8 @@
         .red-t { color: #ff4444; }
         .blue-t { color: #00d4ff; }
     </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -99,11 +101,16 @@
     </div>
 
     <div id="controls">
-        <p>Active Transmission: <span id="currentTurn" class="red-t">LOADING NETWORK...</span></p>
+        <p>Active Transmission: <span id="currentTurn" class="red-t">CONNECTING TO MATRIX...</span></p>
         <button onclick="resetNetworkGame()">RESET GLOBAL SYSTEM</button>
     </div>
 
     <script>
+        // STEP 2: INITIALIZE CONNECTION TO YOUR DATABASE
+        const SUPABASE_URL = "https://vvpxdheylpnlnqyvdqqb.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_41PPeNX3wc_dlOQP-vpoyA_MOz6RGZg"; // <-- Put your public anon API key here!
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         const canvas = document.getElementById('hexCanvas');
         const ctx = canvas.getContext('2d');
         const turnText = document.getElementById('currentTurn');
@@ -121,6 +128,7 @@
         let board = Array(boardSize).fill(null).map(() => Array(boardSize).fill(null));
         let currentPlayer = 'Red'; 
         let gameActive = true;
+        const gameRowId = 1; // We will use row ID 1 to hold our single ongoing match
 
         const redImg = new Image();
         redImg.src = '1778729047628.png';
@@ -240,17 +248,15 @@
                     const dist = Math.sqrt((mx - hx)**2 + (my - hy)**2);
 
                     if (dist < hexRadius && !board[q][r]) {
-                        // Place piece for current global player
                         board[q][r] = currentPlayer;
                         drawBoard();
                         
                         if (checkWin(currentPlayer)) {
                             declareWinner(currentPlayer);
                         } else {
-                            // Switch player turn and sync to Soba cloud backend
                             currentPlayer = (currentPlayer === 'Red') ? 'Blue' : 'Red';
                             updateUI();
-                            saveGameToSoba();
+                            saveGameToSupabase();
                         }
                         return;
                     }
@@ -263,68 +269,83 @@
             winNotification.innerText = `${player.toUpperCase()} BRIDGE SECURED!`;
             winNotification.className = `win-overlay ${player.toLowerCase()}-win`;
             winNotification.style.display = 'block';
-            saveGameToSoba();
+            saveGameToSupabase();
         }
 
-        function resetNetworkGame() {
+        // STEP 3: DATA PUSH FUNCTION (UPSERT)
+        async function saveGameToSupabase() {
+            try {
+                const { error } = await supabase
+                    .from('hex_games')
+                    .upsert({
+                        id: gameRowId,
+                        board_state: board,
+                        current_player: currentPlayer,
+                        game_active: gameActive
+                    });
+                if (error) console.error("Error writing to Supabase:", error);
+            } catch (err) {
+                console.error("Network exception:", err);
+            }
+        }
+
+        // STEP 4: DATA PULL FUNCTION
+        async function loadGameFromSupabase() {
+            try {
+                const { data, error } = await supabase
+                    .from('hex_games')
+                    .select('*')
+                    .eq('id', gameRowId)
+                    .single();
+
+                if (error && error.code !== 'PGRST116') { // Ignore empty database errors on initial run
+                    console.error("Error loading from Supabase:", error);
+                    return;
+                }
+
+                if (data) {
+                    board = data.board_state;
+                    currentPlayer = data.current_player;
+                    gameActive = data.game_active;
+                    
+                    if (!gameActive) {
+                        const dynamicWin = checkWin('Red') ? 'Red' : 'Blue';
+                        gameActive = false;
+                        winNotification.innerText = `${dynamicWin.toUpperCase()} BRIDGE SECURED!`;
+                        winNotification.className = `win-overlay ${dynamicWin.toLowerCase()}-win`;
+                        winNotification.style.display = 'block';
+                    } else {
+                        winNotification.style.display = 'none';
+                    }
+                    
+                    updateUI();
+                    drawBoard();
+                }
+            } catch (err) {
+                console.error("Sync error:", err);
+            }
+        }
+
+        async function resetNetworkGame() {
             board = Array(boardSize).fill(null).map(() => Array(boardSize).fill(null));
             currentPlayer = 'Red';
             gameActive = true;
             winNotification.style.display = 'none';
             updateUI();
             drawBoard();
-            saveGameToSoba(); // Wipe server data back to start state
+            await saveGameToSupabase();
         }
 
-        // ==========================================
-        // SOBA CLOUD SYNCHRONIZATION BACKEND
-        // ==========================================
+        // Automatically pull the database state every 3 seconds to capture your opponent's actions
+        setInterval(loadGameFromSupabase, 3000);
 
-        function saveGameToSoba() {
-            const gameState = {
-                board: board,
-                currentPlayer: currentPlayer,
-                gameActive: gameActive
-            };
-            
-            // SOBA INTEGRATION POINT: 
-            // Replace console.log with your specific Soba database saving function.
-            // Example: soba.set("hex_game_state", JSON.stringify(gameState));
-            console.log("Saving state to Soba database...", gameState);
-        }
-
-        function loadGameFromSoba() {
-            // SOBA INTEGRATION POINT:
-            // Fetch the layout string state saved in your database here.
-            // Example: let data = soba.get("hex_game_state");
-            
-            let data = null; // Replace with server read data string
-
-            if (data) {
-                const state = JSON.parse(data);
-                board = state.board;
-                currentPlayer = state.currentPlayer;
-                gameActive = state.gameActive;
-                
-                if (!gameActive) {
-                    // Check who won from data
-                    const dynamicWin = checkWin('Red') ? 'Red' : 'Blue';
-                    declareWinner(dynamicWin);
-                } else {
-                    winNotification.style.display = 'none';
-                }
-                
+        // Initial launch configuration sequence
+        loadGameFromSupabase().then(() => {
+            if(turnText.innerText === "CONNECTING TO MATRIX...") {
                 updateUI();
                 drawBoard();
             }
-        }
-
-        // Check for updates automatically every 3 seconds (3000ms)
-        setInterval(loadGameFromSoba, 3000);
-
-        // Initial launch configuration
-        updateUI();
-        loadGameFromSoba();
+        });
     </script>
 </body>
 </html>
