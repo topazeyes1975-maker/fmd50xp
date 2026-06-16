@@ -12,7 +12,7 @@
         .controls { border-top: 2px solid #7c4dff; padding-top: 20px; }
         #messageVisualizer { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 5px; }
         #magnifierOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; }
-    </style>
+  </style>
 </head>
 <body>
 
@@ -20,7 +20,7 @@
     <div id="alphabet-container"></div>
 
     <div class="controls">
-        <input type="text" id="cipherCode" placeholder="Enter 6-digit code">
+        <input type="text" id="cipherCode" placeholder="Enter custom passcode or name...">
         <button onclick="saveAll()">Save</button>
         <button onclick="loadAll()">Load</button>
         <hr>
@@ -172,5 +172,7 @@
             exp.style.display = "none";
         }
     </script>
+    <footer><h3>The Professional Disclaimer Text
+Important Note on Security & Privacy: > This platform operates on a strict privacy-first model. Your cipher keys are saved securely in the cloud using only the custom passcode you create—whether that is a name, a phrase, or a sequence of numbers. We do not collect usernames, email addresses, or personal data, which means your passcode cannot be recovered or reset if it is lost. Please write down or remember your passcode carefully; if you lose it, your saved drawings cannot be retrieved.</h3></footer>
 </body>
 </html>
