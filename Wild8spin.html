@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mystic Pendulum Eights</title>
+    <style>
+        body {
+            background-color: #0c0c0e;
+            color: #e3d9c6;
+            font-family: 'Georgia', serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+
+        header {
+            text-align: center;
+            color: #d4af37;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+            margin-bottom: 2px;
+        }
+
+        h1 { margin: 0; font-size: 1.4rem; }
+        p { margin: 2px 0 5px 0; font-size: 0.85rem; color: #a59b84; }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
+            gap: 8px;
+        }
+
+        .hand-label {
+            font-size: 0.8rem;
+            color: #baa473;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .play-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            gap: 10px;
+            margin: 5px 0;
+        }
+
+        .wheel-box {
+            width: 240px;
+            height: 240px;
+            position: relative;
+            user-select: none;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        #pendulum-needle {
+            transform-origin: 100px 100px;
+            transform: rotate(0deg);
+        }
+
+        #pendulum-needle.active-spin {
+            transition: transform 2.5s cubic-bezier(0.1, 0.8, 0.2, 1);
+        }
+
+        .center-button-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: radial-gradient(#222, #0a0a0c);
+            border: 2px solid #444;
+            color: #555;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.65rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: not-allowed;
+            z-index: 30;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            transition: all 0.2s ease;
+        }
+
+        .center-button-overlay.enabled {
+            border: 2px solid #d4af37;
+            color: #d4af37;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+        }
+
+        .center-button-overlay.enabled:active {
+            transform: translate(-50%, -50%) scale(0.9);
+            background: #d4af37;
+            color: #0c0c0e;
+        }
+
+        .card {
+            width: 60px;
+            height: 88px;
+            background-color: #fff;
+            border-radius: 5px;
+            display: inline-flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 4px;
+            box-sizing: border-box;
+            font-weight: bold;
+            font-size: 1rem;
+            box-shadow: 2px 2px 6px rgba(0,0,0,0.5);
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+        }
+
+        .card.red { color: #b71c1c; }
+        .card.black { color: #111; }
+        
+        .card-back {
+            background: #1f140a;
+            background-image: radial-gradient(#d4af37 1px, transparent 0);
+            background-size: 5px 5px;
+            border: 2px solid #d4af37;
+        }
+
+        .suit-center {
+            font-size: 1.4rem;
+            align-self: center;
+        }
+
+        .hand {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            white-space: nowrap;
+            width: 100%;
+            min-height: 108px;
+            padding: 8px;
+            background: rgba(212, 175, 55, 0.01);
+            border: 1px solid rgba(212, 175, 55, 0.05);
+            border-radius: 6px;
+            box-sizing: border-box;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .hand::-webkit-scrollbar {
+            height: 4px;
+        }
+        .hand::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        .hand::-webkit-scrollbar-thumb {
+            background: rgba(212, 175, 55, 0.2);
+            border-radius: 2px;
+        }
+
+        .status-box {
+            background: #111113;
+            border: 1px solid #2d2d33;
+            padding: 10px;
+            border-radius: 5px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.95rem;
+            min-height: 70px;
+            color: #baa473;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .reset-btn {
+            background: #d4af37;
+            color: #0c0c0e;
+            border: none;
+            padding: 6px 12px;
+            font-family: 'Georgia', serif;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #161619;
+            border: 2px solid #d4af37;
+            padding: 20px;
+            border-radius: 8px;
+            z-index: 100;
+            text-align: center;
+            box-shadow: 0 0 35px #000;
+        }
+
+        .suit-btn {
+            font-size: 1.6rem;
+            margin: 6px;
+            cursor: pointer;
+            background: #222;
+            border: 1px solid #d4af37;
+            color: #fff;
+            padding: 5px 12px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Mystic Pendulum Eights</h1>
+    <p>Human vs Computer Intelligence</p>
+    <h4><strong>How to Play: Mystic Pendulum Eights</strong>
+        <p>Welcome to Mystic Pendulum Eights, a strategic card game where classic matching mechanics collide with an unpredictable alignment wheel of fate. You are playing against a computer intelligence to see who can completely clear their hand first.</p>
+        <ul><strong>The Core Rules</strong>
+            <li>The Match Criteria: You must play a card from your hand that matches either the Suit or the Value of the card currently face-up on the discard pile.</li>
+            <li>Drawing Cards: If you do not have a matching card in your hand, you must tap the deck to draw a card.</li>
+            <li>The Turn Vector: Unlike traditional Crazy Eights, drawing a card immediately concludes your current turn. Even if the card you just drew is a perfect match, you must hold it in your hand and wait for the track to return to you on your next turn before you can play it.</li></ul>
+        <ul><strong>The Crazy Eight & The Pendulum</strong>
+            <li>The 8s are completely wild, but playing one is a massive gamble. When you or the computer plays an Eight, the game state shifts into an Alignment Spin:</li>
+            <li>Play the Eight: Lay down an 8 of any suit.</li>
+            <li>Execute the Rotation: Tap the center SPIN button to release the pendulum needle.</li>
+            <li>Accept the Verdict: The pendulum will land on one of the cosmic outcomes that instantly alters the hands or the board:</li>
+            <li>If it lands on YES: The Eight is accepted! You safely mutate the current suit vector to any suit you choose.</li>
+            <li>If it lands on NO: The Eight is rejected! The card is pulled back into your hand, and the match criteria resets to what it was before.</li>
+            <li>If it lands on MINUS 2 or MINUS 3: Absolute fortune! The engine instantly purges 2 or 3 cards out of your hand and buries them back in the deck. (Yes, you can dynamically win the game right here if this clears your hand!)</li>
+            <li>If it lands on ADD 2 or ADD 3: A penalty payload! Your opponent is forced to draw 2 or 3 extra penalty cards into their hand.</li>
+            <li>If it lands on SPIN AGAIN: The alignment is locked in a loop. You must spin the pendulum needle again until a decisive verdict is met.</li></ul>
+                <ul><storng>Securing Victory</strong>
+                    <p>The first intelligence to successfully drop their hand down to 0 cards completely purges the matrix and secures total victory. Watch out for the computer saving an Eight for its last card—the pendulum might just force them to take it back!</p></ul></h4>
+</header>
+
+<div class="game-container">
+    <div class="hand-label" id="cpu-label">Computer Hand</div>
+    <div id="computer-hand" class="hand"></div>
+
+    <div class="play-area">
+        <div id="deck" class="card card-back" onclick="handleHumanDraw()"></div>
+
+        <div class="wheel-box">
+            <svg viewBox="0 0 200 200">
+                <defs>
+                    <radialGradient id="wheel-shading" cx="50%" cy="50%" r="50%">
+                        <stop offset="70%" stop-color="#17171a"/>
+                        <stop offset="100%" stop-color="#0e0e10"/>
+                    </radialGradient>
+                </defs>
+                
+                <circle cx="100" cy="100" r="96" fill="url(#wheel-shading)" stroke="#d4af37" stroke-width="3"/>
+                <circle cx="100" cy="100" r="92" fill="none" stroke="#d4af37" stroke-width="1" stroke-dasharray="3,3"/>
+                
+                <text x="100" y="24" font-family="Georgia" font-size="9" fill="#baa473" font-weight="bold" text-anchor="middle">YES</text>
+                <text x="154" y="46" font-family="Georgia" font-size="9" fill="#baa473" font-weight="bold" text-anchor="middle">MINUS 2</text>
+                <text x="176" y="103" font-family="Georgia" font-size="9" fill="#baa473" font-weight="bold" text-anchor="middle">ADD 2</text>
+                <text x="152" y="160" font-family="Georgia" font-size="9" fill="#baa473" font-weight="bold" text-anchor="middle">SPIN AGAIN</text>
+                <text x="100" y="184" font-family="Georgia" font-size="9" fill="#baa473" font-weight="bold" text-anchor="middle">NO</text>
+                <text x="48" y="160" font-family="Georgia" font-size="9" fill="#baa473" font-weight="bold" text-anchor="middle">SPIN AGAIN</text>
+                <text x="24" y="103" font-family="Georgia" font-size="9" fill="#baa473" font-weight="bold" text-anchor="middle">ADD 3</text>
+                <text x="48" y="46" font-family="Georgia" font-size="9" fill="#baa473" font-weight="bold" text-anchor="middle">MINUS 3</text>
+                
+                <circle cx="100" cy="100" r="24" fill="none" stroke="#d4af37" stroke-width="1" stroke-dasharray="2,2"/>
+
+                <g id="pendulum-needle">
+                    <line x1="100" y1="100" x2="100" y2="34" stroke="#d4af37" stroke-width="2.5" stroke-linecap="round"/>
+                    <polygon points="100,24 95,36 105,36" fill="#d4af37"/>
+                    <circle cx="100" cy="34" r="3" fill="#0c0c0e" stroke="#d4af37" stroke-width="1"/>
+                </g>
+            </svg>
+
+            <div id="center-spin-btn" class="center-button-overlay" onclick="handleManualSpinClick()">Spin</div>
+        </div>
+
+        <div id="discard-pile"></div>
+    </div>
+
+    <div id="status" class="status-box">
+        <div id="status-text">Initializing Vectors...</div>
+    </div>
+
+    <div class="hand-label">Your Hand</div>
+    <div id="human-hand" class="hand"></div>
+</div>
+
+<div id="suit-selector" class="modal">
+    <h3>Choose a New Astral Suit:</h3>
+    <button class="suit-btn" onclick="selectSuit('♠')">♠</button>
+    <button class="suit-btn" onclick="selectSuit('♥')" style="color:#b71c1c;">♥</button>
+    <button class="suit-btn" onclick="selectSuit('♦')" style="color:#b71c1c;">♦</button>
+    <button class="suit-btn" onclick="selectSuit('♣')">♣</button>
+</div>
+
+<script>
+    const suits = ['♠', '♥', '♦', '♣'];
+    const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+    let deck = [];
+    let humanHand = [];
+    let computerHand = [];
+    let discardPile = [];
+    let currentSuit = '';
+    let currentValue = '';
+    
+    let isHumanTurn = true; 
+    let pendingEightCard = null; 
+    let cardOwner = null; 
+    let spinUnlocked = false; 
+    let isAiProcessing = false; 
+
+    const pieSlices = [
+        { name: 'Yes', angle: 0 },
+        { name: 'Minus 2', angle: 45 },
+        { name: 'Add 2', angle: 90 },
+        { name: 'Spin Again', angle: 135 },
+        { name: 'No', angle: 180 },
+        { name: 'Spin Again', angle: 225 },
+        { name: 'Add 3', angle: 270 },
+        { name: 'Minus 3', angle: 315 }
+    ];
+
+    function createDeck() {
+        deck = [];
+        for (let suit of suits) {
+            for (let value of values) {
+                deck.push({ suit, value });
+            }
+        }
+    }
+
+    function shuffleDeck() {
+        for (let run = 0; run < 5; run++) {
+            for (let i = deck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
+        }
+    }
+
+    function initGame() {
+        isHumanTurn = true;
+        pendingEightCard = null;
+        cardOwner = null;
+        spinUnlocked = false;
+        isAiProcessing = false;
+        
+        const existingBtn = document.getElementById('restart-btn');
+        if (existingBtn) existingBtn.remove();
+
+        humanHand = []; 
+        computerHand = []; 
+        discardPile = [];
+        deck = [];
+
+        createDeck();
+        shuffleDeck();
+
+        for (let i = 0; i < 5; i++) {
+            humanHand.push(deck.pop());
+            computerHand.push(deck.pop());
+        }
+
+        let baseCard = deck.pop();
+        while (baseCard.value === '8') {
+            deck.unshift(baseCard);
+            baseCard = deck.pop();
+        }
+        
+        discardPile.push(baseCard);
+        currentSuit = baseCard.suit;
+        currentValue = baseCard.value;
+
+        const needle = document.getElementById('pendulum-needle');
+        needle.classList.remove('active-spin');
+        needle.style.transform = `rotate(0deg)`;
+        
+        updateUI();
+        printStatus(`Match Started! Your turn. Play ${currentValue}${currentSuit} or an 8.`);
+    }
+
+    function updateUI() {
+        const hDiv = document.getElementById('human-hand');
+        hDiv.innerHTML = '';
+        humanHand.forEach((card, idx) => {
+            const el = createCardView(card);
+            el.onclick = () => handleHumanCardClick(idx);
+            hDiv.appendChild(el);
+        });
+
+        const cDiv = document.getElementById('computer-hand');
+        cDiv.innerHTML = '';
+        computerHand.forEach(() => {
+            const el = document.createElement('div');
+            el.className = 'card card-back';
+            cDiv.appendChild(el);
+        });
+        document.getElementById('cpu-label').innerText = `Computer Hand (${computerHand.length} cards)`;
+
+        const discardDiv = document.getElementById('discard-pile');
+        discardDiv.innerHTML = '';
+        const top = pendingEightCard ? pendingEightCard : discardPile[discardPile.length - 1];
+        if (top) {
+            const topEl = createCardView(top);
+            if (top.value === '8' || pendingEightCard) topEl.style.boxShadow = '0 0 10px #d4af37';
+            discardDiv.appendChild(topEl);
+        }
+
+        const btn = document.getElementById('center-spin-btn');
+        if (spinUnlocked) {
+            btn.classList.add('enabled');
+            if (cardOwner === 'computer') {
+                btn.innerText = "EXE";
+            } else {
+                btn.innerText = "Spin";
+            }
+        } else {
+            btn.classList.remove('enabled');
+            btn.innerText = "Spin";
+        }
+    }
+
+    function createCardView(card) {
+        const div = document.createElement('div');
+        const isRed = card.suit === '♥' || card.suit === '♦';
+        div.className = `card ${isRed ? 'red' : 'black'}`;
+        div.innerHTML = `
+            <div>${card.value}</div>
+            <div class="suit-center">${card.suit}</div>
+            <div style="transform: rotate(180deg);">${card.value}</div>
+        `;
+        return div;
+    }
+
+    function handleHumanCardClick(idx) {
+        if (!isHumanTurn || spinUnlocked || isAiProcessing) return;
+
+        const card = humanHand[idx];
+        const matchByValue = (card.value === currentValue);
+        const matchBySuit = (card.suit === currentSuit);
+        const isEight = (card.value === '8');
+
+        if (isEight) {
+            cardOwner = 'human';
+            pendingEightCard = humanHand.splice(idx, 1)[0];
+            spinUnlocked = true;
+            updateUI();
+            printStatus("You played an 8! Tap the center SPIN button.");
+        } else if (matchByValue || matchBySuit) {
+            humanHand.splice(idx, 1);
+            discardPile.push(card);
+            currentSuit = card.suit;
+            currentValue = card.value;
+            
+            // Visual check before changing turn sequence
+            if (checkEndConditions()) return;
+            
+            isHumanTurn = false;
+            isAiProcessing = true;
+            updateUI();
+            printStatus("Computer analyzing matrix...");
+            setTimeout(executeComputerAI, 1200);
+        } else {
+            printStatus("Card must match current suit or value!");
+        }
+    }
+
+    function handleHumanDraw() {
+        if (!isHumanTurn || spinUnlocked || isAiProcessing) return;
+
+        refillDeckIfEmpty();
+        if (deck.length > 0) {
+            humanHand.push(deck.pop());
+            printStatus("You drew a card. Passing track...");
+            isHumanTurn = false;
+            isAiProcessing = true;
+            updateUI();
+            setTimeout(executeComputerAI, 1200);
+        } else {
+            printStatus("Deck empty. Passing turn.");
+            isHumanTurn = false;
+            isAiProcessing = true;
+            updateUI();
+            setTimeout(executeComputerAI, 1200);
+        }
+    }
+
+    function executeComputerAI() {
+        if (checkEndConditions()) {
+            isAiProcessing = false;
+            return;
+        }
+
+        for (let i = 0; i < computerHand.length; i++) {
+            let card = computerHand[i];
+            if (card.value === currentValue || card.suit === currentSuit) {
+                computerHand.splice(i, 1);
+                discardPile.push(card);
+                currentSuit = card.suit;
+                currentValue = card.value;
+                printStatus(`Computer played ${card.value}${card.suit}.`);
+                
+                // Clear out the card display before validation loop runs
+                updateUI();
+                
+                if (checkEndConditions()) {
+                    isAiProcessing = false;
+                    return;
+                }
+                isHumanTurn = true;
+                isAiProcessing = false;
+                updateUI();
+                return;
+            }
+        }
+
+        for (let i = 0; i < computerHand.length; i++) {
+            if (computerHand[i].value === '8') {
+                cardOwner = 'computer';
+                pendingEightCard = computerHand.splice(i, 1)[0];
+                spinUnlocked = true;
+                printStatus("Computer played an Eight! Initializing alignment spin...");
+                updateUI();
+                
+                setTimeout(handleManualSpinClick, 1200);
+                return;
+            }
+        }
+
+        refillDeckIfEmpty();
+        if (deck.length > 0) {
+            computerHand.push(deck.pop());
+            printStatus("Computer drew a card.");
+        } else {
+            printStatus("Computer passed turn.");
+        }
+        isHumanTurn = true;
+        isAiProcessing = false;
+        updateUI();
+    }
+
+    function refillDeckIfEmpty() {
+        if (deck.length === 0 && discardPile.length > 1) {
+            const top = discardPile.pop();
+            deck = [...discardPile];
+            shuffleDeck();
+            discardPile = [top];
+        }
+    }
+
+    function handleManualSpinClick() {
+        if (!spinUnlocked) return;
+        
+        spinUnlocked = false; 
+        updateUI();
+
+        const needle = document.getElementById('pendulum-needle');
+        needle.classList.remove('active-spin');
+        needle.style.transform = `rotate(0deg)`;
+        void needle.offsetHeight; 
+
+        const designatedSlice = pieSlices[Math.floor(Math.random() * pieSlices.length)];
+        const randomLoops = Math.floor(Math.random() * 5) + 5; 
+        const totalSpinDegrees = (randomLoops * 360) + designatedSlice.angle;
+
+        printStatus("Vector rotation executing...");
+
+        setTimeout(() => {
+            needle.classList.add('active-spin');
+            needle.style.transform = `rotate(${totalSpinDegrees}deg)`;
+        }, 30);
+
+        setTimeout(() => {
+            executePendulumRule(designatedSlice.name);
+        }, 2600);
+    }
+
+    function executePendulumRule(outcome) {
+        let activeHand = (cardOwner === 'human') ? humanHand : computerHand;
+        let waitingHand = (cardOwner === 'human') ? computerHand : humanHand;
+        const activeEight = pendingEightCard;
+
+        if (outcome === 'Spin Again') {
+            printStatus(`Landed on: SPIN AGAIN! Relocking alignment for ${cardOwner}.`);
+            spinUnlocked = true;
+            updateUI();
+            return; 
+        }
+
+        pendingEightCard = null;
+
+        switch(outcome) {
+            case 'Yes':
+                printStatus(`Result: YES! The Eight vector is accepted.`);
+                if (activeEight) {
+                    discardPile.push(activeEight);
+                    currentValue = '8';
+                    currentSuit = activeEight.suit;
+                }
+                updateUI();
+                
+                if (cardOwner === 'human') {
+                    setTimeout(() => {
+                        document.getElementById('suit-selector').style.display = 'block';
+                    }, 800);
+                } else {
+                    setTimeout(() => {
+                        const randomSuit = suits[Math.floor(Math.random() * suits.length)];
+                        currentSuit = randomSuit;
+                        printStatus(`Computer mutated suit vector to ${randomSuit}. Your turn!`);
+                        isHumanTurn = true;
+                        isAiProcessing = false;
+                        updateUI();
+                    }, 1200);
+                }
+                break;
+
+            case 'No':
+                printStatus(`Result: NO! The Eight returns to ${cardOwner}.`);
+                if (activeEight) activeHand.push(activeEight);
+                
+                if (discardPile.length > 0) {
+                    const lastCard = discardPile[discardPile.length - 1];
+                    currentValue = lastCard.value;
+                    currentSuit = lastCard.suit;
+                }
+                finalizeTurnOrderPostSpin();
+                break;
+
+            case 'Minus 2':
+            case 'Minus 3':
+                const countMin = outcome === 'Minus 2' ? 2 : 3;
+                printStatus(`Result: ${outcome}! Purging cards from ${cardOwner}'s hand.`);
+                if (activeEight) {
+                    discardPile.push(activeEight);
+                    currentValue = '8';
+                    currentSuit = activeEight.suit;
+                }
+                
+                for(let i=0; i<countMin; i++) {
+                    if(activeHand.length > 0) deck.push(activeHand.pop());
+                }
+                
+                // Clear UI instantly so player can see empty hand state
+                updateUI();
+                
+                if (checkEndConditions()) return;
+                finalizeTurnOrderPostSpin();
+                break;
+
+            case 'Add 2':
+            case 'Add 3':
+                const countAdd = outcome === 'Add 2' ? 2 : 3;
+                printStatus(`Result: ${outcome}! Penalty payload appended to opponent.`);
+                if (activeEight) {
+                    discardPile.push(activeEight);
+                    currentValue = '8';
+                    currentSuit = activeEight.suit;
+                }
+                
+                for(let i=0; i<countAdd; i++) {
+                    refillDeckIfEmpty();
+                    if(deck.length > 0) waitingHand.push(deck.pop());
+                }
+                
+                if (checkEndConditions()) return;
+                finalizeTurnOrderPostSpin();
+                break;
+        }
+    }
+
+    function finalizeTurnOrderPostSpin() {
+        if (cardOwner === 'human') {
+            isHumanTurn = false;
+            isAiProcessing = true;
+            updateUI();
+            setTimeout(executeComputerAI, 1200);
+        } else {
+            isHumanTurn = true;
+            isAiProcessing = false;
+            updateUI();
+            printStatus(`Your Turn! Match criteria: ${currentValue}${currentSuit}.`);
+        }
+    }
+
+    function selectSuit(suit) {
+        currentSuit = suit;
+        document.getElementById('suit-selector').style.display = 'none';
+        isHumanTurn = false;
+        isAiProcessing = true;
+        updateUI();
+        printStatus(`Suit mutated to ${suit}. Computer processing...`);
+        setTimeout(executeComputerAI, 1200);
+    }
+
+    function checkEndConditions() {
+        if (humanHand.length === 0) {
+            updateUI(); 
+            printStatus("VICTORY SECURED! You beat the engine.");
+            showResetButton();
+            return true;
+        }
+        if (computerHand.length === 0) {
+            updateUI(); 
+            printStatus("DEFEAT. Computer processing loop finished first.");
+            showResetButton();
+            return true;
+        }
+        return false;
+    }
+
+    function showResetButton() {
+        spinUnlocked = false;
+        isAiProcessing = false;
+        const box = document.getElementById('status');
+        const oldBtn = document.getElementById('restart-btn');
+        if (oldBtn) oldBtn.remove();
+
+        const btn = document.createElement('button');
+        btn.id = 'restart-btn';
+        btn.className = 'reset-btn';
+        btn.innerText = 'Reset Matrix';
+        btn.onclick = initGame;
+        box.appendChild(btn);
+    }
+
+    function printStatus(msg) {
+        document.getElementById('status-text').innerText = msg;
+    }
+
+    initGame();
+</script>
+
+</body>
+</html>
