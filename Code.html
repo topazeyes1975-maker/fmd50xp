@@ -13,9 +13,21 @@
         #messageVisualizer { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 5px; }
         #magnifierOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; }
   </style>
+        <div class="instructions-box" style="background: #2d1b4e; border: 1px solid #7c4dff; padding: 15px; margin-bottom: 20px; border-radius: 5px; font-size: 14px; line-height: 1.6;">
+        <h2 style="margin-top: 0; color: #7c4dff; font-size: 18px;">Welcome to Cipher Codec</h2>
+        <p style="margin-bottom: 15px;">This tool allows you to design your own custom visual alphabet and instantly translate text into your unique symbolic cipher language.</p>
+        
+        <h3 style="margin-bottom: 5px; font-size: 15px; color: #7c4dff;">How to Use:</h3>
+        <ul style="margin-top: 0; padding-left: 20px;">
+            <li><strong>Create Your Symbols:</strong> Tap on any letter box in the grid below to open the large drawing screen. Draw your custom character, then tap <em>"Save & Close"</em>.</li>
+            <li><strong>Save to the Cloud:</strong> Type a custom passcode or name into the box at the bottom, then click <strong>Save</strong> to lock your alphabet online.</li>
+            <li><strong>Load Your Saved Alphabet:</strong> To bring back your drawings later, just type your passcode into the box and click <strong>Load</strong>.</li>
+            <li><strong>Generate Messages:</strong> Type any word or phrase into the text box and click <strong>Generate</strong> to see it translated into your custom cipher. You can also download the finished key!</li>
+        </ul>
+        </div>
+    
 </head>
 <body>
-
     <h1>Cipher Codec</h1>
     <div id="alphabet-container"></div>
 
