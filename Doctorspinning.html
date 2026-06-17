@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Doctor Who: Angel Staredown</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         body {
             margin: 0;
@@ -82,7 +85,7 @@
             pointer-events: none;
         }
 
-        /* --- ARCADE GLOBAL OVERLAY FOR SOBA --- */
+        /* --- GLOBAL LEADERBOARD OVERLAY --- */
         #gameOverScreen {
             position: absolute;
             top: 0;
@@ -105,19 +108,19 @@
         }
         .final-stats {
             font-size: 20px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             color: #00a2ff;
         }
         #initialsForm {
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
         #initialsInput {
             background: #112233;
             border: 2px solid #00a2ff;
             color: #fff;
-            font-size: 28px;
+            font-size: 24px;
             text-align: center;
-            width: 100px;
+            width: 90px;
             padding: 5px;
             text-transform: uppercase;
             letter-spacing: 5px;
@@ -132,32 +135,46 @@
             color: #fff;
             border: none;
             padding: 10px 20px;
-            font-size: 18px;
+            font-size: 16px;
             cursor: pointer;
             border-radius: 5px;
             font-weight: bold;
             margin-left: 10px;
+            vertical-align: middle;
         }
         .submit-btn:hover {
             background: #00d2ff;
         }
-        .soba-status {
-            font-size: 14px;
+        
+        /* --- GLOBAL LEADERBOARD SCALER TABLE --- */
+        #leaderboard {
+            width: 85%;
+            max-width: 450px;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        #leaderboard th {
+            border-bottom: 2px solid #00a2ff;
             color: #ffcc00;
-            margin-top: 15px;
-            font-style: italic;
+            padding: 6px;
+            font-size: 15px;
+        }
+        #leaderboard td {
+            padding: 6px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+            font-family: monospace;
         }
         .restart-btn {
             background: #ffcc00;
             color: #050b14;
             border: none;
             padding: 12px 30px;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
             cursor: pointer;
             border-radius: 5px;
-            margin-top: 25px;
-            display: none;
+            margin-top: 20px;
         }
         .restart-btn:hover {
             background: #fff;
@@ -189,17 +206,38 @@
         <div class="final-stats" id="finalStatsText">Score: 0 | Time: 0s</div>
         
         <div id="initialsForm">
-            <p style="margin-bottom: 10px; color: #aaa;">Enter Initials (3 Digits) for the Top Scale:</p>
+            <p style="margin-bottom: 10px; color: #aaa; font-size: 15px;">Enter Initials (3 Digits) for the Top Scale:</p>
             <input type="text" id="initialsInput" maxlength="3" placeholder="AAA" autocomplete="off">
-            <button class="submit-btn" id="submitScoreBtn">SUBMIT TO SOBA</button>
-            <div class="soba-status">Scores will sync to Soba's global leaderboard tables!</div>
+            <button class="submit-btn" id="submitScoreBtn">SUBMIT</button>
         </div>
+
+        <h3 style="color: #ffcc00; margin: 5px 0;">GLOBAL TOP SCALE</h3>
+        <table id="leaderboard">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Initials</th>
+                    <th>Score</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody id="leaderboardBody">
+                <tr><td colspan="4" style="color:#aaa;">Loading scores...</td></tr>
+            </tbody>
+        </table>
         
-        <button class="restart-btn" id="restartGameBtn">RUN AGAIN</button>
+        <button class="restart-btn" id="restartGameBtn" style="display: none;">RUN AGAIN</button>
     </div>
 </div>
 
 <script>
+// --- SUPABASE CONNECTIVITY SETUP ---
+// Replace these strings with your actual database keys from your Supabase Project Settings!
+const SUPABASE_URL = "YOUR_SUPABASE_URL";
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -372,8 +410,41 @@ function checkMovementInput() {
     }
 }
 
-// --- SOBA GLOBAL EVENT HANDLER ---
-function triggerGameOver() {
+// --- SUPABASE DATABASE INTERACTIONS ---
+async function fetchGlobalLeaderboard() {
+    try {
+        // Queries your table (assumed name: 'leaderboard'), ordered descending
+        const { data, error } = await supabase
+            .from('leaderboard')
+            .select('*')
+            .order('score', { ascending: false })
+            .limit(5);
+
+        if (error) throw error;
+
+        const tbody = document.getElementById('leaderboardBody');
+        tbody.innerHTML = "";
+
+        for (let i = 0; i < 5; i++) {
+            const row = document.createElement('tr');
+            if (data && data[i]) {
+                row.innerHTML = `
+                    <td>#${i + 1}</td>
+                    <td>${data[i].initials}</td>
+                    <td>${data[i].score}</td>
+                    <td>${data[i].time_survived}s</td>
+                `;
+            } else {
+                row.innerHTML = `<td>#${i + 1}</td><td>---</td><td>0</td><td>0s</td>`;
+            }
+            tbody.appendChild(row);
+        }
+    } catch (err) {
+        console.error("Error pulling database stats:", err);
+    }
+}
+
+async function triggerGameOver() {
     isGameOver = true;
     player.isMoving = false;
     
@@ -383,30 +454,35 @@ function triggerGameOver() {
     document.getElementById('initialsForm').style.display = 'block';
     document.getElementById('restartGameBtn').style.display = 'none';
     document.getElementById('initialsInput').value = "";
-}
-
-// Send score data up to the parent Soba engine container
-function submitScoreToSoba(initials) {
-    const scorePayload = {
-        event: "submit_high_score",
-        playerInitials: initials.toUpperCase(),
-        playerScore: player.score,
-        timeSurvived: timeSurvived
-    };
     
-    // Dispatches standard postMessage API clear through Soba's platform shell
-    window.parent.postMessage(scorePayload, "*");
+    // Fetch live entries immediately upon dying
+    await fetchGlobalLeaderboard();
 }
 
 // Submit button tracking
-document.getElementById('submitScoreBtn').addEventListener('click', () => {
-    let initials = document.getElementById('initialsInput').value.trim();
+document.getElementById('submitScoreBtn').addEventListener('click', async () => {
+    let initials = document.getElementById('initialsInput').value.trim().toUpperCase();
     if (initials.length < 1) initials = "DOC"; 
     
-    // Fire to Soba network tables
-    submitScoreToSoba(initials);
-    
-    // Swap form fields to reveal restart key
+    document.getElementById('submitScoreBtn').innerText = "SAVING...";
+
+    try {
+        // Inserts raw run down into your Supabase columns
+        const { error } = await supabase
+            .from('leaderboard')
+            .insert([
+                { initials: initials, score: player.score, time_survived: timeSurvived }
+            ]);
+
+        if (error) throw error;
+
+    } catch (err) {
+        console.error("Could not write to Supabase backend:", err);
+    }
+
+    // Refresh display scale and drop the restart option
+    await fetchGlobalLeaderboard();
+    document.getElementById('submitScoreBtn').innerText = "SUBMIT";
     document.getElementById('initialsForm').style.display = 'none';
     document.getElementById('restartGameBtn').style.display = 'block';
 });
@@ -548,7 +624,28 @@ function update() {
     });
 
     // Collect Energy Balls
-  energyBalls.forEach(ball => {
+    energyBalls.forEach((ball, index) => {
+        let dx = player.x - ball.x;
+        let dy = player.y - ball.y;
+        if (Math.sqrt(dx*dx + dy*dy) < player.radius + ball.radius) {
+            player.score += 10;
+            energyBalls.splice(index, 1);
+        }
+    });
+
+    // Hidden TARDIS Boxes
+    tardisBoxes.forEach(box => {
+        if (useImages && sprites.tardis) {
+            ctx.drawImage(sprites.tardis, box.x, box.y, box.width, box.height);
+        } else {
+            ctx.fillStyle = '#003b6f'; 
+            ctx.fillRect(box.x, box.y, box.width, box.height);
+            ctx.strokeStyle = '#fff';
+            ctx.strokeRect(box.x, box.y, box.width, box.height);
+        }
+    });
+
+    energyBalls.forEach(ball => {
         if (useImages && sprites.energyBall) {
             ctx.drawImage(sprites.energyBall, ball.x - ball.radius, ball.y - ball.radius, ball.radius*2, ball.radius*2);
         } else {
