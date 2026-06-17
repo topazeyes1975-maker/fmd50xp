@@ -232,9 +232,9 @@
 
 <script>
 // --- SUPABASE CONNECTIVITY SETUP ---
-// Replace these strings with your actual database keys from your Supabase Project Settings!
-const SUPABASE_URL = "YOUR_SUPABASE_URL";
-const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+// Use the credentials from your existing Hex or Cryptogram project here!
+const SUPABASE_URL = "YOUR_EXISTING_PROJECT_URL";
+const SUPABASE_ANON_KEY = "YOUR_EXISTING_PROJECT_ANON_KEY";
 
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -413,9 +413,9 @@ function checkMovementInput() {
 // --- SUPABASE DATABASE INTERACTIONS ---
 async function fetchGlobalLeaderboard() {
     try {
-        // Queries your table (assumed name: 'leaderboard'), ordered descending
+        // Points to the specific shared table for this game
         const { data, error } = await supabase
-            .from('leaderboard')
+            .from('doctor_leaderboard')
             .select('*')
             .order('score', { ascending: false })
             .limit(5);
@@ -455,7 +455,6 @@ async function triggerGameOver() {
     document.getElementById('restartGameBtn').style.display = 'none';
     document.getElementById('initialsInput').value = "";
     
-    // Fetch live entries immediately upon dying
     await fetchGlobalLeaderboard();
 }
 
@@ -467,9 +466,8 @@ document.getElementById('submitScoreBtn').addEventListener('click', async () => 
     document.getElementById('submitScoreBtn').innerText = "SAVING...";
 
     try {
-        // Inserts raw run down into your Supabase columns
         const { error } = await supabase
-            .from('leaderboard')
+            .from('doctor_leaderboard')
             .insert([
                 { initials: initials, score: player.score, time_survived: timeSurvived }
             ]);
@@ -480,7 +478,6 @@ document.getElementById('submitScoreBtn').addEventListener('click', async () => 
         console.error("Could not write to Supabase backend:", err);
     }
 
-    // Refresh display scale and drop the restart option
     await fetchGlobalLeaderboard();
     document.getElementById('submitScoreBtn').innerText = "SUBMIT";
     document.getElementById('initialsForm').style.display = 'none';
@@ -634,6 +631,25 @@ function update() {
     });
 
     // Hidden TARDIS Boxes
+    tardisBoxes.forEach((box) => {
+        let closestX = Math.max(box.x, Math.min(player.x, box.x + box.width));
+        let closestY = Math.max(box.y, Math.min(player.y, box.y + box.height));
+        let dx = player.x - closestX;
+        let dy = player.y - closestY;
+        
+        if (Math.sqrt(dx*dx + dy*dy) < player.radius) {
+            if(player.hp < 100) {
+                player.hp = Math.min(100, player.hp + 25);
+                box.x = Math.random() * (canvas.width - 60) + 30;
+                box.y = Math.random() * (canvas.height - 60) + 30;
+            }
+        }
+    });
+}
+
+function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
     tardisBoxes.forEach(box => {
         if (useImages && sprites.tardis) {
             ctx.drawImage(sprites.tardis, box.x, box.y, box.width, box.height);
