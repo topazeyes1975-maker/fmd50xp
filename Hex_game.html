@@ -106,12 +106,13 @@
     </div>
 
     <script>
-        // STEP 2: INITIALIZE CONNECTION TO YOUR DATABASE
-        const SUPABASE_URL = "https://vvpxdheylpnlnqyvdqqb.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_41PPeNX3wc_dlOQP-vpoyA_MOz6RGZg"; // <-- Put your public anon API key here!
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // // --- SUPABASE CONNECTIVITY SETUP ---
+const SUPABASE_URL = "https://vvpddhoytpmtnqyvdqgb.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_41PPeNX3wc_dlOQP-vpoyA_MOz6RGZg";
 
-        const canvas = document.getElementById('hexCanvas');
+const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+const canvas = document.getElementById('hexCanvas');
         const ctx = canvas.getContext('2d');
         const turnText = document.getElementById('currentTurn');
         const winNotification = document.getElementById('winNotification');
