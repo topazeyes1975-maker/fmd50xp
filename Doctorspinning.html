@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html html, css, js language="en">
+<html language="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -39,7 +39,6 @@
             text-shadow: 2px 2px 4px #000;
             pointer-events: none;
         }
-        /* Mobile Virtual Joystick area */
         #touchZone {
             position: absolute;
             bottom: 20px;
@@ -69,6 +68,7 @@
     <div id="ui">
         <div>Score: <span id="scoreVal">0</span></div>
         <div>HP: <span id="hpVal">100</span></div>
+        <div>Time Survived: <span id="timerVal">0s</span></div>
         <div id="status" style="color: #ffcc00; margin-top: 5px;">Status: Moving (Sonic Active)</div>
     </div>
     <div id="touchZone">
@@ -80,29 +80,27 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-// Adjust canvas resolution
 canvas.width = 800;
 canvas.height = 600;
 
 // --- IMAGE CONFIGURATION ---
-// Paste your image URLs here when ready! Leave them blank to use colored vector shapes.
 const IMAGES = {
-    doctor: "",       // The Doctor image URL
-    angel: "",        // Weeping Angel image URL
-    tardis: "",       // TARDIS (Heal Box) image URL
-    sonic: "",        // Sonic Screwdriver image URL
-    energyBall: ""    // Energy Ball image URL
+    doctor: "",        
+    angel: "",         
+    littleMonster: "", 
+    tardis: "",        
+    sonic: "",         
+    energyBall: ""     
 };
 
 const sprites = {};
 let imagesLoaded = 0;
 let useImages = false;
 
-// Load images if URLs are provided
 for (let key in IMAGES) {
     if (IMAGES[key]) {
         sprites[key] = new Image();
-        sprites[key] = IMAGES[key];
+        sprites[key].src = IMAGES[key];
         sprites[key].onload = () => {
             imagesLoaded++;
             if (imagesLoaded === Object.keys(IMAGES).length) useImages = true;
@@ -126,8 +124,11 @@ let player = {
 
 let input = { x: 0, y: 0 };
 let angels = [];
+let littleMonsters = []; 
 let energyBalls = [];
 let tardisBoxes = [];
+let startTime = Date.now();
+let timeSurvived = 0;
 
 // Spawn hidden TARDIS health spots
 function spawnTardis() {
@@ -135,16 +136,16 @@ function spawnTardis() {
         x: Math.random() * (canvas.width - 60) + 30,
         y: Math.random() * (canvas.height - 60) + 30,
         width: 30,
-        height: 45,
-        active: true
+        height: 45
     });
 }
 for(let i=0; i<3; i++) spawnTardis();
 
-// Spawn Weeping Angels
+// Spawn Big Weeping Angels
 function spawnAngel() {
+    let side = Math.random();
     let x, y;
-    if (Math.random() < 0.5) {
+    if (side < 0.5) {
         x = Math.random() < 0.5 ? -20 : canvas.width + 20;
         y = Math.random() * canvas.height;
     } else {
@@ -155,12 +156,34 @@ function spawnAngel() {
         x: x,
         y: y,
         radius: 18,
-        speed: 1.5,
-        state: 'chasing', // 'chasing' or 'fleeing'
+        speed: 1.2,
+        state: 'chasing',
         fleeTimer: 0
     });
 }
-setInterval(spawnAngel, 2000);
+setInterval(spawnAngel, 3500);
+
+// Spawn Little Monsters (Baby Angels)
+function spawnLittleMonster() {
+    let side = Math.random();
+    let x, y;
+    if (side < 0.5) {
+        x = Math.random() < 0.5 ? -10 : canvas.width + 10;
+        y = Math.random() * canvas.height;
+    } else {
+        x = Math.random() * canvas.width;
+        y = Math.random() < 0.5 ? -10 : canvas.height + 10;
+    }
+    littleMonsters.push({
+        x: x,
+        y: y,
+        radius: 10,       
+        speed: 2.2,       
+        state: 'approaching', 
+        dropTimer: 0
+    });
+}
+setInterval(spawnLittleMonster, 2000);
 
 // --- TOUCH / JOYSTICK CONTROLS ---
 const touchZone = document.getElementById('touchZone');
@@ -193,7 +216,6 @@ touchZone.addEventListener('touchmove', (e) => {
 
     joystick.style.transform = `translate(${dx}px, ${dy}px)`;
     
-    // Set movement vector
     input.x = dx / maxRadius;
     input.y = dy / maxRadius;
     player.isMoving = (Math.abs(input.x) > 0.1 || Math.abs(input.y) > 0.1);
@@ -207,7 +229,7 @@ touchZone.addEventListener('touchend', () => {
     player.isMoving = false;
 });
 
-// --- KEYBOARD FALLBACK FOR TESTING ---
+// --- KEYBOARD FALLBACK ---
 let keys = {};
 window.addEventListener('keydown', e => { keys[e.code] = true; player.isMoving = true; });
 window.addEventListener('keyup', e => { 
@@ -223,55 +245,101 @@ function handleKeyboardInput() {
     if (keys['KeyS'] || keys['ArrowDown']) input.y = 1;
 }
 
+function resetGame() {
+    alert("The Angels drained your energy! Game Over.\nScore: " + player.score + "\nTime Survived: " + timeSurvived + "s");
+    player.hp = 100;
+    player.score = 0;
+    startTime = Date.now();
+    angels = [];
+    littleMonsters = [];
+    energyBalls = [];
+}
+
 // --- GAME LOOP ---
 function update() {
     handleKeyboardInput();
+
+    // Track survival time
+    timeSurvived = Math.floor((Date.now() - startTime) / 1000);
+    document.getElementById('timerVal').innerText = timeSurvived + "s";
 
     // Move Player
     if (player.isMoving) {
         player.x += input.x * player.speed;
         player.y += input.y * player.speed;
-        // Keep inside bounds
         player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
         player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y));
         
-        // Spin the Sonics when moving
         player.sonicRotation += 0.08;
         document.getElementById('status').innerText = "Status: Moving (Sonic Active)";
         document.getElementById('status').style.color = "#00a2ff";
     } else {
-        document.getElementById('status').innerText = "Status: Staring (Angels Frozen/Vulnerable)";
+        document.getElementById('status').innerText = "Status: Staring (Angels Frozen)";
         document.getElementById('status').style.color = "#ffcc00";
     }
 
-    // Update Angels
+    // If player stops moving, everything freezes because he is staring!
+    if (!player.isMoving) {
+        return; 
+    }
+
+    // --- UPDATE LITTLE MONSTERS ---
+    littleMonsters.forEach((little, index) => {
+        let dx = player.x - little.x;
+        let dy = player.y - little.y;
+        let dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (little.state === 'approaching') {
+            little.x += (dx / dist) * little.speed;
+            little.y += (dy / dist) * little.speed;
+
+            // Little monster reaches the Doctor's shield radius
+            if (dist < player.sonicDistance) {
+                little.state = 'runningAway';
+            }
+            
+            // CRITICAL ADDITION: If they actually touch his main body, they rapidly drain his energy
+            if (dist < player.radius + little.radius) {
+                player.hp -= 1.5; // Rapid tick drain
+                if (player.hp <= 0) {
+                    resetGame();
+                    return;
+                }
+            }
+        } else if (little.state === 'runningAway') {
+            little.x -= (dx / dist) * (little.speed * 1.2);
+            little.y -= (dy / dist) * (little.speed * 1.2);
+
+            little.dropTimer++;
+            if (little.dropTimer % 20 === 0) {
+                energyBalls.push({ x: little.x, y: little.y, radius: 7 });
+            }
+
+            if (little.x < -50 || little.x > canvas.width + 50 || little.y < -50 || little.y > canvas.height + 50) {
+                littleMonsters.splice(index, 1);
+            }
+        }
+    });
+
+    // --- UPDATE BIG ANGELS ---
     angels.forEach((angel, index) => {
         let dx = player.x - angel.x;
         let dy = player.y - angel.y;
         let dist = Math.sqrt(dx * dx + dy * dy);
 
-        if (!player.isMoving) {
-            // Player is staring! Angels freeze in place and can't move or flee
-            if (angel.state === 'fleeing') {
-                angel.fleeTimer--;
-                if (angel.fleeTimer <= 0) angel.state = 'chasing';
-            }
-            return; 
-        }
-
         if (angel.state === 'chasing') {
-            // Chase the Doctor
             angel.x += (dx / dist) * angel.speed;
             angel.y += (dy / dist) * angel.speed;
 
-            // Check collision with Doctor's body
             if (dist < player.radius + angel.radius) {
-                player.hp -= 10;
+                player.hp -= 20; // Big instant energy drain
                 angels.splice(index, 1);
+                if (player.hp <= 0) {
+                    resetGame();
+                }
                 return;
             }
 
-            // Check collision with Spinning Sonics
             for (let i = 0; i < player.sonicCount; i++) {
                 let angle = player.sonicRotation + (i * (Math.PI * 2 / player.sonicCount));
                 let sonicX = player.x + Math.cos(angle) * player.sonicDistance;
@@ -282,14 +350,12 @@ function update() {
                 let sDist = Math.sqrt(sDx * sDx + sDy * sDy);
 
                 if (sDist < angel.radius + 12) {
-                    // Turn angel around to flee and drop an energy ball
                     angel.state = 'fleeing';
-                    angel.fleeTimer = 120; // run away for 120 frames
+                    angel.fleeTimer = 100;
                     energyBalls.push({ x: angel.x, y: angel.y, radius: 8 });
                 }
             }
         } else if (angel.state === 'fleeing') {
-            // Run away from Doctor
             angel.x -= (dx / dist) * (angel.speed * 1.5);
             angel.y -= (dy / dist) * (angel.speed * 1.5);
             angel.fleeTimer--;
@@ -308,9 +374,8 @@ function update() {
         }
     });
 
-    // Hidden TARDIS Healing Boxes
+    // Hidden TARDIS Boxes
     tardisBoxes.forEach((box) => {
-        // Simple circle-to-box collision
         let closestX = Math.max(box.x, Math.min(player.x, box.x + box.width));
         let closestY = Math.max(box.y, Math.min(player.y, box.y + box.height));
         let dx = player.x - closestX;
@@ -318,43 +383,28 @@ function update() {
         
         if (Math.sqrt(dx*dx + dy*dy) < player.radius) {
             if(player.hp < 100) {
-                player.hp = Math.min(100, player.hp + 20);
-                // Relocate TARDIS box somewhere else secretly
+                player.hp = Math.min(100, player.hp + 25);
                 box.x = Math.random() * (canvas.width - 60) + 30;
                 box.y = Math.random() * (canvas.height - 60) + 30;
             }
         }
     });
-
-    // UI Updates
-    document.getElementById('scoreVal').innerText = player.score;
-    document.getElementById('hpVal').innerText = player.hp;
-
-    if(player.hp <= 0) {
-        alert("The Angels caught you! Game Over. Score: " + player.score);
-        player.hp = 100;
-        player.score = 0;
-        angels = [];
-        energyBalls = [];
-    }
 }
 
 function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // 1. Draw Secret TARDIS boxes
     tardisBoxes.forEach(box => {
         if (useImages && sprites.tardis) {
             ctx.drawImage(sprites.tardis, box.x, box.y, box.width, box.height);
         } else {
-            ctx.fillStyle = '#003b6f'; // TARDIS Blue
+            ctx.fillStyle = '#003b6f'; 
             ctx.fillRect(box.x, box.y, box.width, box.height);
             ctx.strokeStyle = '#fff';
             ctx.strokeRect(box.x, box.y, box.width, box.height);
         }
     });
 
-    // 2. Draw Energy Balls
     energyBalls.forEach(ball => {
         if (useImages && sprites.energyBall) {
             ctx.drawImage(sprites.energyBall, ball.x - ball.radius, ball.y - ball.radius, ball.radius*2, ball.radius*2);
@@ -362,24 +412,19 @@ function render() {
             ctx.beginPath();
             ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
             ctx.fillStyle = '#00ffcc';
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = '#00ffcc';
             ctx.fill();
-            ctx.shadowBlur = 0; // reset
         }
     });
 
-    // 3. Draw Player (The Doctor)
     if (useImages && sprites.doctor) {
         ctx.drawImage(sprites.doctor, player.x - player.radius, player.y - player.radius, player.radius*2, player.radius*2);
     } else {
         ctx.beginPath();
         ctx.arc(player.x, player.y, player.radius, 0, Math.PI*2);
-        ctx.fillStyle = '#9e782f'; // Tweed jacket brown
+        ctx.fillStyle = '#9e782f'; 
         ctx.fill();
     }
 
-    // 4. Draw Sonic Screwdrivers (Only spin when moving)
     for (let i = 0; i < player.sonicCount; i++) {
         let angle = player.sonicRotation + (i * (Math.PI * 2 / player.sonicCount));
         let sonicX = player.x + Math.cos(angle) * player.sonicDistance;
@@ -394,21 +439,33 @@ function render() {
         } else {
             ctx.beginPath();
             ctx.arc(sonicX, sonicY, 6, 0, Math.PI*2);
-            ctx.fillStyle = player.isMoving ? '#00ff55' : '#555555'; // Glows green when active
+            ctx.fillStyle = player.isMoving ? '#00ff55' : '#555555'; 
             ctx.fill();
         }
     }
 
-    // 5. Draw Weeping Angels
+    littleMonsters.forEach(little => {
+        if (useImages && sprites.littleMonster) {
+            ctx.drawImage(sprites.littleMonster, little.x - little.radius, little.y - little.radius, little.radius*2, little.radius*2);
+        } else {
+            ctx.beginPath();
+            ctx.arc(little.x, little.y, little.radius, 0, Math.PI*2);
+            ctx.fillStyle = '#bbbbbb';
+            ctx.fill();
+            ctx.fillStyle = '#111';
+            ctx.font = "9px sans-serif";
+            ctx.fillText(little.state === 'runningAway' ? "🏃" : "👶", little.x - 5, little.y + 3);
+        }
+    });
+
     angels.forEach(angel => {
         if (useImages && sprites.angel) {
             ctx.drawImage(sprites.angel, angel.x - angel.radius, angel.y - angel.radius, angel.radius*2, angel.radius*2);
         } else {
             ctx.beginPath();
             ctx.arc(angel.x, angel.y, angel.radius, 0, Math.PI*2);
-            ctx.fillStyle = angel.state === 'fleeing' ? '#555' : '#888888'; // Stone gray
+            ctx.fillStyle = '#888888'; 
             ctx.fill();
-            // Tiny wings or hands over face indicator
             ctx.fillStyle = '#333';
             ctx.font = "12px sans-serif";
             ctx.fillText(angel.state === 'fleeing' ? "🙈" : "🗿", angel.x - 6, angel.y + 4);
@@ -419,6 +476,7 @@ function render() {
 function loop() {
     update();
     render();
+    document.getElementById('hpVal').innerText = Math.max(0, Math.floor(player.hp));
     requestAnimationFrame(loop);
 }
 
