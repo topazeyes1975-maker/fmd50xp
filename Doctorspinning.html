@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html html, css, js language="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Doctor Who: Angel Staredown</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #050b14;
+            color: #fff;
+            font-family: sans-serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            max-width: 800px;
+            max-height: 600px;
+        }
+        canvas {
+            background: #112233;
+            display: block;
+            width: 100%;
+            height: 100%;
+            border: 2px solid #00a2ff;
+        }
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 18px;
+            text-shadow: 2px 2px 4px #000;
+            pointer-events: none;
+        }
+        /* Mobile Virtual Joystick area */
+        #touchZone {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+        }
+        #joystick {
+            position: absolute;
+            top: 35px;
+            left: 35px;
+            width: 50px;
+            height: 50px;
+            background: #00a2ff;
+            border-radius: 50%;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+
+<div id="gameContainer">
+    <canvas id="gameCanvas"></canvas>
+    <div id="ui">
+        <div>Score: <span id="scoreVal">0</span></div>
+        <div>HP: <span id="hpVal">100</span></div>
+        <div id="status" style="color: #ffcc00; margin-top: 5px;">Status: Moving (Sonic Active)</div>
+    </div>
+    <div id="touchZone">
+        <div id="joystick"></div>
+    </div>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// Adjust canvas resolution
+canvas.width = 800;
+canvas.height = 600;
+
+// --- IMAGE CONFIGURATION ---
+// Paste your image URLs here when ready! Leave them blank to use colored vector shapes.
+const IMAGES = {
+    doctor: "",       // The Doctor image URL
+    angel: "",        // Weeping Angel image URL
+    tardis: "",       // TARDIS (Heal Box) image URL
+    sonic: "",        // Sonic Screwdriver image URL
+    energyBall: ""    // Energy Ball image URL
+};
+
+const sprites = {};
+let imagesLoaded = 0;
+let useImages = false;
+
+// Load images if URLs are provided
+for (let key in IMAGES) {
+    if (IMAGES[key]) {
+        sprites[key] = new Image();
+        sprites[key] = IMAGES[key];
+        sprites[key].onload = () => {
+            imagesLoaded++;
+            if (imagesLoaded === Object.keys(IMAGES).length) useImages = true;
+        };
+    }
+}
+
+// --- GAME STATE ---
+let player = {
+    x: canvas.width / 2,
+    y: canvas.height / 2,
+    radius: 20,
+    speed: 4,
+    hp: 100,
+    score: 0,
+    isMoving: false,
+    sonicRotation: 0,
+    sonicCount: 6,
+    sonicDistance: 65
+};
+
+let input = { x: 0, y: 0 };
+let angels = [];
+let energyBalls = [];
+let tardisBoxes = [];
+
+// Spawn hidden TARDIS health spots
+function spawnTardis() {
+    tardisBoxes.push({
+        x: Math.random() * (canvas.width - 60) + 30,
+        y: Math.random() * (canvas.height - 60) + 30,
+        width: 30,
+        height: 45,
+        active: true
+    });
+}
+for(let i=0; i<3; i++) spawnTardis();
+
+// Spawn Weeping Angels
+function spawnAngel() {
+    let x, y;
+    if (Math.random() < 0.5) {
+        x = Math.random() < 0.5 ? -20 : canvas.width + 20;
+        y = Math.random() * canvas.height;
+    } else {
+        x = Math.random() * canvas.width;
+        y = Math.random() < 0.5 ? -20 : canvas.height + 20;
+    }
+    angels.push({
+        x: x,
+        y: y,
+        radius: 18,
+        speed: 1.5,
+        state: 'chasing', // 'chasing' or 'fleeing'
+        fleeTimer: 0
+    });
+}
+setInterval(spawnAngel, 2000);
+
+// --- TOUCH / JOYSTICK CONTROLS ---
+const touchZone = document.getElementById('touchZone');
+const joystick = document.getElementById('joystick');
+let joystickActive = false;
+let startX = 0, startY = 0;
+
+touchZone.addEventListener('touchstart', (e) => {
+    joystickActive = true;
+    const touch = e.touches[0];
+    const rect = touchZone.getBoundingClientRect();
+    startX = rect.left + rect.width / 2;
+    startY = rect.top + rect.height / 2;
+});
+
+touchZone.addEventListener('touchmove', (e) => {
+    if (!joystickActive) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    
+    let dx = touch.clientX - startX;
+    let dy = touch.clientY - startY;
+    let distance = Math.sqrt(dx*dx + dy*dy);
+    let maxRadius = 40;
+
+    if (distance > maxRadius) {
+        dx = (dx / distance) * maxRadius;
+        dy = (dy / distance) * maxRadius;
+    }
+
+    joystick.style.transform = `translate(${dx}px, ${dy}px)`;
+    
+    // Set movement vector
+    input.x = dx / maxRadius;
+    input.y = dy / maxRadius;
+    player.isMoving = (Math.abs(input.x) > 0.1 || Math.abs(input.y) > 0.1);
+});
+
+touchZone.addEventListener('touchend', () => {
+    joystickActive = false;
+    joystick.style.transform = `translate(0px, 0px)`;
+    input.x = 0;
+    input.y = 0;
+    player.isMoving = false;
+});
+
+// --- KEYBOARD FALLBACK FOR TESTING ---
+let keys = {};
+window.addEventListener('keydown', e => { keys[e.code] = true; player.isMoving = true; });
+window.addEventListener('keyup', e => { 
+    keys[e.code] = false; 
+    if(!keys['KeyW'] && !keys['KeyA'] && !keys['KeyS'] && !keys['KeyD']) player.isMoving = false;
+});
+
+function handleKeyboardInput() {
+    input.x = 0; input.y = 0;
+    if (keys['KeyA'] || keys['ArrowLeft']) input.x = -1;
+    if (keys['KeyD'] || keys['ArrowRight']) input.x = 1;
+    if (keys['KeyW'] || keys['ArrowUp']) input.y = -1;
+    if (keys['KeyS'] || keys['ArrowDown']) input.y = 1;
+}
+
+// --- GAME LOOP ---
+function update() {
+    handleKeyboardInput();
+
+    // Move Player
+    if (player.isMoving) {
+        player.x += input.x * player.speed;
+        player.y += input.y * player.speed;
+        // Keep inside bounds
+        player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
+        player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y));
+        
+        // Spin the Sonics when moving
+        player.sonicRotation += 0.08;
+        document.getElementById('status').innerText = "Status: Moving (Sonic Active)";
+        document.getElementById('status').style.color = "#00a2ff";
+    } else {
+        document.getElementById('status').innerText = "Status: Staring (Angels Frozen/Vulnerable)";
+        document.getElementById('status').style.color = "#ffcc00";
+    }
+
+    // Update Angels
+    angels.forEach((angel, index) => {
+        let dx = player.x - angel.x;
+        let dy = player.y - angel.y;
+        let dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (!player.isMoving) {
+            // Player is staring! Angels freeze in place and can't move or flee
+            if (angel.state === 'fleeing') {
+                angel.fleeTimer--;
+                if (angel.fleeTimer <= 0) angel.state = 'chasing';
+            }
+            return; 
+        }
+
+        if (angel.state === 'chasing') {
+            // Chase the Doctor
+            angel.x += (dx / dist) * angel.speed;
+            angel.y += (dy / dist) * angel.speed;
+
+            // Check collision with Doctor's body
+            if (dist < player.radius + angel.radius) {
+                player.hp -= 10;
+                angels.splice(index, 1);
+                return;
+            }
+
+            // Check collision with Spinning Sonics
+            for (let i = 0; i < player.sonicCount; i++) {
+                let angle = player.sonicRotation + (i * (Math.PI * 2 / player.sonicCount));
+                let sonicX = player.x + Math.cos(angle) * player.sonicDistance;
+                let sonicY = player.y + Math.sin(angle) * player.sonicDistance;
+
+                let sDx = angel.x - sonicX;
+                let sDy = angel.y - sonicY;
+                let sDist = Math.sqrt(sDx * sDx + sDy * sDy);
+
+                if (sDist < angel.radius + 12) {
+                    // Turn angel around to flee and drop an energy ball
+                    angel.state = 'fleeing';
+                    angel.fleeTimer = 120; // run away for 120 frames
+                    energyBalls.push({ x: angel.x, y: angel.y, radius: 8 });
+                }
+            }
+        } else if (angel.state === 'fleeing') {
+            // Run away from Doctor
+            angel.x -= (dx / dist) * (angel.speed * 1.5);
+            angel.y -= (dy / dist) * (angel.speed * 1.5);
+            angel.fleeTimer--;
+
+            if (angel.fleeTimer <= 0) angel.state = 'chasing';
+        }
+    });
+
+    // Collect Energy Balls
+    energyBalls.forEach((ball, index) => {
+        let dx = player.x - ball.x;
+        let dy = player.y - ball.y;
+        if (Math.sqrt(dx*dx + dy*dy) < player.radius + ball.radius) {
+            player.score += 10;
+            energyBalls.splice(index, 1);
+        }
+    });
+
+    // Hidden TARDIS Healing Boxes
+    tardisBoxes.forEach((box) => {
+        // Simple circle-to-box collision
+        let closestX = Math.max(box.x, Math.min(player.x, box.x + box.width));
+        let closestY = Math.max(box.y, Math.min(player.y, box.y + box.height));
+        let dx = player.x - closestX;
+        let dy = player.y - closestY;
+        
+        if (Math.sqrt(dx*dx + dy*dy) < player.radius) {
+            if(player.hp < 100) {
+                player.hp = Math.min(100, player.hp + 20);
+                // Relocate TARDIS box somewhere else secretly
+                box.x = Math.random() * (canvas.width - 60) + 30;
+                box.y = Math.random() * (canvas.height - 60) + 30;
+            }
+        }
+    });
+
+    // UI Updates
+    document.getElementById('scoreVal').innerText = player.score;
+    document.getElementById('hpVal').innerText = player.hp;
+
+    if(player.hp <= 0) {
+        alert("The Angels caught you! Game Over. Score: " + player.score);
+        player.hp = 100;
+        player.score = 0;
+        angels = [];
+        energyBalls = [];
+    }
+}
+
+function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 1. Draw Secret TARDIS boxes
+    tardisBoxes.forEach(box => {
+        if (useImages && sprites.tardis) {
+            ctx.drawImage(sprites.tardis, box.x, box.y, box.width, box.height);
+        } else {
+            ctx.fillStyle = '#003b6f'; // TARDIS Blue
+            ctx.fillRect(box.x, box.y, box.width, box.height);
+            ctx.strokeStyle = '#fff';
+            ctx.strokeRect(box.x, box.y, box.width, box.height);
+        }
+    });
+
+    // 2. Draw Energy Balls
+    energyBalls.forEach(ball => {
+        if (useImages && sprites.energyBall) {
+            ctx.drawImage(sprites.energyBall, ball.x - ball.radius, ball.y - ball.radius, ball.radius*2, ball.radius*2);
+        } else {
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
+            ctx.fillStyle = '#00ffcc';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#00ffcc';
+            ctx.fill();
+            ctx.shadowBlur = 0; // reset
+        }
+    });
+
+    // 3. Draw Player (The Doctor)
+    if (useImages && sprites.doctor) {
+        ctx.drawImage(sprites.doctor, player.x - player.radius, player.y - player.radius, player.radius*2, player.radius*2);
+    } else {
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.radius, 0, Math.PI*2);
+        ctx.fillStyle = '#9e782f'; // Tweed jacket brown
+        ctx.fill();
+    }
+
+    // 4. Draw Sonic Screwdrivers (Only spin when moving)
+    for (let i = 0; i < player.sonicCount; i++) {
+        let angle = player.sonicRotation + (i * (Math.PI * 2 / player.sonicCount));
+        let sonicX = player.x + Math.cos(angle) * player.sonicDistance;
+        let sonicY = player.y + Math.sin(angle) * player.sonicDistance;
+
+        if (useImages && sprites.sonic) {
+            ctx.save();
+            ctx.translate(sonicX, sonicY);
+            ctx.rotate(angle);
+            ctx.drawImage(sprites.sonic, -8, -20, 16, 40);
+            ctx.restore();
+        } else {
+            ctx.beginPath();
+            ctx.arc(sonicX, sonicY, 6, 0, Math.PI*2);
+            ctx.fillStyle = player.isMoving ? '#00ff55' : '#555555'; // Glows green when active
+            ctx.fill();
+        }
+    }
+
+    // 5. Draw Weeping Angels
+    angels.forEach(angel => {
+        if (useImages && sprites.angel) {
+            ctx.drawImage(sprites.angel, angel.x - angel.radius, angel.y - angel.radius, angel.radius*2, angel.radius*2);
+        } else {
+            ctx.beginPath();
+            ctx.arc(angel.x, angel.y, angel.radius, 0, Math.PI*2);
+            ctx.fillStyle = angel.state === 'fleeing' ? '#555' : '#888888'; // Stone gray
+            ctx.fill();
+            // Tiny wings or hands over face indicator
+            ctx.fillStyle = '#333';
+            ctx.font = "12px sans-serif";
+            ctx.fillText(angel.state === 'fleeing' ? "🙈" : "🗿", angel.x - 6, angel.y + 4);
+        }
+    });
+}
+
+function loop() {
+    update();
+    render();
+    requestAnimationFrame(loop);
+}
+
+loop();
+</script>
+</body>
+</html>
