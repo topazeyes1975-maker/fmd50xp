@@ -8,65 +8,53 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
+        /* The entire page fits the mobile screen perfectly without scrolling or dead zones */
         body {
             margin: 0;
             padding: 0;
-            background: #000000; /* Pure black background to make images pop */
+            background: #000000; 
             color: #fff;
             font-family: sans-serif;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            align-items: center;
             height: 100vh;
             width: 100vw;
-            justify-content: flex-end; /* Pushes content down towards the controller space */
+            box-sizing: border-box;
         }
 
-        #gameContainer {
-            position: relative;
-            width: 100vw;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #000000;
-            margin-bottom: 10px; /* Snaps closer down to the joystick area */
-        }
-
-        canvas {
-            /* Replace 'YOUR_BACKGROUND_IMAGE_URL_HERE.jpg' with your background image path or URL */
-            background: #020813 url('YOUR_BACKGROUND_IMAGE_URL_HERE.jpg') no-repeat center center;
-            background-size: cover; 
+        /* The game map dynamically occupies the upper space naturally */
+        #gameCanvas {
+            background: #000000; /* Pure black field so your sprites pop intensely */
             display: block;
             width: 100vw;
-            height: calc(100vw * 0.75); 
-            max-height: 65vh;
+            height: 60vh; /* Takes up the top 60% of the screen fluidly */
             box-sizing: border-box;
-            border-bottom: 2px solid rgba(0, 162, 255, 0.3);
+            border-bottom: 2px solid rgba(0, 162, 255, 0.2);
         }
 
+        /* Bold, clean overlay text tracking stats */
         #ui {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            font-size: 20px; 
+            top: 15px;
+            left: 15px;
+            font-size: 18px; 
             font-weight: bold;
-            text-shadow: 2px 2px 5px #000, -1px -1px 2px #000;
+            text-shadow: 2px 2px 4px #000;
             pointer-events: none;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 4px;
             z-index: 5;
         }
 
         #healthContainer {
-            width: 160px; 
-            height: 16px; 
+            width: 140px; 
+            height: 14px; 
             background: rgba(255, 255, 255, 0.2);
             border: 2px solid #fff;
-            border-radius: 8px;
+            border-radius: 6px;
             overflow: hidden;
-            margin-top: 2px;
         }
 
         #healthBar {
@@ -75,21 +63,19 @@
             background: #00ff55;
         }
 
-        /* Controls Area sits beautifully at the bottom with reduced empty padding */
+        /* Dedicated controller basement occupying the remaining bottom screen */
         #controlsArea {
+            flex: 1; /* Automatically absorbs all remaining lower screen space */
             width: 100vw;
-            height: 180px; /* Tightened height to minimize empty space */
-            position: relative;
             background: #000000;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding-bottom: 20px;
         }
 
         #touchZone {
-            width: 130px;
-            height: 130px;
+            width: 120px;
+            height: 120px;
             background: rgba(255, 255, 255, 0.05);
             border: 3px solid #00a2ff;
             border-radius: 50%;
@@ -99,13 +85,13 @@
 
         #joystick {
             position: absolute;
-            top: 40px;
-            left: 40px;
+            top: 35px;
+            left: 35px;
             width: 50px;
             height: 50px;
             background: #00a2ff;
             border-radius: 50%;
-            box-shadow: 0 0 12px #00a2ff;
+            box-shadow: 0 0 10px #00a2ff;
         }
 
         /* --- GLOBAL LEADERBOARD OVERLAY --- */
@@ -113,8 +99,8 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 60vh; /* Matches the exact field area */
             background: rgba(0, 0, 0, 0.95);
             display: none; 
             flex-direction: column;
@@ -125,45 +111,46 @@
         }
         #gameOverScreen h1 {
             color: #ff3333;
-            font-size: 28px;
-            margin-bottom: 5px;
+            font-size: 24px;
+            margin: 0 0 5px 0;
         }
         .final-stats {
-            font-size: 16px;
-            margin-bottom: 15px;
+            font-size: 15px;
+            margin-bottom: 10px;
             color: #00a2ff;
         }
         #initialsInput {
             background: #112233;
             border: 2px solid #00a2ff;
             color: #fff;
-            font-size: 20px;
+            font-size: 18px;
             text-align: center;
-            width: 80px;
-            padding: 5px;
+            width: 70px;
+            padding: 4px;
             text-transform: uppercase;
         }
         .submit-btn {
             background: #00a2ff;
             color: #fff;
             border: none;
-            padding: 10px 15px;
-            font-size: 14px;
-            border-radius: 5px;
+            padding: 8px 12px;
+            font-size: 13px;
+            border-radius: 4px;
             font-weight: bold;
         }
         #leaderboard {
             width: 90%;
-            max-width: 360px;
+            max-width: 320px;
             border-collapse: collapse;
         }
         #leaderboard th {
             border-bottom: 2px solid #00a2ff;
             color: #ffcc00;
-            padding: 4px;
+            padding: 2px;
+            font-size: 13px;
         }
         #leaderboard td {
-            padding: 5px;
+            padding: 4px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             font-size: 12px;
         }
@@ -171,17 +158,17 @@
             background: #ffcc00;
             color: #050b14;
             border: none;
-            padding: 10px 25px;
-            font-size: 15px;
+            padding: 8px 20px;
+            font-size: 14px;
             font-weight: bold;
-            border-radius: 5px;
-            margin-top: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
 
-<div id="gameContainer">
+<div style="position: relative; width: 100vw; height: 60vh;">
     <canvas id="gameCanvas"></canvas>
     
     <div id="ui">
@@ -193,7 +180,7 @@
             </div>
         </div>
         <div>Time Survived: <span id="timerVal">0s</span></div>
-        <div id="status" style="color: #ffcc00; margin-top: 2px; font-size: 16px;">Status: Moving</div>
+        <div id="status" style="color: #ffcc00; margin-top: 2px; font-size: 15px;">Status: Moving</div>
     </div>
 
     <div id="gameOverScreen">
@@ -201,12 +188,12 @@
         <div class="final-stats" id="finalStatsText">Score: 0 | Time: 0s</div>
         
         <div id="initialsForm">
-            <p style="margin-bottom: 10px; color: #aaa; font-size: 13px;">Enter Initials for the Top Scale:</p>
+            <p style="margin: 0 0 8px 0; color: #aaa; font-size: 12px;">Enter Initials for the Top Scale:</p>
             <input type="text" id="initialsInput" maxlength="3" placeholder="AAA" autocomplete="off">
             <button class="submit-btn" id="submitScoreBtn">SUBMIT</button>
         </div>
 
-        <h3 style="color: #ffcc00; margin: 5px 0; font-size: 15px;">GLOBAL TOP SCALE</h3>
+        <h3 style="color: #ffcc00; margin: 4px 0; font-size: 14px;">GLOBAL TOP SCALE</h3>
         <table id="leaderboard">
             <thead>
                 <tr>
@@ -241,6 +228,7 @@ const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+// Game tracking coordinates resolution
 canvas.width = 800;
 canvas.height = 600;
 
@@ -276,14 +264,14 @@ for (let key in IMAGES) {
 let player = {
     x: canvas.width / 2,
     y: canvas.height / 2,
-    radius: 22, 
-    speed: 5,
+    radius: 24, /* Base size for the doctor */
+    speed: 5.2,
     hp: 100,
     score: 0,
     isMoving: false,
     sonicRotation: 0,
     maxSonics: 6,
-    sonicDistance: 68,
+    sonicDistance: 74,
     regenTimer: 0
 };
 
@@ -299,15 +287,37 @@ let isGameOver = false;
 
 function spawnTardis() {
     tardisBoxes.push({
-        x: Math.random() * (canvas.width - 80) + 40,
-        y: Math.random() * (canvas.height - 90) + 45,
-        width: 50,  /* Expanded from 35 to 50 so it's a realistic police box shape */
-        height: 65  /* Expanded from 50 to 65 */
+        x: Math.random() * (canvas.width - 100) + 50,
+        y: Math.random() * (canvas.height - 120) + 60,
+        width: 55,  /* Widened proportion so it looks like a real structural box */
+        height: 80  /* Expanded height */
     });
 }
 for(let i=0; i<3; i++) spawnTardis();
 
 function spawnAngel() {
+    if (isGameOver) return;
+    let side = Math.random();
+    let x, y;
+    if (side < 0.5) {
+        x = Math.random() < 0.5 ? -40 : canvas.width + 40;
+        y = Math.random() * canvas.height;
+    } else {
+        x = Math.random() * canvas.width;
+        y = Math.random() < 0.5 ? -40 : canvas.height + 40;
+    }
+    angels.push({
+        x: x,
+        y: y,
+        radius: 36, /* Amplified character size so they look clear and menacing */
+        speed: 1.5,
+        state: 'chasing',
+        fleeTimer: 0
+    });
+}
+setInterval(spawnAngel, 3200);
+
+function spawnLittleMonster() {
     if (isGameOver) return;
     let side = Math.random();
     let x, y;
@@ -318,33 +328,11 @@ function spawnAngel() {
         x = Math.random() * canvas.width;
         y = Math.random() < 0.5 ? -30 : canvas.height + 30;
     }
-    angels.push({
-        x: x,
-        y: y,
-        radius: 28, /* Scaled up from 20 to 28 so angels appear larger and clear */
-        speed: 1.4,
-        state: 'chasing',
-        fleeTimer: 0
-    });
-}
-setInterval(spawnAngel, 3500);
-
-function spawnLittleMonster() {
-    if (isGameOver) return;
-    let side = Math.random();
-    let x, y;
-    if (side < 0.5) {
-        x = Math.random() < 0.5 ? -20 : canvas.width + 20;
-        y = Math.random() * canvas.height;
-    } else {
-        x = Math.random() * canvas.width;
-        y = Math.random() < 0.5 ? -20 : canvas.height + 20;
-    }
     littleMonsters.push({
         x: x,
         y: y,
-        radius: 18, /* Scaled up from 12 to 18 to fix small sprite look */      
-        speed: 2.4,       
+        radius: 26, /* Scaled up significantly from 12 so they don't look like dots */      
+        speed: 2.5,       
         state: 'approaching', 
         dropTimer: 0
     });
@@ -532,7 +520,7 @@ function update() {
             little.x -= (dx / dist) * (little.speed * 1.2);
             little.y -= (dy / dist) * (little.speed * 1.2);
             little.dropTimer++;
-            if (little.dropTimer % 20 === 0) energyBalls.push({ x: little.x, y: little.y, radius: 12 }); /* Balls up to 12 */
+            if (little.dropTimer % 18 === 0) energyBalls.push({ x: little.x, y: little.y, radius: 18 }); /* Larger collectible sizes */
             if (little.x < -50 || little.x > canvas.width + 50 || little.y < -50 || little.y > canvas.height + 50) {
                 littleMonsters.splice(index, 1);
             }
@@ -565,7 +553,7 @@ function update() {
                 if (Math.sqrt(sDx*sDx + sDy*sDy) < angel.radius + 12) {
                     angel.state = 'fleeing';
                     angel.fleeTimer = 100;
-                    energyBalls.push({ x: angel.x, y: angel.y, radius: 14 }); /* Scaled energy drops */
+                    energyBalls.push({ x: angel.x, y: angel.y, radius: 20 }); 
                     sonics[i] = false; 
                 }
             }
@@ -594,8 +582,8 @@ function update() {
         if (Math.sqrt(dx*dx + dy*dy) < player.radius) {
             if(player.hp < 100) {
                 player.hp = Math.min(100, player.hp + 25);
-                box.x = Math.random() * (canvas.width - 80) + 40;
-                box.y = Math.random() * (canvas.height - 90) + 45;
+                box.x = Math.random() * (canvas.width - 100) + 50;
+                box.y = Math.random() * (canvas.height - 120) + 60;
             }
         }
     });
