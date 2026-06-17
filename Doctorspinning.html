@@ -16,30 +16,32 @@
             font-family: sans-serif;
             overflow: hidden;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             height: 100vh;
             width: 100vw;
         }
+
+        /* The container is now completely transparent and expands to maximum screen width */
         #gameContainer {
             position: relative;
-            /* Force the game box to expand cleanly on mobile viewports */
             width: 100vw;
-            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            background: #050b14;
         }
+
+        /* FORCE the canvas to take up 100% of the phone's width and scale beautifully */
         canvas {
             background: #112233;
             display: block;
-            /* Make the board visually fill the screen space */
-            width: 100%;
-            height: auto;
-            max-height: 100vh;
-            border: 2px solid #00a2ff;
+            width: 100vw;
+            height: calc(100vw * 0.75); /* Maintains the perfect 4:3 gameplay ratio dynamically */
+            max-height: 70vh;
             box-sizing: border-box;
         }
+
         #ui {
             position: absolute;
             top: 15px;
@@ -52,6 +54,7 @@
             gap: 4px;
             z-index: 5;
         }
+
         #healthContainer {
             width: 130px;
             height: 12px;
@@ -61,34 +64,43 @@
             overflow: hidden;
             margin-top: 2px;
         }
+
         #healthBar {
             width: 100%;
             height: 100%;
             background: #00ff55;
-            transition: width 0.1s ease, background-color 0.3s ease;
         }
+
+        /* Dedicated space below the screen for your joystick */
+        #controlsArea {
+            flex: 1;
+            width: 100vw;
+            position: relative;
+            background: #050b14;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
         #touchZone {
-            position: absolute;
-            bottom: 30px;
-            left: 30px;
-            width: 110px;
-            height: 110px;
-            background: rgba(255, 255, 255, 0.15);
-            border: 2px solid rgba(255, 255, 255, 0.4);
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 3px solid #00a2ff;
             border-radius: 50%;
             touch-action: none;
-            z-index: 5;
+            position: relative;
         }
+
         #joystick {
             position: absolute;
-            top: 32px;
-            left: 32px;
-            width: 45px;
-            height: 45px;
+            top: 35px;
+            left: 35px;
+            width: 50px;
+            height: 50px;
             background: #00a2ff;
             border-radius: 50%;
-            opacity: 0.8;
-            pointer-events: none;
+            box-shadow: 0 0 10px #00a2ff;
         }
 
         /* --- GLOBAL LEADERBOARD OVERLAY --- */
@@ -108,75 +120,57 @@
         }
         #gameOverScreen h1 {
             color: #ff3333;
-            font-size: 32px;
+            font-size: 28px;
             margin-bottom: 5px;
-            text-shadow: 0 0 10px rgba(255, 51, 51, 0.5);
         }
         .final-stats {
-            font-size: 18px;
+            font-size: 16px;
             margin-bottom: 15px;
             color: #00a2ff;
-        }
-        #initialsForm {
-            margin-bottom: 20px;
         }
         #initialsInput {
             background: #112233;
             border: 2px solid #00a2ff;
             color: #fff;
-            font-size: 22px;
+            font-size: 20px;
             text-align: center;
-            width: 90px;
+            width: 80px;
             padding: 5px;
             text-transform: uppercase;
-            letter-spacing: 5px;
-            border-radius: 5px;
-        }
-        #initialsInput:focus {
-            outline: none;
-            box-shadow: 0 0 15px #00a2ff;
         }
         .submit-btn {
             background: #00a2ff;
             color: #fff;
             border: none;
-            padding: 10px 20px;
-            font-size: 15px;
-            cursor: pointer;
+            padding: 10px 15px;
+            font-size: 14px;
             border-radius: 5px;
             font-weight: bold;
-            margin-left: 10px;
-            vertical-align: middle;
         }
-        
         #leaderboard {
             width: 90%;
-            max-width: 400px;
+            max-width: 360px;
             border-collapse: collapse;
-            margin-top: 10px;
         }
         #leaderboard th {
             border-bottom: 2px solid #00a2ff;
             color: #ffcc00;
-            padding: 6px;
-            font-size: 14px;
+            padding: 4px;
         }
         #leaderboard td {
-            padding: 6px;
+            padding: 5px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 13px;
-            font-family: monospace;
+            font-size: 12px;
         }
         .restart-btn {
             background: #ffcc00;
             color: #050b14;
             border: none;
-            padding: 12px 30px;
-            font-size: 16px;
+            padding: 10px 25px;
+            font-size: 15px;
             font-weight: bold;
-            cursor: pointer;
             border-radius: 5px;
-            margin-top: 20px;
+            margin-top: 15px;
         }
     </style>
 </head>
@@ -184,6 +178,7 @@
 
 <div id="gameContainer">
     <canvas id="gameCanvas"></canvas>
+    
     <div id="ui">
         <div>Score: <span id="scoreVal">0</span></div>
         <div style="display: flex; align-items: center; gap: 8px;">
@@ -195,22 +190,18 @@
         <div>Time Survived: <span id="timerVal">0s</span></div>
         <div id="status" style="color: #ffcc00; margin-top: 2px; font-size: 14px;">Status: Moving</div>
     </div>
-    
-    <div id="touchZone">
-        <div id="joystick"></div>
-    </div>
 
     <div id="gameOverScreen">
         <h1>THE ANGELS CAUGHT YOU</h1>
         <div class="final-stats" id="finalStatsText">Score: 0 | Time: 0s</div>
         
         <div id="initialsForm">
-            <p style="margin-bottom: 10px; color: #aaa; font-size: 14px;">Enter Initials for the Top Scale:</p>
+            <p style="margin-bottom: 10px; color: #aaa; font-size: 13px;">Enter Initials for the Top Scale:</p>
             <input type="text" id="initialsInput" maxlength="3" placeholder="AAA" autocomplete="off">
             <button class="submit-btn" id="submitScoreBtn">SUBMIT</button>
         </div>
 
-        <h3 style="color: #ffcc00; margin: 5px 0; font-size: 16px;">GLOBAL TOP SCALE</h3>
+        <h3 style="color: #ffcc00; margin: 5px 0; font-size: 15px;">GLOBAL TOP SCALE</h3>
         <table id="leaderboard">
             <thead>
                 <tr>
@@ -229,6 +220,12 @@
     </div>
 </div>
 
+<div id="controlsArea">
+    <div id="touchZone">
+        <div id="joystick"></div>
+    </div>
+</div>
+
 <script>
 // --- SUPABASE CONNECTIVITY SETUP ---
 const SUPABASE_URL = "https://vvpddhoytpmtnqyvdqgb.supabase.co";
@@ -239,17 +236,9 @@ const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-// DYNAMIC SCREEN SCALER ENGINE: Fits the canvas directly to your phone screen width
-function resizeCanvas() {
-    const displayWidth = window.innerWidth;
-    const displayHeight = window.innerHeight;
-    
-    // Set internal resolution aspect ratio based on phone size
-    canvas.width = 800;
-    canvas.height = 600;
-}
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
+// Game math maintains steady coordinate bounds
+canvas.width = 800;
+canvas.height = 600;
 
 // --- IMAGE CONFIGURATION ---
 const IMAGES = {
@@ -274,7 +263,7 @@ for (let key in IMAGES) {
             if (imagesLoaded === Object.keys(IMAGES).length) useImages = true;
         };
         sprites[key].onerror = () => {
-            console.log("Using backup geometric layout engine colors for asset: " + key);
+            console.log("Fallback colors active for asset: " + key);
         };
     }
 }
@@ -283,8 +272,8 @@ for (let key in IMAGES) {
 let player = {
     x: canvas.width / 2,
     y: canvas.height / 2,
-    radius: 22, // Marginally enlarged for visibility on small displays
-    speed: 4,
+    radius: 22, 
+    speed: 5,
     hp: 100,
     score: 0,
     isMoving: false,
@@ -329,7 +318,7 @@ function spawnAngel() {
         x: x,
         y: y,
         radius: 20,
-        speed: 1.2,
+        speed: 1.4,
         state: 'chasing',
         fleeTimer: 0
     });
@@ -351,14 +340,14 @@ function spawnLittleMonster() {
         x: x,
         y: y,
         radius: 12,       
-        speed: 2.2,       
+        speed: 2.4,       
         state: 'approaching', 
         dropTimer: 0
     });
 }
 setInterval(spawnLittleMonster, 2000);
 
-// --- TOUCH / JOYSTICK INTERACTION SETUP ---
+// --- TOUCH ZONE MAPPING ---
 const touchZone = document.getElementById('touchZone');
 const joystick = document.getElementById('joystick');
 let joystickActive = false;
@@ -380,7 +369,7 @@ touchZone.addEventListener('touchmove', (e) => {
     let dx = touch.clientX - startX;
     let dy = touch.clientY - startY;
     let distance = Math.sqrt(dx*dx + dy*dy);
-    let maxRadius = 35;
+    let maxRadius = 40;
 
     if (distance > maxRadius) {
         dx = (dx / distance) * maxRadius;
@@ -398,29 +387,15 @@ touchZone.addEventListener('touchend', () => {
     input.y = 0;
 });
 
-// --- KEYBOARD CONTROLS ---
-let keys = {};
-window.addEventListener('keydown', e => { if(!isGameOver) keys[e.code] = true; });
-window.addEventListener('keyup', e => { keys[e.code] = false; });
-
 function checkMovementInput() {
-    let kbX = 0; let kbY = 0;
-    if (keys['KeyA'] || keys['ArrowLeft']) kbX = -1;
-    if (keys['KeyD'] || keys['ArrowRight']) kbX = 1;
-    if (keys['KeyW'] || keys['ArrowUp']) kbY = -1;
-    if (keys['KeyS'] || keys['ArrowDown']) kbY = 1;
-
-    if (kbX !== 0 || kbY !== 0) {
-        input.x = kbX; input.y = kbY;
-        player.isMoving = true;
-    } else if (joystickActive && (Math.abs(input.x) > 0.1 || Math.abs(input.y) > 0.1)) {
+    if (joystickActive && (Math.abs(input.x) > 0.05 || Math.abs(input.y) > 0.05)) {
         player.isMoving = true;
     } else {
         player.isMoving = false;
     }
 }
 
-// --- SUPABASE DATABASE INTERACTIONS ---
+// --- SUPABASE DATA HANDLERS ---
 async function fetchGlobalLeaderboard() {
     if (!db) return;
     try {
@@ -431,40 +406,30 @@ async function fetchGlobalLeaderboard() {
             .limit(5);
 
         if (error) throw error;
-
         const tbody = document.getElementById('leaderboardBody');
         tbody.innerHTML = "";
 
         for (let i = 0; i < 5; i++) {
             const row = document.createElement('tr');
             if (data && data[i]) {
-                row.innerHTML = `
-                    <td>#${i + 1}</td>
-                    <td>${data[i].initials}</td>
-                    <td>${data[i].score}</td>
-                    <td>${data[i].time_survived}s</td>
-                `;
+                row.innerHTML = `<td>#${i + 1}</td><td>${data[i].initials}</td><td>${data[i].score}</td><td>${data[i].time_survived}s</td>`;
             } else {
                 row.innerHTML = `<td>#${i + 1}</td><td>---</td><td>0</td><td>0s</td>`;
             }
             tbody.appendChild(row);
         }
     } catch (err) {
-        console.error("Error pulling database stats:", err);
+        console.error(err);
     }
 }
 
 async function triggerGameOver() {
     isGameOver = true;
     player.isMoving = false;
-    
     document.getElementById('gameOverScreen').style.display = 'flex';
-    document.getElementById('finalStatsText').innerText = `Score: ${player.score} | Time Survived: ${timeSurvived}s`;
-    
+    document.getElementById('finalStatsText').innerText = `Score: ${player.score} | Time: ${timeSurvived}s`;
     document.getElementById('initialsForm').style.display = 'block';
     document.getElementById('restartGameBtn').style.display = 'none';
-    document.getElementById('initialsInput').value = "";
-    
     await fetchGlobalLeaderboard();
 }
 
@@ -473,22 +438,13 @@ document.getElementById('submitScoreBtn').addEventListener('click', async () => 
     if (initials.length < 1) initials = "DOC"; 
     
     document.getElementById('submitScoreBtn').innerText = "SAVING...";
-
     if (db) {
         try {
-            const { error } = await db
-                .from('doctor_leaderboard')
-                .insert([
-                    { initials: initials, score: player.score, time_survived: timeSurvived }
-                ]);
-
-            if (error) throw error;
-
+            await db.from('doctor_leaderboard').insert([{ initials: initials, score: player.score, time_survived: timeSurvived }]);
         } catch (err) {
-            console.error("Could not write to Supabase backend:", err);
+            console.error(err);
         }
     }
-
     await fetchGlobalLeaderboard();
     document.getElementById('submitScoreBtn').innerText = "SUBMIT";
     document.getElementById('initialsForm').style.display = 'none';
@@ -509,7 +465,7 @@ document.getElementById('restartGameBtn').addEventListener('click', () => {
     isGameOver = false;
 });
 
-// --- GAME LOOP ---
+// --- FRAME MECHANICS LOOP ---
 function update() {
     if (isGameOver) return;
 
@@ -519,12 +475,7 @@ function update() {
     document.getElementById('timerVal').innerText = timeSurvived + "s";
 
     const healthBar = document.getElementById('healthBar');
-    if (healthBar) {
-        healthBar.style.width = player.hp + "%";
-        if (player.hp > 50) healthBar.style.backgroundColor = "#00ff55";
-        else if (player.hp > 25) healthBar.style.backgroundColor = "#ffcc00";
-        else healthBar.style.backgroundColor = "#ff3333";
-    }
+    if (healthBar) healthBar.style.width = player.hp + "%";
 
     if (player.isMoving) {
         player.x += input.x * player.speed;
@@ -548,7 +499,7 @@ function update() {
     }
 
     player.regenTimer++;
-    if (player.regenTimer % 180 === 0) { 
+    if (player.regenTimer % 150 === 0) { 
         for (let i = 0; i < sonics.length; i++) {
             if (!sonics[i]) {
                 sonics[i] = true;
@@ -559,7 +510,7 @@ function update() {
 
     if (!player.isMoving) return; 
 
-    // Little Monsters
+    // Monsters tracking
     littleMonsters.forEach((little, index) => {
         let dx = player.x - little.x;
         let dy = player.y - little.y;
@@ -569,28 +520,23 @@ function update() {
             little.x += (dx / dist) * little.speed;
             little.y += (dy / dist) * little.speed;
 
-            if (dist < player.sonicDistance) {
-                little.state = 'runningAway';
-            }
+            if (dist < player.sonicDistance) little.state = 'runningAway';
             if (dist < player.radius + little.radius) {
                 player.hp -= 1.5; 
-                if (player.hp <= 0) { triggerGameOver(); return; }
+                if (player.hp <= 0) { triggerGameOver(); }
             }
         } else if (little.state === 'runningAway') {
             little.x -= (dx / dist) * (little.speed * 1.2);
             little.y -= (dy / dist) * (little.speed * 1.2);
-
             little.dropTimer++;
-            if (little.dropTimer % 20 === 0) {
-                energyBalls.push({ x: little.x, y: little.y, radius: 8 });
-            }
+            if (little.dropTimer % 20 === 0) energyBalls.push({ x: little.x, y: little.y, radius: 8 });
             if (little.x < -50 || little.x > canvas.width + 50 || little.y < -50 || little.y > canvas.height + 50) {
                 littleMonsters.splice(index, 1);
             }
         }
     });
 
-    // Angels Chasing
+    // Weeping Angels tracking
     angels.forEach((angel, index) => {
         let dx = player.x - angel.x;
         let dy = player.y - angel.y;
@@ -609,16 +555,12 @@ function update() {
 
             for (let i = 0; i < player.maxSonics; i++) {
                 if (!sonics[i]) continue; 
-
                 let angle = player.sonicRotation + (i * (Math.PI * 2 / player.maxSonics));
                 let sonicX = player.x + Math.cos(angle) * player.sonicDistance;
                 let sonicY = player.y + Math.sin(angle) * player.sonicDistance;
-
                 let sDx = angel.x - sonicX;
                 let sDy = angel.y - sonicY;
-                let sDist = Math.sqrt(sDx * sDx + sDy * sDy);
-
-                if (sDist < angel.radius + 12) {
+                if (Math.sqrt(sDx*sDx + sDy*sDy) < angel.radius + 12) {
                     angel.state = 'fleeing';
                     angel.fleeTimer = 100;
                     energyBalls.push({ x: angel.x, y: angel.y, radius: 9 });
@@ -633,7 +575,6 @@ function update() {
         }
     });
 
-    // Energy Balls Collect
     energyBalls.forEach((ball, index) => {
         let dx = player.x - ball.x;
         let dy = player.y - ball.y;
@@ -643,13 +584,11 @@ function update() {
         }
     });
 
-    // TARDIS Regeneration Boxes
     tardisBoxes.forEach((box) => {
         let closestX = Math.max(box.x, Math.min(player.x, box.x + box.width));
         let closestY = Math.max(box.y, Math.min(player.y, box.y + box.height));
         let dx = player.x - closestX;
         let dy = player.y - closestY;
-        
         if (Math.sqrt(dx*dx + dy*dy) < player.radius) {
             if(player.hp < 100) {
                 player.hp = Math.min(100, player.hp + 25);
@@ -667,10 +606,7 @@ function render() {
         if (useImages && sprites.tardis) {
             ctx.drawImage(sprites.tardis, box.x, box.y, box.width, box.height);
         } else {
-            ctx.fillStyle = '#003b6f'; 
-            ctx.fillRect(box.x, box.y, box.width, box.height);
-            ctx.strokeStyle = '#fff';
-            ctx.strokeRect(box.x, box.y, box.width, box.height);
+            ctx.fillStyle = '#003b6f'; ctx.fillRect(box.x, box.y, box.width, box.height);
         }
     });
 
@@ -678,41 +614,25 @@ function render() {
         if (useImages && sprites.energyBall) {
             ctx.drawImage(sprites.energyBall, ball.x - ball.radius, ball.y - ball.radius, ball.radius*2, ball.radius*2);
         } else {
-            ctx.beginPath();
-            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
-            ctx.fillStyle = '#00ffcc';
-            ctx.fill();
+            ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2); ctx.fillStyle = '#00ffcc'; ctx.fill();
         }
     });
 
     if (useImages && sprites.doctor) {
         ctx.drawImage(sprites.doctor, player.x - player.radius, player.y - player.radius, player.radius*2, player.radius*2);
     } else {
-        ctx.beginPath();
-        ctx.arc(player.x, player.y, player.radius, 0, Math.PI*2);
-        ctx.fillStyle = '#9e782f'; 
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(player.x, player.y, player.radius, 0, Math.PI*2); ctx.fillStyle = '#9e782f'; ctx.fill();
     }
 
-    // Orbiting Sonic Blades
     for (let i = 0; i < player.maxSonics; i++) {
         if (!sonics[i]) continue; 
-
         let angle = player.sonicRotation + (i * (Math.PI * 2 / player.maxSonics));
         let sonicX = player.x + Math.cos(angle) * player.sonicDistance;
         let sonicY = player.y + Math.sin(angle) * player.sonicDistance;
-
         if (useImages && sprites.sonic) {
-            ctx.save();
-            ctx.translate(sonicX, sonicY);
-            ctx.rotate(angle + Math.PI / 2); 
-            ctx.drawImage(sprites.sonic, -10, -22, 20, 44); // Marginally scaled up for visibility
-            ctx.restore();
+            ctx.save(); ctx.translate(sonicX, sonicY); ctx.rotate(angle + Math.PI / 2); ctx.drawImage(sprites.sonic, -10, -22, 20, 44); ctx.restore();
         } else {
-            ctx.beginPath();
-            ctx.arc(sonicX, sonicY, 7, 0, Math.PI*2);
-            ctx.fillStyle = player.isMoving ? '#00ff55' : '#555555'; 
-            ctx.fill();
+            ctx.beginPath(); ctx.arc(sonicX, sonicY, 7, 0, Math.PI*2); ctx.fillStyle = '#00ff55'; ctx.fill();
         }
     }
 
@@ -720,10 +640,7 @@ function render() {
         if (useImages && sprites.littleMonster) {
             ctx.drawImage(sprites.littleMonster, little.x - little.radius, little.y - little.radius, little.radius*2, little.radius*2);
         } else {
-            ctx.beginPath();
-            ctx.arc(little.x, little.y, little.radius, 0, Math.PI*2);
-            ctx.fillStyle = '#bbbbbb';
-            ctx.fill();
+            ctx.beginPath(); ctx.arc(little.x, little.y, little.radius, 0, Math.PI*2); ctx.fillStyle = '#bbbbbb'; ctx.fill();
         }
     });
 
@@ -731,10 +648,7 @@ function render() {
         if (useImages && sprites.angel) {
             ctx.drawImage(sprites.angel, angel.x - angel.radius, angel.y - angel.radius, angel.radius*2, angel.radius*2);
         } else {
-            ctx.beginPath();
-            ctx.arc(angel.x, angel.y, angel.radius, 0, Math.PI*2);
-            ctx.fillStyle = '#888888'; 
-            ctx.fill();
+            ctx.beginPath(); ctx.arc(angel.x, angel.y, angel.radius, 0, Math.PI*2); ctx.fillStyle = '#888888'; ctx.fill();
         }
     });
 }
