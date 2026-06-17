@@ -231,12 +231,12 @@
 </div>
 
 <script>
-// --- SUPABASE CONNECTIVITY SETUP ---
-// Use the credentials from your existing Hex or Cryptogram project here!
+// --- SUPABASE CONNECTIVITY SETUP (FIXED CLIENT NAME INITIALIZATION) ---
 const SUPABASE_URL = "https://vvpddhoytpmtnqyvdqgb.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_41PPeNX3wc_dlOQP-vpoyA_MOz6RGZg";
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Fix: Use the global library initialization properly
+const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -265,6 +265,10 @@ for (let key in IMAGES) {
         sprites[key].onload = () => {
             imagesLoaded++;
             if (imagesLoaded === Object.keys(IMAGES).length) useImages = true;
+        };
+        // Safety backup for offline file loading errors
+        sprites[key].onerror = () => {
+            console.log("Using backup geometric engine colors for asset: " + key);
         };
     }
 }
@@ -412,9 +416,9 @@ function checkMovementInput() {
 
 // --- SUPABASE DATABASE INTERACTIONS ---
 async function fetchGlobalLeaderboard() {
+    if (!db) return;
     try {
-        // Points to the specific shared table for this game
-        const { data, error } = await supabase
+        const { data, error } = await db
             .from('doctor_leaderboard')
             .select('*')
             .order('score', { ascending: false })
@@ -465,17 +469,19 @@ document.getElementById('submitScoreBtn').addEventListener('click', async () => 
     
     document.getElementById('submitScoreBtn').innerText = "SAVING...";
 
-    try {
-        const { error } = await supabase
-            .from('doctor_leaderboard')
-            .insert([
-                { initials: initials, score: player.score, time_survived: timeSurvived }
-            ]);
+    if (db) {
+        try {
+            const { error } = await db
+                .from('doctor_leaderboard')
+                .insert([
+                    { initials: initials, score: player.score, time_survived: timeSurvived }
+                ]);
 
-        if (error) throw error;
+            if (error) throw error;
 
-    } catch (err) {
-        console.error("Could not write to Supabase backend:", err);
+        } catch (err) {
+            console.error("Could not write to Supabase backend:", err);
+        }
     }
 
     await fetchGlobalLeaderboard();
@@ -508,10 +514,12 @@ function update() {
     document.getElementById('timerVal').innerText = timeSurvived + "s";
 
     const healthBar = document.getElementById('healthBar');
-    healthBar.style.width = player.hp + "%";
-    if (player.hp > 50) healthBar.style.backgroundColor = "#00ff55";
-    else if (player.hp > 25) healthBar.style.backgroundColor = "#ffcc00";
-    else healthBar.style.backgroundColor = "#ff3333";
+    if (healthBar) {
+        healthBar.style.width = player.hp + "%";
+        if (player.hp > 50) healthBar.style.backgroundColor = "#00ff55";
+        else if (player.hp > 25) healthBar.style.backgroundColor = "#ffcc00";
+        else healthBar.style.backgroundColor = "#ff3333";
+    }
 
     if (player.isMoving) {
         player.x += input.x * player.speed;
@@ -681,6 +689,7 @@ function render() {
         ctx.fill();
     }
 
+    // --- SPINNING SONIC BLADES (PERFECTED CIRCULAR ORBIT MECHANIC) ---
     for (let i = 0; i < player.maxSonics; i++) {
         if (!sonics[i]) continue; 
 
@@ -691,7 +700,7 @@ function render() {
         if (useImages && sprites.sonic) {
             ctx.save();
             ctx.translate(sonicX, sonicY);
-            ctx.rotate(angle);
+            ctx.rotate(angle + Math.PI / 2); // Aligns blade tip pointing outwards 
             ctx.drawImage(sprites.sonic, -8, -20, 16, 40);
             ctx.restore();
         } else {
@@ -734,10 +743,13 @@ function render() {
 function loop() {
     update();
     render();
-    document.getElementById('scoreVal').innerText = player.score;
+    const scoreVal = document.getElementById('scoreVal');
+    if (scoreVal) scoreVal.innerText = player.score;
     requestAnimationFrame(loop);
 }
 
+// Initial fetch attempt
+fetchGlobalLeaderboard();
 loop();
 </script>
 </body>
