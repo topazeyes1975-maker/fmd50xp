@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fox Guardian - Interactive Box</title>
+  <style>
+    body { background-color: #111; color: #fff; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+    
+    /* Header/Footer Styles */
+    header, footer { width: 100%; display: flex; justify-content: space-between; padding: 10px; box-sizing: border-box; font-size: 0.9rem; color: #888; }
+    
+    .game-matrix { display: grid; grid-template-columns: repeat(3, 90px); grid-template-rows: repeat(3, 90px); gap: 30px; margin: 50px 0; position: relative; }
+    #creature-container { grid-column: 2; grid-row: 2; width: 90px; height: 90px; overflow: hidden; border: 1px dashed #333; z-index: 5; }
+    .face-style { width: 80px; height: 80px; object-fit: contain; transform: translateY(100%); transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    #creature-container.active .face-style { transform: translateY(0); }
+    
+    .switch-item { width: 75px; height: 75px; border: 2px solid #444; border-radius: 12px; background-color: #222; cursor: pointer; }
+    .switch-item.on { border-color: #ffcc00; background-color: #332200; }
+    
+    .hand-style { position: absolute; width: 45px; height: 45px; z-index: 10; pointer-events: none; transform: scale(0); transition: all 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.2); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <span>How-To: Toggle the switches to interact with the Guardian.</span>
+    <span>Guardian v1.0</span>
+  </header>
+
+  <div class="game-matrix">
+    <div id="creature-container"><img id="creature-face" src="face-intro.png" class="face-style"></div>
+    <div class="switch-item" id="s-0" onclick="triggerSwitch('s-0')"></div>
+    <div class="switch-item" id="s-1" onclick="triggerSwitch('s-1')"></div>
+    <div class="switch-item" id="s-2" onclick="triggerSwitch('s-2')"></div>
+    <div class="switch-item" id="s-3" onclick="triggerSwitch('s-3')"></div>
+    <div class="switch-item" id="s-4" onclick="triggerSwitch('s-4')"></div>
+    <div class="switch-item" id="s-5" onclick="triggerSwitch('s-5')"></div>
+    <div class="switch-item" id="s-6" onclick="triggerSwitch('s-6')"></div>
+    <div class="switch-item" id="s-7" onclick="triggerSwitch('s-7')"></div>
+
+    <img src="hand.png" class="hand-style" id="hand-s-0">
+    <img src="hand.png" class="hand-style" id="hand-s-1">
+    <img src="hand.png" class="hand-style" id="hand-s-2">
+    <img src="hand.png" class="hand-style" id="hand-s-3">
+    <img src="hand.png" class="hand-style" id="hand-s-4">
+    <img src="hand.png" class="hand-style" id="hand-s-5">
+    <img src="hand.png" class="hand-style" id="hand-s-6">
+    <img src="hand.png" class="hand-style" id="hand-s-7">
+  </div>
+
+  <footer>
+    <span>Programmed by Fonda.</span>
+    <span>Tribute to the original Useless Box makers.</span>
+  </footer>
+
+  <script>
+    const container = document.getElementById('creature-container');
+    const face = document.getElementById('creature-face');
+    let activeCount = 0;
+
+    function triggerSwitch(id) {
+      const sw = document.getElementById(id);
+      const hand = document.getElementById('hand-' + id);
+      if (sw.classList.contains('on')) return;
+      
+      sw.classList.add('on');
+      activeCount++;
+      container.classList.add('active');
+      hand.style.transform = 'scale(1)';
+
+      setTimeout(() => {
+        sw.classList.remove('on');
+        hand.style.transform = 'scale(0)';
+        activeCount--;
+        if (activeCount === 0) container.classList.remove('active');
+      }, 550);
+    }
+  </script>
+</body>
+</html>
+
