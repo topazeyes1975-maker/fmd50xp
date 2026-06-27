@@ -3,33 +3,115 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fox Guardian - Interactive Box</title>
+  <title>Creature 8-Hand Speed Optimized Engine</title>
   <style>
-    body { background-color: #111; color: #fff; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-    
-    /* Header/Footer Styles */
-    header, footer { width: 100%; display: flex; justify-content: space-between; padding: 10px; box-sizing: border-box; font-size: 0.9rem; color: #888; }
-    
-    .game-matrix { display: grid; grid-template-columns: repeat(3, 90px); grid-template-rows: repeat(3, 90px); gap: 30px; margin: 50px 0; position: relative; }
-    #creature-container { grid-column: 2; grid-row: 2; width: 90px; height: 90px; overflow: hidden; border: 1px dashed #333; z-index: 5; }
-    .face-style { width: 80px; height: 80px; object-fit: contain; transform: translateY(100%); transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-    #creature-container.active .face-style { transform: translateY(0); }
-    
-    .switch-item { width: 75px; height: 75px; border: 2px solid #444; border-radius: 12px; background-color: #222; cursor: pointer; }
-    .switch-item.on { border-color: #ffcc00; background-color: #332200; }
-    
-    .hand-style { position: absolute; width: 45px; height: 45px; z-index: 10; pointer-events: none; transform: scale(0); transition: all 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.2); }
+    /* --- SYSTEM SETUP --- */
+    body {
+      background-color: #111;
+      color: #fff;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+
+    /* --- THE SPACIOUS RING GRID --- */
+    .game-matrix {
+      display: grid;
+      grid-template-columns: repeat(3, 90px);
+      grid-template-rows: repeat(3, 90px);
+      gap: 30px; 
+      align-items: center;
+      justify-items: center;
+      position: relative;
+    }
+
+    /* THE CENTER CREATURE BOX */
+    #creature-container {
+      grid-column: 2;
+      grid-row: 2;
+      width: 90px;
+      height: 90px;
+      position: relative;
+      overflow: hidden; 
+      border: 1px dashed #333;
+      z-index: 5;
+    }
+
+    /* Face Style */
+    .face-style {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      display: block;
+      margin: 5px auto 0 auto;
+      transform: translateY(100%); 
+      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    #creature-container.active .face-style {
+      transform: translateY(0);
+    }
+
+    /* --- THE SWITCHES --- */
+    .switch-item {
+      width: 75px;
+      height: 75px;
+      border: 2px solid #444;
+      border-radius: 12px;
+      background-color: #222;
+      cursor: pointer;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+
+    .switch-item.on {
+      border-color: #ffcc00;
+      background-color: #332200;
+    }
+
+    /* Perimeter Grid Mappings for the Switches */
+    #s-0 { grid-column: 1; grid-row: 1; } 
+    #s-1 { grid-column: 2; grid-row: 1; } 
+    #s-2 { grid-column: 3; grid-row: 1; } 
+    #s-3 { grid-column: 3; grid-row: 2; } 
+    #s-4 { grid-column: 3; grid-row: 3; } 
+    #s-5 { grid-column: 2; grid-row: 3; } 
+    #s-6 { grid-column: 1; grid-row: 3; } 
+    #s-7 { grid-column: 1; grid-row: 2; } 
+
+    /* --- THE 8 INDEPENDENT HANDS LAYER --- */
+    .hand-style {
+      position: absolute;
+      width: 45px;
+      height: 45px;
+      z-index: 10;
+      pointer-events: none;
+      left: 120px; 
+      top: 120px; 
+      transform: scale(0);
+      /* Going OUT speed: elastic and responsive */
+      transition: all 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.2); 
+    }
+
+    /* Retraction Modifier: Snap back at warp speed when scaling down */
+    .hand-style[style*="scale(0)"] {
+      transition: all 0.12s ease-in;
+    }
   </style>
 </head>
 <body>
 
-  <header>
-    <span>How-To: Toggle the switches to interact with the Guardian.</span>
-    <span>Guardian v1.0</span>
-  </header>
-
   <div class="game-matrix">
-    <div id="creature-container"><img id="creature-face" src="face-intro.png" class="face-style"></div>
+
+    <div id="creature-container">
+      <img id="creature-face" src="face-intro.png" alt="Creature Face" class="face-style">
+    </div>
+
     <div class="switch-item" id="s-0" onclick="triggerSwitch('s-0')"></div>
     <div class="switch-item" id="s-1" onclick="triggerSwitch('s-1')"></div>
     <div class="switch-item" id="s-2" onclick="triggerSwitch('s-2')"></div>
@@ -39,44 +121,81 @@
     <div class="switch-item" id="s-6" onclick="triggerSwitch('s-6')"></div>
     <div class="switch-item" id="s-7" onclick="triggerSwitch('s-7')"></div>
 
-    <img src="hand.png" class="hand-style" id="hand-s-0">
-    <img src="hand.png" class="hand-style" id="hand-s-1">
-    <img src="hand.png" class="hand-style" id="hand-s-2">
-    <img src="hand.png" class="hand-style" id="hand-s-3">
-    <img src="hand.png" class="hand-style" id="hand-s-4">
-    <img src="hand.png" class="hand-style" id="hand-s-5">
-    <img src="hand.png" class="hand-style" id="hand-s-6">
-    <img src="hand.png" class="hand-style" id="hand-s-7">
-  </div>
+    <img src="hand-left.png" class="hand-style" id="hand-s-0" alt="Hand 0">
+    <img src="hand-center.png" class="hand-style" id="hand-s-1" alt="Hand 1">
+    <img src="1782549431176.png" class="hand-style" id="hand-s-2" alt="Hand 2">
+    <img src="1782549431176.png" class="hand-style" id="hand-s-3" alt="Hand 3">
+    <img src="1782549431176.png" class="hand-style" id="hand-s-4" alt="Hand 4">
+    <img src="hand-center.png" class="hand-style" id="hand-s-5" alt="Hand 5">
+    <img src="hand-left.png" class="hand-style" id="hand-s-6" alt="Hand 6">
+    <img src="hand-left.png" class="hand-style" id="hand-s-7" alt="Hand 7">
 
-  <footer>
-    <span>Programmed by Fonda.</span>
-    <span>Tribute to the original Useless Box makers.</span>
-  </footer>
+  </div>
 
   <script>
     const container = document.getElementById('creature-container');
     const face = document.getElementById('creature-face');
-    let activeCount = 0;
 
-    function triggerSwitch(id) {
-      const sw = document.getElementById(id);
-      const hand = document.getElementById('hand-' + id);
-      if (sw.classList.contains('on')) return;
+    const stage1Sounds = ['voice-wake1.mp3', 'voice-wake2.mp3', 'voice-huh.mp3'];
+    const stage4Sounds = ['voice-angry1.mp3', 'voice-angry2.mp3', 'voice-growl.mp3'];
+
+    let activeSwitchesCount = 0;
+
+    function playRandomVoice(soundArray) {
+      const randomIndex = Math.floor(Math.random() * soundArray.length);
+      const audioTrack = new Audio(soundArray[randomIndex]);
+      audioTrack.play().catch(e => console.log("Audio hunting..."));
+    }
+
+    function triggerSwitch(switchId) {
+      const clickedSwitch = document.getElementById(switchId);
+      const associatedHand = document.getElementById('hand-' + switchId);
       
-      sw.classList.add('on');
-      activeCount++;
+      if (clickedSwitch.classList.contains('on')) return;
+      
+      clickedSwitch.classList.add('on');
+      activeSwitchesCount++;
+      
       container.classList.add('active');
-      hand.style.transform = 'scale(1)';
 
+      if (switchId === 's-2' || switchId === 's-3' || switchId === 's-4') {
+        face.src = '1782547971917.png';
+        playRandomVoice(stage4Sounds);
+      } else {
+        face.src = 'face-intro.png';
+        playRandomVoice(stage1Sounds);
+      } else {
+        face.src = '1782547957791.png';
+      }
+
+      // COORDINATE MATH
+      const switchLocation = clickedSwitch.getBoundingClientRect();
+      const containerLocation = container.parentElement.getBoundingClientRect();
+      let targetX = switchLocation.left - containerLocation.left;
+      let targetY = switchLocation.top - containerLocation.top;
+
+      // Shoot out
+      associatedHand.style.transform = 'scale(1)';
+      associatedHand.style.left = (targetX + 15) + 'px';
+      associatedHand.style.top = (targetY + 15) + 'px';
+
+      // SPEED CUT: Slipped down to 550ms for a rapid touch-and-go experience
       setTimeout(() => {
-        sw.classList.remove('on');
-        hand.style.transform = 'scale(0)';
-        activeCount--;
-        if (activeCount === 0) container.classList.remove('active');
+        clickedSwitch.classList.remove('on');
+        
+        // Retract at 0.12s fast transition speed via CSS selector matching
+        associatedHand.style.transform = 'scale(0)';
+        associatedHand.style.left = '120px';
+        associatedHand.style.top = '120px';
+        
+        activeSwitchesCount--;
+        if (activeSwitchesCount === 0) {
+          container.classList.remove('active');
+        }
       }, 550);
     }
   </script>
+
 </body>
 </html>
 
