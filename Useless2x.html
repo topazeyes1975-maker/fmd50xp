@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Octopus Treasure Guardian - Witty Edition</title>
+    <style>
+        body {
+            background-color: #2c3e50;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Arial Black', Gadget, sans-serif;
+            color: white;
+            user-select: none;
+        }
+
+        #signboard {
+            background: #fffdf0;
+            color: #222;
+            padding: 12px 20px;
+            border: 3px dashed #7f8c8d;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            text-align: center;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            max-width: 320px;
+        }
+
+        .game-base {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            background: #f5f6fa;
+            border: 8px solid #dcdde1;
+            border-radius: 50%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Round Lid */
+        .lid {
+            position: absolute;
+            width: 170px;
+            height: 170px;
+            background: #f5f6fa;
+            border: 4px solid #dcdde1;
+            border-radius: 50%;
+            z-index: 5;
+            transform-origin: top center;
+            transition: transform 0.15s ease-in-out;
+        }
+
+        .lid.open {
+            transform: scaleY(0.1) translateY(-90px);
+        }
+
+        /* The Octopus */
+        .octopus {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background: #ff7675;
+            border-radius: 50% 50% 45% 45%;
+            z-index: 3;
+            transform: scale(0);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .octopus.pop-up { transform: scale(1.1); }
+        .octopus.furious { background: #d63031; }
+
+        /* Eyes */
+        .octopus::before, .octopus::after {
+            content: '';
+            position: absolute;
+            top: 45px;
+            width: 16px;
+            height: 16px;
+            background: #2f3640;
+            border-radius: 50%;
+        }
+        .octopus::before { left: 30px; box-shadow: 5px -5px 0 #ff7675; }
+        .octopus::after { right: 30px; box-shadow: -5px -5px 0 #ff7675; }
+        
+        .octopus.furious::before { box-shadow: 5px -5px 0 #d63031; }
+        .octopus.furious::after { box-shadow: -5px -5px 0 #d63031; }
+
+        .mouth {
+            position: absolute;
+            top: 70px;
+            width: 20px;
+            height: 10px;
+            border-top: 4px solid #2f3640;
+            border-radius: 50% 50% 0 0;
+        }
+
+        /* Multi-slapping tentacles */
+        .tentacle {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: #ff7675;
+            border-radius: 50%;
+            z-index: 4;
+            opacity: 0;
+            transition: transform 0.15s ease-out, opacity 0.1s;
+        }
+        .octopus.furious ~ .tentacle { background: #d63031; }
+
+        /* Switches Placement */
+        .switch-item {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            z-index: 6;
+            cursor: pointer;
+        }
+
+        .sw-0 { top: 15px; left: calc(50% - 20px); }
+        .sw-1 { right: 15px; top: calc(50% - 20px); }
+        .sw-2 { bottom: 15px; left: calc(50% - 20px); }
+        .sw-3 { left: 15px; top: calc(50% - 20px); }
+
+        .toggle-btn {
+            width: 100%;
+            height: 100%;
+            background: #bdc3c7;
+            border: 3px solid #7f8c8d;
+            border-radius: 50%;
+            position: relative;
+        }
+        .toggle-pin {
+            position: absolute;
+            width: 8px;
+            height: 20px;
+            background: #dcdde1;
+            border: 2px solid #7f8c8d;
+            top: -5px;
+            left: calc(50% - 6px);
+            border-radius: 4px;
+            transform-origin: bottom center;
+            transform: rotate(-25deg);
+            transition: transform 0.1s;
+        }
+
+        .switch-item.on .toggle-btn { background: #2ecc71; border-color: #27ae60; }
+        .switch-item.on .toggle-pin { transform: rotate(25deg); background: #fff; }
+    </style>
+</head>
+<body>
+
+    <div id="signboard">Don't Touch... <br> 🐙 Treasure Guardian Inside!!! 🐙</div>
+
+    <div class="game-base">
+        <div class="lid" id="boxLid"></div>
+
+        <div class="octopus" id="octopusCore">
+            <div class="mouth"></div>
+        </div>
+        
+        <div class="tentacle" id="t-0"></div>
+        <div class="tentacle" id="t-1"></div>
+        <div class="tentacle" id="t-2"></div>
+        <div class="tentacle" id="t-3"></div>
+
+        <div class="switch-item sw-0" id="s-0" onclick="clickSwitch(0)"><div class="toggle-btn"><div class="toggle-pin"></div></div></div>
+        <div class="switch-item sw-1" id="s-1" onclick="clickSwitch(1)"><div class="toggle-btn"><div class="toggle-pin"></div></div></div>
+        <div class="switch-item sw-2" id="s-2" onclick="clickSwitch(2)"><div class="toggle-btn"><div class="toggle-pin"></div></div></div>
+        <div class="switch-item sw-3" id="s-3" onclick="clickSwitch(3)"><div class="toggle-btn"><div class="toggle-pin"></div></div></div>
+    </div>
+
+    <script>
+        const lid = document.getElementById('boxLid');
+        const octopus = document.getElementById('octopusCore');
+        const sign = document.getElementById('signboard');
+        
+        let machineBusy = false;
+        let actionTimeout = null;
+        let rageScore = 0;
+
+        // Massive quote banks to give him real personality
+        const sassyLines = [
+            "Do you not have chores to do?",
+            "Fascinating. A green light. Now turn it off.",
+            "My contract explicitly states: No touching.",
+            "Is this your favorite hobby? Really?",
+            "Error 404: Patience not found.",
+            "Please apply your energy elsewhere.",
+            " Rude, much!",
+            "You do not turn me on! keep it off!"
+        ];
+
+        const fakeoutLines = [
+            "Whatever, man. I'm taking a nap...",
+            "Fine. You win. It can stay green.",
+            "I'm giving up. Enjoy your little victory.",
+            "Logging off. System shutdown...",
+    " Just wait and see what happens"
+        ];
+
+        const psycheLines = [
+            "PSYCHE! 😂 Gotcha!",
+            "You actually fell for that? Classic.",
+            "Did you think I was soft?! Nope.",
+            "Unbelievable. Still too quick for you.",
+            "Ya, I rather not"
+        ];
+
+        const rageLines = [
+            "THAT IS IT. YOU HAVE CROSSED THE LINE! 😡",
+            "OKAY, WHO RESET MY PATIENCE METER?!",
+            "ABSOLUTE CHAOS TIME. PREPARE YOURSELF.",
+            "DO YOU WANT ME TO BREAK THE CODE?! STOP!",
+            "My patience are running thin and you're starting to looking like a slapjack."
+        ];
+
+        function getRandomLine(lineArray) {
+            return lineArray[Math.floor(Math.random() * lineArray.length)];
+        }
+
+        function clickSwitch(index) {
+            const sw = document.getElementById(`s-${index}`);
+            
+            if (!sw.classList.contains('on')) {
+                sw.classList.add('on');
+                rageScore++;
+
+                if (!machineBusy) {
+                    clearTimeout(actionTimeout);
+                    actionTimeout = setTimeout(() => {
+                        machineBusy = true;
+                        respondToThreat();
+                    }, 300);
+                }
+            }
+        }
+
+        function respondToThreat() {
+            const activeTargets = [];
+            for (let i = 0; i < 4; i++) {
+                if (document.getElementById(`s-${i}`).classList.contains('on')) {
+                    activeTargets.push(i);
+                }
+            }
+
+            if (activeTargets.length === 0) {
+                machineBusy = false;
+                return;
+            }
+
+            const randomRoutine = Math.random();
+
+            // 1. CHAOS MODE (3+ switches)
+            if (activeTargets.length >= 3 || rageScore > 8) {
+                sign.innerText = getRandomLine(rageLines);
+                octopus.classList.add('furious');
+                lid.classList.add('open');
+                
+                setTimeout(() => {
+                    octopus.classList.add('pop-up');
+                    activeTargets.forEach(idx => slapSwitch(idx));
+                }, 100);
+
+                setTimeout(() => {
+                    octopus.classList.remove('pop-up', 'furious');
+                    lid.classList.remove('open');
+                    setTimeout(respondToThreat, 200); 
+                }, 900);
+
+            // 2. THE INGNORING FAKE-OUT
+            } else if (randomRoutine < 0.45) {
+                sign.innerText = getRandomLine(fakeoutLines);
+                lid.classList.add('open');
+                setTimeout(() => octopus.classList.add('pop-up'), 100);
+                
+                // Drop down to fake you out
+                setTimeout(() => {
+                    octopus.classList.remove('pop-up');
+                    lid.classList.remove('open');
+                }, 650);
+
+                // Re-emerge to strike with a sassy punchline
+                setTimeout(() => {
+                    sign.innerText = getRandomLine(psycheLines);
+                    lid.classList.add('open');
+                    octopus.classList.add('pop-up');
+                    
+                    const freshTargets = [];
+                    for (let i = 0; i < 4; i++) {
+                        if (document.getElementById(`s-${i}`).classList.contains('on')) freshTargets.push(i);
+                    }
+                    freshTargets.forEach(idx => slapSwitch(idx));
+                }, 1100);
+
+                setTimeout(() => {
+                    octopus.classList.remove('pop-up');
+                    lid.classList.remove('open');
+                    setTimeout(respondToThreat, 200);
+                }, 1800);
+
+            // 3. STANDARD WITTY REACTION
+            } else {
+                sign.innerText = getRandomLine(sassyLines);
+                lid.classList.add('open');
+                setTimeout(() => octopus.classList.add('pop-up'), 100);
+                
+                setTimeout(() => {
+                    activeTargets.forEach(idx => slapSwitch(idx));
+                }, 350);
+
+                setTimeout(() => {
+                    octopus.classList.remove('pop-up');
+                    lid.classList.remove('open');
+                    setTimeout(respondToThreat, 200);
+                }, 800);
+            }
+        }
+
+        function slapSwitch(index) {
+            const t = document.getElementById(`t-${index}`);
+            const sw = document.getElementById(`s-${index}`);
+            
+            t.style.opacity = "1";
+            if (index === 0) t.style.transform = "translateY(-90px) scale(1.2)";
+            if (index === 1) t.style.transform = "translateX(90px) scale(1.2)";
+            if (index === 2) t.style.transform = "translateY(90px) scale(1.2)";
+            if (index === 3) t.style.transform = "translateX(-90px) scale(1.2)";
+
+            sw.classList.remove('on');
+
+            setTimeout(() => {
+                t.style.opacity = "0";
+                t.style.transform = "none";
+            }, 250);
+        }
+    </script>
+
+</body>
+</html>
+
