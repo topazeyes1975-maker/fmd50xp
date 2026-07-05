@@ -4,17 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UPC Void Finder</title>
-    <header style="background-color: #f8f9fa; border: 1px solid #e9ecef; padding: 16px; border-radius: 8px; margin-bottom: 24px; font-family: sans-serif;">
-    <h1 style="margin: 0 0 8px 0; color: #343a40; font-size: 1.4rem; font-weight: 700;">Void Matcher</h1>
-    
-    <p style="margin: 0 0 10px 0; font-size: 0.9rem; color: #495057; line-height: 1.5;">
-        🔒 <strong>Privacy Note:</strong> This tool runs entirely local in your browser. It <strong>does not store or transmit</strong> any corporate data. It is strictly a visual aid designed to reduce eye strain and speed up high-volume verification.
-    </p>
-    
-    <p style="margin: 0; font-size: 0.85rem; color: #6c757d; border-top: 1px solid #dee2e6; padding-top: 8px;">
-        ℹ️ <strong>Status Guide:</strong> It will show "No" while typing. Once the <strong>full number</strong> is entered, it will flash <strong>Green</strong> for a match. If it stays "No" after the full number is entered, there is no match.
-    </p>
-    </header>
     
     <style>
         body {
@@ -46,7 +35,7 @@
         textarea, input[type="text"] {
             width: 100%;
             padding: 12px;
-            border: 2px border #ccc;
+            border: 2px solid #ccc;
             border-radius: 6px;
             font-size: 1rem;
             box-sizing: border-box;
@@ -60,9 +49,14 @@
             height: 120px;
             resize: vertical;
             font-family: monospace;
-            margin-bottom: 20px;
+            margin-bottom: 8px;
         }
         .search-box {
+            margin-bottom: 15px;
+        }
+        .action-row {
+            display: flex;
+            gap: 10px;
             margin-bottom: 25px;
         }
         .result {
@@ -93,27 +87,37 @@
 </head>
 <body>
 
+<header style="background-color: #f8f9fa; border: 1px solid #e9ecef; padding: 16px; border-radius: 8px; margin-bottom: 24px; font-family: sans-serif;">
+    <h1 style="margin: 0 0 8px 0; color: #343a40; font-size: 1.4rem; font-weight: 700;">Void Matcher</h1>
+    
+    <p style="margin: 0 0 10px 0; font-size: 0.9rem; color: #495057; line-height: 1.5;">
+        🔒 <strong>Privacy Note:</strong> This tool runs entirely local in your browser. It <strong>does not store or transmit</strong> any corporate data. It is strictly a visual aid designed to reduce eye strain and speed up high-volume verification.
+    </p>
+    
+    <p style="margin: 0; font-size: 0.85rem; color: #6c757d; border-top: 1px solid #dee2e6; padding-top: 8px;">
+        ℹ️ <strong>Status Guide:</strong> It will show "No" while typing. Once the <strong>full number</strong> is entered, it will flash <strong>Green</strong> for a match. If it stays "No" after the full number is entered, there is no match.
+    </p>
+</header>
+
 <div class="card">
     <h1>UPC Void Finder</h1>
     
     <label for="masterList">1. Paste Master List of Invoice UPCs <span id="count" class="count-badge">(0 loaded)</span></label>
     <textarea id="masterList" placeholder="Paste your invoice numbers here. You can separate them with spaces, commas, or line breaks..." oninput="processList()"></textarea>
-<textarea id="masterListInput" placeholder="Paste master receipt list here..."></textarea>
-<br>
-<button onclick="clearMasterList()" style="background-color: #dc3545; color: white; border: none; padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; cursor: pointer; margin-top: 5px;">
-    🗑️ Clear Master List
-</button>
+    
+    <button onclick="clearMasterList()" style="background-color: #dc3545; color: white; border: none; padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; cursor: pointer; margin-bottom: 25px;">
+        🗑️ Clear Master List
+    </button>
     
     <div class="search-box">
         <label for="searchQuery">2. Type Receipt Number to Check</label>
-        <input type="text" id="searchQuery" placeholder="Type a number and press Enter..." autocomplete="off" oninput="checkNumber()">
+        <div class="action-row">
+            <input type="text" id="searchQuery" placeholder="Type a number..." autocomplete="off" oninput="checkNumber()">
+            <button onclick="clearCurrentInput()" style="background-color: #6c757d; color: white; border: none; padding: 0 20px; font-size: 1rem; border-radius: 6px; cursor: pointer; font-weight: bold; white-space: nowrap;">
+                Clear Input
+            </button>
+        </div>
     </div>
-    <input type="text" id="receiptInput" placeholder="Type receipt number here...">
-
-<button onclick="clearCurrentInput()" style="background-color: #6c757d; color: white; border: none; padding: 10px 20px; font-size: 1rem; border-radius: 5px; cursor: pointer; font-weight: bold; margin-left: 10px;">
-    Clear Input
-</button>
-    <br>
 
     <div id="resultWindow" class="result"></div>
 </div>
@@ -128,34 +132,37 @@
         // Split by commas, spaces, or newlines, and filter out any empty strings
         const tokens = rawText.split(/[\s,]+/).filter(token => token.trim() !== '');
         
-        // Use a Set for lightning fast O(1) lookups
+        // Use a Set for lookups
         upcSet = new Set(tokens);
         
-        // Update the visual count so you know the data registered
+        // Update the visual count
         document.getElementById('count').textContent = `(${upcSet.size} loaded)`;
         
         // Re-run the search on the updated list just in case there's text in the search box
         checkNumber();
     }
-// FUNCTION 1: Only clears the box you are actively typing in
-function clearCurrentInput() {
-    const inputField = document.getElementById('receiptInput'); // Your typing box
-    const statusField = document.getElementById('statusDisplay'); // Your Green/No display
-    
-    inputField.value = ''; // Clear the box
-    statusField.innerText = 'No'; // Reset status text
-    statusField.style.backgroundColor = ''; // Remove the green color
-    
-    inputField.focus(); // Put the cursor back in the box automatically
-}
 
-// FUNCTION 2: Clears the master database list at the top
-function clearMasterList() {
-    if (confirm("Are you sure you want to clear the entire master receipt list?")) {
-        const masterListField = document.getElementById('masterListInput'); // Your big text area at the top
-        masterListField.value = ''; // Wipes the database list clean
+    // FUNCTION 1: Only clears the box you are actively typing in at the bottom
+    function clearCurrentInput() {
+        const inputField = document.getElementById('searchQuery');
+        const resultWindow = document.getElementById('resultWindow');
+        
+        inputField.value = ''; // Clear the text input
+        resultWindow.style.display = 'none'; // Hide the result window entirely until they type again
+        
+        inputField.focus(); // Snap cursor back to input box
     }
-}
+
+    // FUNCTION 2: Clears the master database list at the top
+    function clearMasterList() {
+        if (confirm("Are you sure you want to clear the entire master receipt list?")) {
+            const masterListField = document.getElementById('masterList');
+            masterListField.value = ''; // Clear text area
+            upcSet.clear(); // Empty database set
+            document.getElementById('count').textContent = `(0 loaded)`; // Reset count
+            checkNumber(); // Refresh view
+        }
+    }
     
     // Checks the search input against our master set
     function checkNumber() {
