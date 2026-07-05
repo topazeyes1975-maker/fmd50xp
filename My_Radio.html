@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radio Broadcast Studio</title>
+    <style>
+        /* Modern, scannable, and fluid dark theme */
+        body {
+            background-color: #0b0c10;
+            color: #c5c6c7;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Main player console using soft, circular styling */
+        .radio-console {
+            background: linear-gradient(145deg, #1f2833, #151a21);
+            border-radius: 30px; /* Fluid, round borders */
+            padding: 40px 30px;
+            width: 100%;
+            max-width: 550px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            border: 1px solid #45f3ff22;
+        }
+
+        /* Decorative circular glowing element representing broadcast pulse */
+        .broadcast-pulse {
+            width: 70px;
+            height: 70px;
+            background: radial-gradient(circle, #45f3ff 20%, transparent 70%);
+            border-radius: 50%;
+            margin: 0 auto 20px auto;
+            animation: pulse-ring 2.5s infinite ease-in-out;
+        }
+
+        h1 {
+            color: #ffffff;
+            font-size: 1.8rem;
+            margin: 0 0 10px 0;
+            letter-spacing: 1px;
+        }
+
+        p {
+            color: #66fcf1;
+            font-size: 0.95rem;
+            margin: 0 0 30px 0;
+            opacity: 0.8;
+        }
+
+        /* Embedded Player Frame Wrapper */
+        .frame-wrapper {
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden; /* Clips the iframe to maintain the rounded corners */
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+            background-color: #020c1b;
+        }
+
+        iframe {
+            border: none;
+            display: block;
+        }
+
+        /* Subtle ambient pulsing animation for the broadcast element */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.5; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+            100% { transform: scale(0.95); opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="radio-console">
+    <!-- Visual station indicator -->
+    <div class="broadcast-pulse"></div>
+    
+    <h1>On-Air Radio</h1>
+    <p>Streaming the latest tracking drops automatically</p>
+    
+    <div class="frame-wrapper">
+        <!-- Swap out the URL below with your actual shared Suno public playlist URL -->
+        <iframe 
+            src="https://suno.com/playlist/1a2ed29d-7f8c-4f4c-a045-c69b65187faf" 
+            width="100%" 
+            height="450" 
+            allow="autoplay; encrypted-media; picture-in-picture" 
+            allowfullscreen>
+        </iframe>
+    </div>
+</div>
+
+</body>
+</html>
+
