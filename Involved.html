@@ -98,11 +98,22 @@
     
     <label for="masterList">1. Paste Master List of Invoice UPCs <span id="count" class="count-badge">(0 loaded)</span></label>
     <textarea id="masterList" placeholder="Paste your invoice numbers here. You can separate them with spaces, commas, or line breaks..." oninput="processList()"></textarea>
-
+<textarea id="masterListInput" placeholder="Paste master receipt list here..."></textarea>
+<br>
+<button onclick="clearMasterList()" style="background-color: #dc3545; color: white; border: none; padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; cursor: pointer; margin-top: 5px;">
+    🗑️ Clear Master List
+</button>
+    
     <div class="search-box">
         <label for="searchQuery">2. Type Receipt Number to Check</label>
         <input type="text" id="searchQuery" placeholder="Type a number and press Enter..." autocomplete="off" oninput="checkNumber()">
     </div>
+    <input type="text" id="receiptInput" placeholder="Type receipt number here...">
+
+<button onclick="clearCurrentInput()" style="background-color: #6c757d; color: white; border: none; padding: 10px 20px; font-size: 1rem; border-radius: 5px; cursor: pointer; font-weight: bold; margin-left: 10px;">
+    Clear Input
+</button>
+    <br>
 
     <div id="resultWindow" class="result"></div>
 </div>
@@ -126,7 +137,26 @@
         // Re-run the search on the updated list just in case there's text in the search box
         checkNumber();
     }
+// FUNCTION 1: Only clears the box you are actively typing in
+function clearCurrentInput() {
+    const inputField = document.getElementById('receiptInput'); // Your typing box
+    const statusField = document.getElementById('statusDisplay'); // Your Green/No display
+    
+    inputField.value = ''; // Clear the box
+    statusField.innerText = 'No'; // Reset status text
+    statusField.style.backgroundColor = ''; // Remove the green color
+    
+    inputField.focus(); // Put the cursor back in the box automatically
+}
 
+// FUNCTION 2: Clears the master database list at the top
+function clearMasterList() {
+    if (confirm("Are you sure you want to clear the entire master receipt list?")) {
+        const masterListField = document.getElementById('masterListInput'); // Your big text area at the top
+        masterListField.value = ''; // Wipes the database list clean
+    }
+}
+    
     // Checks the search input against our master set
     function checkNumber() {
         const query = document.getElementById('searchQuery').value.trim();
