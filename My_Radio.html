@@ -3,149 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Radio Broadcast Studio</title>
+    <title>Robot DJ Studio</title>
     <style>
-        /* Modern, scannable, and fluid dark theme */
         body {
             background-color: #0b0c10;
             color: #c5c6c7;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             min-height: 100vh;
             margin: 0;
             padding: 20px;
             box-sizing: border-box;
         }
 
-        /* Main player console using soft, circular styling */
-        .radio-console {
+        .dj-console {
             background: linear-gradient(145deg, #1f2833, #151a21);
-            border-radius: 30px; /* Fluid, round borders */
+            border-radius: 30px;
             padding: 40px 30px;
             width: 100%;
-            max-width: 550px;
+            max-width: 450px;
             text-align: center;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
             border: 1px solid #45f3ff22;
         }
 
-        /* Decorative circular glowing element representing broadcast pulse */
-        .broadcast-pulse {
-            width: 70px;
-            height: 70px;
-            background: radial-gradient(circle, #45f3ff 20%, transparent 70%);
+        /* Fluid circular interface design */
+        .dj-head {
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, #202833 40%, #45f3ff 95%);
             border-radius: 50%;
             margin: 0 auto 20px auto;
-            animation: pulse-ring 2.5s infinite ease-in-out;
-        }
-
-        h1 {
-            color: #ffffff;
-            font-size: 1.8rem;
-            margin: 0 0 10px 0;
-            letter-spacing: 1px;
-        }
-
-        p {
-            color: #66fcf1;
-            font-size: 0.95rem;
-            margin: 0 0 30px 0;
-            opacity: 0.8;
-        }
-
-        /* Station Hub Deck replacing the restrictive iframe */
-        .station-deck {
-            background: #020c1b;
-            border-radius: 20px;
-            padding: 50px 20px;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
-            border: 1px solid #1f2833;
+            position: relative;
+            box-shadow: 0 0 20px rgba(69, 243, 255, 0.3);
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
         }
 
-        .vinyl-graphic {
-            width: 120px;
-            height: 120px;
-            background: radial-gradient(circle, #0b0c10 30%, #202020 31%, #111 40%, #252525 50%, #0b0c10 70%);
+        /* Robot eye indicators */
+        .dj-head::before, .dj-head::after {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background-color: #0b0c10;
             border-radius: 50%;
-            margin-bottom: 30px;
-            border: 4px solid #1f2833;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-            position: relative;
-            animation: spin 6s linear infinite;
+            margin: 0 10px;
+            box-shadow: 0 0 8px #45f3ff;
+            transition: background-color 0.3s;
         }
 
-        .vinyl-center {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 35px;
-            height: 35px;
-            background-color: #45f3ff;
-            border-radius: 50%;
+        .dj-head.talking::before, .dj-head.talking::after {
+            background-color: #ffffff;
+            animation: blink 0.2s infinite alternate;
         }
 
-        /* Highly scannable, modern action link button */
-        .tune-in-btn {
-            display: inline-block;
+        h1 { color: #ffffff; margin: 0 0 5px 0; font-size: 1.6rem; }
+        .status { color: #66fcf1; font-size: 0.9rem; margin-bottom: 25px; min-height: 20px; }
+
+        .deck-interior {
+            background: #020c1b;
+            border-radius: 20px;
+            padding: 30px 20px;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+        }
+
+        .track-display {
+            font-size: 1.1rem;
+            color: #ffffff;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .control-btn {
             background: #45f3ff;
             color: #0b0c10;
-            text-decoration: none;
-            font-weight: bold;
+            border: none;
             font-size: 1.1rem;
+            font-weight: bold;
             padding: 15px 40px;
-            border-radius: 50px; /* Fully circular ends */
-            box-shadow: 0 4px 15px rgba(69, 243, 255, 0.4);
-            transition: all 0.3s ease;
-            letter-spacing: 0.5px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(69, 243, 255, 0.3);
+            transition: all 0.2s;
         }
 
-        .tune-in-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(69, 243, 255, 0.6);
+        .control-btn:hover {
+            transform: scale(1.03);
             background: #ffffff;
         }
 
-        /* Subtle ambient pulsing animation for the broadcast element */
-        @keyframes pulse-ring {
-            0% { transform: scale(0.95); opacity: 0.5; }
-            50% { transform: scale(1.05); opacity: 0.9; }
-            100% { transform: scale(0.95); opacity: 0.5; }
-        }
-
-        @keyframes spin {
-            100% { transform: rotate(360deg); }
+        @keyframes blink {
+            0% { transform: scaleY(1); }
+            100% { transform: scaleY(0.1); }
         }
     </style>
 </head>
 <body>
 
-<div class="radio-console">
-    <!-- Visual station indicator -->
-    <div class="broadcast-pulse"></div>
-    
-    <h1>On-Air Radio</h1>
-    <p>Streaming the latest tracking drops automatically</p>
-    
-    <div class="station-deck">
-        <!-- Animated vinyl player element matching layout design rules -->
-        <div class="vinyl-graphic">
-            <div class="vinyl-center"></div>
-        </div>
-        
-        <!-- Interactive direct pathway to your streaming playlist -->
-        <a href="https://suno.com/playlist/1a2ed29d-7f8c-4f4c-a045-c69b65187faf" target="_blank" class="tune-in-btn">
-            📻 Launch Live Radio
-        </a>
+<div class="dj-console">
+    <div class="dj-head" id="robotFace"></div>
+    <h1>DJ Bot-Mixer</h1>
+    <div class="status" id="djStatus">System Offline</div>
+
+    <div class="deck-interior">
+        <div class="track-display" id="currentTrack">Queue Empty</div>
+        <button class="control-btn" id="powerBtn">▶ Start Party</button>
     </div>
 </div>
+
+<script>
+    // 1. Array of your own downloaded songs stored on GitHub
+    const myPlaylist = [
+        { title: "First Custom Track", file: "audio/song1.mp3" },
+        { title: "Midnight Session", file: "audio/song2.mp3" },
+        { title: "Neon Skyline", file: "audio/song3.mp3" }
+    ];
+
+    // 2. Robot personality script lines
+    const robotIntros = [
+        "Beep boop! Spinning up a certified banger right now. Check this out.",
+        "Dropping into the matrix matrix grid. Let's shift the frequency with this next track.",
+        "Analyzing audio layers. This track matches premium data parameters. Initiating playback.",
+        "A calculation of pure rhythm incoming. Enjoy the sound waves."
+    ];
+
+    const audioPlayer = new Audio();
+    let isPlaying = false;
+    let currentSongIndex = -1;
+
+    const robotFace = document.getElementById('robotFace');
+    const djStatus = document.getElementById('djStatus');
+    const currentTrack = document.getElementById('currentTrack');
+    const powerBtn = document.getElementById('powerBtn');
+
+    // Speech Engine Setup
+    const synth = window.speechSynthesis;
+
+    function speakIntro(callback) {
+        // Stop any text speech happening right now
+        synth.cancel(); 
+        
+        // Pick a random robotic catchphrase
+        const randomPhrase = robotIntros[Math.floor(Math.random() * robotIntros.length)];
+        const utterance = new SpeechSynthesisUtterance(randomPhrase);
+        
+        // Give him a fun computer voice style modulation
+        utterance.pitch = 0.5; // Deeper or higher pitch adjustments
+        utterance.rate = 1.0;  // Pacing
+
+        // Visual effects while speaking
+        robotFace.classList.add('talking');
+        djStatus.innerText = "🤖 DJ Bot is speaking...";
+
+        utterance.onend = () => {
+            robotFace.classList.remove('talking');
+            callback(); // Run the track playback immediately when he is done speaking
+        };
+
+        synth.speak(utterance);
+    }
+
+    function playRandomSong() {
+        // Simple random shuffler
+        let newIndex;
+        do {
+            newIndex = Math.floor(Math.random() * myPlaylist.length);
+        } while (newIndex === currentSongIndex && myPlaylist.length > 1);
+
+        currentSongIndex = newIndex;
+        const song = myPlaylist[currentSongIndex];
+
+        // Let the Robot talk first!
+        speakIntro(() => {
+            audioPlayer.src = song.file;
+            currentTrack.innerText = song.title;
+            djStatus.innerText = "🎵 Streaming track data...";
+            audioPlayer.play();
+        });
+    }
+
+    powerBtn.addEventListener('click', () => {
+        if (!isPlaying) {
+            isPlaying = true;
+            powerBtn.innerText = "⏸ Pause Deck";
+            playRandomSong();
+        } else {
+            isPlaying = false;
+            audioPlayer.pause();
+            synth.cancel();
+            robotFace.classList.remove('talking');
+            powerBtn.innerText = "▶ Resume Deck";
+            djStatus.innerText = "Deck Paused";
+        }
+    });
+
+    // Auto-mix rule: When a song ends, automatically call the DJ back to queue the next one!
+    audioPlayer.addEventListener('ended', () => {
+        if (isPlaying) {
+            playRandomSong();
+        }
+    });
+</script>
 
 </body>
 </html>
