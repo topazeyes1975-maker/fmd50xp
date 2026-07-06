@@ -29,7 +29,7 @@
             border: 1px solid #45f3ff22;
         }
 
-        /* Fluid circular interface design */
+        /* Fluid circular head interface */
         .dj-head {
             width: 100px;
             height: 100px;
@@ -43,7 +43,7 @@
             justify-content: center;
         }
 
-        /* Robot eye indicators */
+        /* Robot eyes */
         .dj-head::before, .dj-head::after {
             content: '';
             width: 12px;
@@ -52,7 +52,6 @@
             border-radius: 50%;
             margin: 0 10px;
             box-shadow: 0 0 8px #45f3ff;
-            transition: background-color 0.3s;
         }
 
         .dj-head.talking::before, .dj-head.talking::after {
@@ -70,11 +69,28 @@
             box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
         }
 
-        .track-display {
-            font-size: 1.1rem;
-            color: #ffffff;
-            margin-bottom: 20px;
+        /* --- DIGITAL RADIO SCROLLING DISPLAY --- */
+        .radio-display-window {
+            background: #051329;
+            border: 2px solid #45f3ff44;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 25px;
+            overflow: hidden; /* Hides text when it scrolls outside the box */
+            position: relative;
+            white-space: nowrap;
+        }
+
+        .scrolling-text {
+            display: inline-block;
+            font-family: 'Courier New', Courier, monospace; /* Gives it an LED look */
+            font-size: 1.2rem;
+            color: #45f3ff;
+            text-shadow: 0 0 5px #45f3ffbb;
             font-weight: bold;
+            padding-left: 100%; /* Starts the text completely off-screen to the right */
+            animation: marquee 10s linear infinite;
+            animation-play-state: paused; /* Paused until music starts */
         }
 
         .control-btn {
@@ -95,6 +111,12 @@
             background: #ffffff;
         }
 
+        /* Keyframes to smoothly loop text right-to-left */
+        @keyframes marquee {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-100%, 0, 0); }
+        }
+
         @keyframes blink {
             0% { transform: scaleY(1); }
             100% { transform: scaleY(0.1); }
@@ -109,101 +131,97 @@
     <div class="status" id="djStatus">System Offline</div>
 
     <div class="deck-interior">
-        <div class="track-display" id="currentTrack">Queue Empty</div>
+        <div class="radio-display-window">
+            <div class="scrolling-text" id="marqueeDisplay">READY TO ROCK...</div>
+        </div>
+        
         <button class="control-btn" id="powerBtn">▶ Start Party</button>
     </div>
 </div>
 
 <script>
-    // 1. Array of your own downloaded songs stored on GitHub
+    // 1. Your voice files containing crazy remarks
+    const robotVoiceIntros = [
+        "audio/intros/intro1.mp3",
+        "audio/intros/intro2.mp3",
+        "audio/intros/intro3.mp3"
+    ];
+
+    // 2. Your music playlist
     const myPlaylist = [
-        { title: "6/6/26", file: "6_6_26 (The Chaos Shift).mp3" },
-        { title: "laughing in the the Airlock", file: "Laughing in the Airlock (1).mp3" },
-        { title: "Neon Skyline", file: "audio/song3.mp3" }
+        { title: "First Custom Track", file: "audio/music/song1.mp3" },
+        { title: "Midnight Session", file: "audio/music/song2.mp3" },
+        { title: "Neon Skyline", file: "audio/music/song3.mp3" }
     ];
 
-    // 2. Robot personality script lines
-    const robotIntros = [
-        "Beep boop! Spinning up a certified banger right now. Check this out.",
-        "Dropping into the matrix matrix grid. Let's shift the frequency with this next track.",
-        "Analyzing audio layers. This track matches premium data parameters. Initiating playback.",
-        "A calculation of pure rhythm incoming. Enjoy the sound waves."
-    ];
-
-    const audioPlayer = new Audio();
+    const player = new Audio();
     let isPlaying = false;
     let currentSongIndex = -1;
 
     const robotFace = document.getElementById('robotFace');
     const djStatus = document.getElementById('djStatus');
-    const currentTrack = document.getElementById('currentTrack');
+    const marqueeDisplay = document.getElementById('marqueeDisplay');
     const powerBtn = document.getElementById('powerBtn');
 
-    // Speech Engine Setup
-    const synth = window.speechSynthesis;
+    function playNextMix() {
+        if (!isPlaying) return;
 
-    function speakIntro(callback) {
-        // Stop any text speech happening right now
-        synth.cancel(); 
-        
-        // Pick a random robotic catchphrase
-        const randomPhrase = robotIntros[Math.floor(Math.random() * robotIntros.length)];
-        const utterance = new SpeechSynthesisUtterance(randomPhrase);
-        
-        // Give him a fun computer voice style modulation
-        utterance.pitch = 0.5; // Deeper or higher pitch adjustments
-        utterance.rate = 1.0;  // Pacing
+        // Stop current text animation while loading
+        marqueeDisplay.style.animationPlayState = 'paused';
 
-        // Visual effects while speaking
-        robotFace.classList.add('talking');
-        djStatus.innerText = "🤖 DJ Bot is speaking...";
-
-        utterance.onend = () => {
-            robotFace.classList.remove('talking');
-            callback(); // Run the track playback immediately when he is done speaking
-        };
-
-        synth.speak(utterance);
-    }
-
-    function playRandomSong() {
-        // Simple random shuffler
+        // Select random track index cleanly
         let newIndex;
         do {
             newIndex = Math.floor(Math.random() * myPlaylist.length);
         } while (newIndex === currentSongIndex && myPlaylist.length > 1);
 
         currentSongIndex = newIndex;
-        const song = myPlaylist[currentSongIndex];
+        const selectedSong = myPlaylist[currentSongIndex];
 
-        // Let the Robot talk first!
-        speakIntro(() => {
-            audioPlayer.src = song.file;
-            currentTrack.innerText = song.title;
-            djStatus.innerText = "🎵 Streaming track data...";
-            audioPlayer.play();
-        });
+        // Select random pre-recorded crazy intro clip
+        const randomIntroFile = robotVoiceIntros[Math.floor(Math.random() * robotVoiceIntros.length)];
+
+        // Phase 1: Play voice clip
+        player.src = randomIntroFile;
+        marqueeDisplay.innerText = "🤖 TUNING FREQUENCY...";
+        djStatus.innerText = "🤖 DJ Bot Intro Active";
+        robotFace.classList.add('talking');
+        
+        player.play();
+
+        // Phase 2: Switch to the song when the voice file runs out
+        player.onended = function playTrack() {
+            robotFace.classList.remove('talking');
+            djStatus.innerText = "🎵 Track Streaming...";
+            
+            // Push song title to the display window and start the scroll animation
+            marqueeDisplay.innerText = "NOW PLAYING: " + selectedSong.title.toUpperCase() + "  * * * ";
+            marqueeDisplay.style.animationPlayState = 'running';
+            
+            player.src = selectedSong.file;
+            player.play();
+
+            // Phase 3: Loop when song completes
+            player.onended = function trackFinished() {
+                if (isPlaying) {
+                    playNextMix();
+                }
+            };
+        };
     }
 
     powerBtn.addEventListener('click', () => {
         if (!isPlaying) {
             isPlaying = true;
             powerBtn.innerText = "⏸ Pause Deck";
-            playRandomSong();
+            playNextMix();
         } else {
             isPlaying = false;
-            audioPlayer.pause();
-            synth.cancel();
+            player.pause();
             robotFace.classList.remove('talking');
+            marqueeDisplay.style.animationPlayState = 'paused';
             powerBtn.innerText = "▶ Resume Deck";
             djStatus.innerText = "Deck Paused";
-        }
-    });
-
-    // Auto-mix rule: When a song ends, automatically call the DJ back to queue the next one!
-    audioPlayer.addEventListener('ended', () => {
-        if (isPlaying) {
-            playRandomSong();
         }
     });
 </script>
