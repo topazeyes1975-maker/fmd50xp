@@ -14,11 +14,38 @@
             text-transform: uppercase;
         }
         /* RESTORED NAV STYLING */
-        nav { background: #000; border-bottom: 1px solid #004d7c; padding: 10px 0; }
-        nav ul { list-style: none; padding: 0; display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin: 0;}
-        nav a { color: #a0f0ff; text-decoration: none; font-weight: bold; }
-        nav a:hover { text-decoration: underline; color: #fff; }
+        nav {
+            background: #000;
+            border-bottom: 1px solid #222;
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
 
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav a {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.85em;
+            font-weight: bold;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+
+        nav a:hover { 
+            color: var(--accent); 
+            text-shadow: 0 0 8px var(--accent); 
+        }
         .form-container { max-width: 600px; margin: 40px auto; padding: 25px; background: #001220; border: 1px solid #004d7c; border-radius: 8px; width: 90%;}
         h2 { text-align: center; color: #fff; margin-top: 0;}
         input, textarea { width: 100%; padding: 10px; margin: 10px 0; background: #000; border: 1px solid #004d7c; color: #00f2ff; font-family: monospace; box-sizing: border-box;}
@@ -29,15 +56,15 @@
 <body>
 
 <nav>
-    <ul>
-        <li><a href="index.html">HOME</a></li>
-        <li><a href="Atlas_Mutatis.html">ATLAS MUTATIS</a></li>
-        <li><a href="Project.html">PHYSICAL PROJECT</a></li>
-        <li><a href="Games.html">GAMES</a></li>
-        <li><a href="3Dmodel.html">3D MODEL</a></li>
-        <li><a href="story.html">Cover of Stories & Theme Song</a></li>
-        <li><a href="contact.html">CONTACT</a></li>
-    </ul>
+        <ul>
+            <li><a href="index.html">HOME</a></li>
+            <li><a href="Atlas_Mutatis.html">ATLAS MUTATIS</a></li>
+            <li><a href="Out_of_order.html">PHYSICAL PROJECT</a></li>
+            <li><a href="Games.html">GAMES</a></li>
+            <li><a href="3Dmodel.html">3D MODEL</a></li>
+            <li><a href="Out_of_order.html">My Radio</a></li>
+            <li><a href="Out_of_order.html">CONTACT</a></li>
+        </ul>
 </nav>
 
 <div class="form-container">
