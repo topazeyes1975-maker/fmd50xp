@@ -183,6 +183,33 @@
             document.body.appendChild(exp);
             exp.style.display = "none";
         }
+        // Supabase Keep-Alive Ping
+async function pingSupabase() {
+  const supabaseUrl = 'YOUR_SUPABASE_URL';
+  const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
+
+  try {
+    const response = await fetch(`${supabaseUrl}/rest/v1/`, {
+      method: 'GET',
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`
+      }
+    });
+
+    if (response.ok) {
+      console.log('Supabase keep-alive ping successful.');
+    } else {
+      console.warn('Keep-alive ping returned status:', response.status);
+    }
+  } catch (error) {
+    console.error('Error sending keep-alive ping:', error);
+  }
+}
+
+// Call the function
+pingSupabase();
+        
     </script>
     <footer><h3>The Professional Disclaimer Text
 Important Note on Security & Privacy: > This platform operates on a strict privacy-first model. Your cipher keys are saved securely in the cloud using only the custom passcode you create—whether that is a name, a phrase, or a sequence of numbers. We do not collect usernames, email addresses, or personal data, which means your passcode cannot be recovered or reset if it is lost. Please write down or remember your passcode carefully; if you lose it, your saved drawings cannot be retrieved.</h3></footer>
