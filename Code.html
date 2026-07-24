@@ -6,14 +6,71 @@
     <title>Cipher Codec</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background: #1a0b2e; color: white; font-family: sans-serif; padding: 10px; }
-        #alphabet-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
-        canvas { border: 1px solid #7c4dff; background: #2d1b4e; width: 60px; height: 60px; display: block; touch-action: none; cursor: pointer; }
-        .controls { border-top: 2px solid #7c4dff; padding-top: 20px; }
-        #messageVisualizer { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 5px; }
-        #magnifierOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; }
-  </style>
-        <div class="instructions-box" style="background: #2d1b4e; border: 1px solid #7c4dff; padding: 15px; margin-bottom: 20px; border-radius: 5px; font-size: 14px; line-height: 1.6;">
+        body { 
+            background: #1a0b2e; 
+            color: white; 
+            font-family: sans-serif; 
+            padding: 10px; 
+        }
+        #alphabet-container { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 8px; 
+            margin-bottom: 20px; 
+        }
+        canvas { 
+            border: 1px solid #7c4dff; 
+            background: #2d1b4e; 
+            width: 60px; 
+            height: 60px; 
+            display: block; 
+            touch-action: none; 
+            cursor: pointer; 
+        }
+        .controls { 
+            border-top: 2px solid #7c4dff; 
+            padding-top: 20px; 
+        }
+        #messageVisualizer { 
+            margin-top: 20px; 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 5px; 
+        }
+        #magnifierOverlay { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.95); 
+            z-index: 1000; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        .instructions-box { 
+            background: #2d1b4e; 
+            border: 1px solid #7c4dff; 
+            padding: 15px; 
+            margin-bottom: 20px; 
+            border-radius: 5px; 
+            font-size: 14px; 
+            line-height: 1.6; 
+        }
+        footer { 
+            margin-top: 30px; 
+            border-top: 1px solid #7c4dff; 
+            padding-top: 15px; 
+            font-size: 13px; 
+            color: #b39ddb; 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="instructions-box">
         <h2 style="margin-top: 0; color: #7c4dff; font-size: 18px;">Welcome to Cipher Codec</h2>
         <p style="margin-bottom: 15px;">This tool allows you to design your own custom visual alphabet and instantly translate text into your unique symbolic cipher language.</p>
         
@@ -24,10 +81,8 @@
             <li><strong>Load Your Saved Alphabet:</strong> To bring back your drawings later, just type your passcode into the box and click <strong>Load</strong>.</li>
             <li><strong>Generate Messages:</strong> Type any word or phrase into the text box and click <strong>Generate</strong> to see it translated into your custom cipher. You can also download the finished key!</li>
         </ul>
-        </div>
-    
-</head>
-<body>
+    </div>
+
     <h1>Cipher Codec</h1>
     <div id="alphabet-container"></div>
 
@@ -48,9 +103,10 @@
     </div>
     
     <script>
+        // 1. Supabase Initialization
         const supabaseUrl = 'https://jhgcyiswxubqzqtbhain.supabase.co'; 
         const supabaseKey = 'sb_publishable_0j0PaDVT_pXMJawcf2W8fQ_Lz9B4KoW'; 
-        const mySupabase = supabase.createClient(supabaseUrl, supabaseKey);
+        const mySupabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
         const container = document.getElementById('alphabet-container');
@@ -62,7 +118,9 @@
 
         function setupCanvas(canvas) {
             const ctx = canvas.getContext('2d');
-            ctx.strokeStyle = 'white'; ctx.lineWidth = (canvas.width > 100) ? 8 : 3; ctx.lineCap = 'round';
+            ctx.strokeStyle = 'white'; 
+            ctx.lineWidth = (canvas.width > 100) ? 8 : 3; 
+            ctx.lineCap = 'round';
             let drawing = false;
 
             function getCoords(e) {
@@ -76,8 +134,9 @@
             canvas.onmousemove = (e) => { if(drawing) { const {x,y} = getCoords(e); ctx.lineTo(x,y); ctx.stroke(); } };
             canvas.onmouseup = () => { drawing = false; };
             
-            canvas.ontouchstart = (e) => { drawing = true; ctx.beginPath(); const {x,y} = getCoords(e); ctx.moveTo(x,y); };
-            canvas.ontouchmove = (e) => { if(drawing) { const {x,y} = getCoords(e); ctx.lineTo(x,y); ctx.stroke(); } };
+            // Prevent screen drag while drawing on mobile
+            canvas.ontouchstart = (e) => { e.preventDefault(); drawing = true; ctx.beginPath(); const {x,y} = getCoords(e); ctx.moveTo(x,y); };
+            canvas.ontouchmove = (e) => { e.preventDefault(); if(drawing) { const {x,y} = getCoords(e); ctx.lineTo(x,y); ctx.stroke(); } };
             canvas.ontouchend = () => { drawing = false; };
         }
 
@@ -105,7 +164,7 @@
 
         async function saveAll() {
             const code = document.getElementById('cipherCode').value;
-            if (!code) { alert("Please enter a 6-digit code first!"); return; }
+            if (!code) { alert("Please enter a custom passcode first!"); return; }
             let dataToSave = {};
             letters.forEach(l => dataToSave[l] = document.getElementById('canvas' + l).toDataURL());
             const { error } = await mySupabase.from('codelock').upsert([{ Code: code, alphabet_data: dataToSave }]);
@@ -129,7 +188,6 @@
                             const img = new Image();
                             img.crossOrigin = "anonymous"; 
                             img.onload = () => { 
-                                // FIX: Force old or different size images to scale exactly to the 60x60 canvas view
                                 ctx.drawImage(img, 0, 0, 60, 60); 
                                 resolve();
                             };
@@ -169,7 +227,7 @@
                 }
             }
             const btn = document.createElement('button');
-            btn.innerText = "Download";
+            btn.innerText = "Download Key";
             btn.onclick = () => {
                 let name = prompt("Name this key?", "my-key");
                 if (name) {
@@ -183,35 +241,34 @@
             document.body.appendChild(exp);
             exp.style.display = "none";
         }
+
         // Supabase Keep-Alive Ping
-async function pingSupabase() {
-  const supabaseUrl = 'YOUR_SUPABASE_URL';
-  const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
+        async function pingSupabase() {
+            try {
+                const response = await fetch(`${supabaseUrl}/rest/v1/`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': supabaseKey,
+                        'Authorization': `Bearer ${supabaseKey}`
+                    }
+                });
 
-  try {
-    const response = await fetch(`${supabaseUrl}/rest/v1/`, {
-      method: 'GET',
-      headers: {
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${supabaseKey}`
-      }
-    });
+                if (response.ok) {
+                    console.log('Supabase keep-alive ping successful.');
+                } else {
+                    console.warn('Keep-alive ping returned status:', response.status);
+                }
+            } catch (error) {
+                console.error('Error sending keep-alive ping:', error);
+            }
+        }
 
-    if (response.ok) {
-      console.log('Supabase keep-alive ping successful.');
-    } else {
-      console.warn('Keep-alive ping returned status:', response.status);
-    }
-  } catch (error) {
-    console.error('Error sending keep-alive ping:', error);
-  }
-}
-
-// Call the function
-pingSupabase();
-        
+        pingSupabase();
     </script>
-    <footer><h3>The Professional Disclaimer Text
-Important Note on Security & Privacy: > This platform operates on a strict privacy-first model. Your cipher keys are saved securely in the cloud using only the custom passcode you create—whether that is a name, a phrase, or a sequence of numbers. We do not collect usernames, email addresses, or personal data, which means your passcode cannot be recovered or reset if it is lost. Please write down or remember your passcode carefully; if you lose it, your saved drawings cannot be retrieved.</h3></footer>
+
+    <footer>
+        <h3>Important Note on Security & Privacy:</h3>
+        <p>This platform operates on a strict privacy-first model. Your cipher keys are saved securely in the cloud using only the custom passcode you create—whether that is a name, a phrase, or a sequence of numbers. We do not collect usernames, email addresses, or personal data, which means your passcode cannot be recovered or reset if it is lost. Please write down or remember your passcode carefully; if you lose it, your saved drawings cannot be retrieved.</p>
+    </footer>
 </body>
 </html>
