@@ -6,7 +6,8 @@
     <title>3D Model Vault | FMD50XP</title>
     
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
         /* 1. BRAND FOUNDATION (SOLID BLACK, CYAN, PINK) */
         :root {
@@ -878,15 +879,90 @@ The wolf splits, and justice is served.</li></ul></p>
     </div>
 
     <script>
-        function addLike(btn) {
-            let counter = btn.querySelector('.count-num');
-            let current = parseInt(counter.innerText);
-            counter.innerText = current + 1;
+    // 1. Initialize Supabase Connection
+    const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+    const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // 2. Load all likes across every card when the page loads
+    async function loadAllLikes() {
+        const cards = document.querySelectorAll('.model-card');
+
+        for (let card of cards) {
+            const modelId = card.getAttribute('data-model');
+            if (!modelId) continue;
+
+            // Get saved counts for this model from Supabase
+            let { data } = await supabase
+                .from('model_likes')
+                .select('like_count')
+                .eq('model_id', modelId)
+                .single();
+
+            if (data && data.like_count) {
+                // If like_count is stored as an object: { heart: 5, brain: 2 }
+                const counts = typeof data.like_count === 'string' ? JSON.parse(data.like_count) : data.like_count;
+                
+                const buttons = card.querySelectorAll('.emoji-btn');
+                buttons.forEach(btn => {
+                    const emojiType = btn.getAttribute('data-emoji');
+                    if (counts[emojiType] !== undefined) {
+                        btn.querySelector('.count-num').innerText = counts[emojiType];
+                    }
+                });
+            }
+        }
+    }
+
+    // 3. Handle when someone clicks ANY emoji button
+    async function addLike(btn) {
+        const card = btn.closest('.model-card');
+        const modelId = card.getAttribute('data-model');
+        const emojiType = btn.getAttribute('data-emoji');
+        const counter = btn.querySelector('.count-num');
+
+        if (!modelId || !emojiType) return;
+
+        // Fetch current data from Supabase
+        let { data } = await supabase
+            .from('model_likes')
+            .select('like_count')
+            .eq('model_id', modelId)
+            .single();
+
+        let currentData = {};
+        if (data && data.like_count) {
+            currentData = typeof data.like_count === 'string' ? JSON.parse(data.like_count) : data.like_count;
+        }
+
+        // Add +1 to the clicked emoji
+        currentData[emojiType] = (currentData[emojiType] || 0) + 1;
+
+        // Save back to Supabase
+        const { error } = await supabase
+            .from('model_likes')
+            .upsert({ model_id: modelId, like_count: currentData });
+
+        if (!error) {
+            counter.innerText = currentData[emojiType];
             
+            // Visual pulse effect
             btn.style.borderColor = "#00f0ff";
             setTimeout(() => { btn.style.borderColor = "#333"; }, 200);
         }
-    </script>
+    }
+
+    // 4. Attach event listeners automatically
+    document.addEventListener('DOMContentLoaded', () => {
+        loadAllLikes();
+
+        document.querySelectorAll('.emoji-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                addLike(this);
+            });
+        });
+    });
+</script>
 
 </body>
 </html>
