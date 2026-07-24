@@ -106,7 +106,6 @@
     
 <div class="form-container">
     <h2>[ ESTABLISH COMMS LINK ]</h2>
-    <!-- YOUR FORMSPREE ENDPOINT IS PLUGGED IN BELOW -->
     <form action="https://formspree.io/f/maqrpbop" method="POST">
         <label>TRANSMISSION SOURCE (NAME):</label>
         <input type="text" name="name" required placeholder="IDENTIFY SYGNAL...">
@@ -120,6 +119,16 @@
         <button type="submit">TRANSMIT PACKET</button>
     </form>
 </div>
+
+<!-- SCRIPT TO CLEAR FORM ON PAGE LOAD / GOING BACK -->
+<script>
+    window.addEventListener('pageshow', function (event) {
+        var form = document.querySelector('form');
+        if (form) {
+            form.reset();
+        }
+    });
+</script>
 
 </body>
 </html>
