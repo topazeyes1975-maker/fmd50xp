@@ -6,7 +6,7 @@
     <title>3D Model Vault | FMD50XP</title>
     
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
         /* 1. BRAND FOUNDATION (SOLID BLACK, CYAN, PINK) */
@@ -173,25 +173,24 @@
         }
 
         /* 6. REACTION BAR */
-        ..interaction-bar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 15px;
-}
+        .interaction-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
 
-.emoji-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 6px 12px;
-    background: #111;
-    border: 1px solid #333;
-    border-radius: 20px;
-    color: #fff;
-    cursor: pointer;
-}
-
+        .emoji-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 20px;
+            color: #fff;
+            cursor: pointer;
+        }
 
         .emoji-btn:hover {
             border-color: var(--primary);
@@ -203,37 +202,38 @@
         @media (min-width: 768px) {
             h1 { font-size: 2.5em; }
         }
+
         /* Apply this directly to the wrapper that holds the cards inside the category */
-.your-grid-class-name {
-  display: grid;
-  /* CRITICAL: Use auto-fill, and set a strict pixel limit like 300px instead of '1fr' */
-  grid-template-columns: repeat(auto-fill, 300px); 
-  gap: 25px;
-  justify-content: center; /* Keeps the row centered on your desktop screen */
-  align-items: start;
-}
+        .your-grid-class-name {
+            display: grid;
+            /* CRITICAL: Use auto-fill, and set a strict pixel limit like 300px instead of '1fr' */
+            grid-template-columns: repeat(auto-fill, 300px); 
+            gap: 25px;
+            justify-content: center; /* Keeps the row centered on your desktop screen */
+            align-items: start;
+        }
 
-/* Apply this to the individual card itself */
-.your-card-class-name {
-  width: 300px;           /* Strict, physical baseball card width */
-  height: 580px;          /* Strict, physical baseball card height */
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;       /* This cuts off text from physically expanding the box */
-  border-radius: 10px;
-  box-sizing: border-box;
-}
+        /* Apply this to the individual card itself */
+        .your-card-class-name {
+            width: 300px;           /* Strict, physical baseball card width */
+            height: 580px;          /* Strict, physical baseball card height */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;       /* This cuts off text from physically expanding the box */
+            border-radius: 10px;
+            box-sizing: border-box;
+        }
 
-/* This is the magic trick for your massive superhero & Atlantis lore */
-.your-card-text-section {
-  padding: 15px;
-  flex-grow: 1;
-  overflow-y: auto;       /* Adds a scrollbar INSIDE the card if the lore is long! */
-  
-  /* Optional: Smooth scrolling for your text stats */
-  scrollbar-width: thin;
-  scrollbar-color: #00d2ff #0d1117; 
-}
+        /* This is the magic trick for your massive superhero & Atlantis lore */
+        .your-card-text-section {
+            padding: 15px;
+            flex-grow: 1;
+            overflow-y: auto;       /* Adds a scrollbar INSIDE the card if the lore is long! */
+            
+            /* Optional: Smooth scrolling for your text stats */
+            scrollbar-width: thin;
+            scrollbar-color: #00d2ff #0d1117; 
+        }
         
     </style>
 </head>
