@@ -173,29 +173,25 @@
         }
 
         /* 6. REACTION BAR */
-        .interaction-bar { 
-            display: flex; 
-            justify-content: space-around;
-            flex-wrap: wrap;
-            gap: 5px;
-            padding: 15px;
-            border-top: 1px solid #222;
-            background: rgba(0,0,0,0.2);
-        }
+        ..interaction-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 15px;
+}
 
-        .emoji-btn { 
-            background: #222; 
-            border: 1px solid #333; 
-            color: #eee; 
-            padding: 8px 12px; 
-            border-radius: 20px; 
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-            font-size: 0.85em;
-            transition: 0.2s;
-        }
+.emoji-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 20px;
+    color: #fff;
+    cursor: pointer;
+}
+
 
         .emoji-btn:hover {
             border-color: var(--primary);
@@ -863,12 +859,12 @@ The wolf splits, and justice is served.</li></ul></p>
     </div>
 
     <script>
-    // 1. Initialize Supabase Connection (Fixed Variable Capitalization)
+    // 1. Supabase Initialization (Fixed initialization crash)
     const SUPABASE_URL = 'https://jhgcyiswxubqzqtbhain.supabase.co'; 
     const SUPABASE_KEY = 'sb_publishable_0j0PaDVT_pXMJawcf2W8fQ_Lz9B4KoW'; 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // 2. Load all likes across every card when the page loads
+    // 2. Load reaction counts from cloud
     async function loadAllLikes() {
         const cards = document.querySelectorAll('.model-card');
 
@@ -896,7 +892,7 @@ The wolf splits, and justice is served.</li></ul></p>
         }
     }
 
-    // 3. Handle when someone clicks ANY emoji button
+    // 3. Handle emoji click
     async function addLike(btn) {
         const card = btn.closest('.model-card');
         const modelId = card.getAttribute('data-model');
@@ -924,13 +920,12 @@ The wolf splits, and justice is served.</li></ul></p>
 
         if (!error) {
             counter.innerText = currentData[emojiType];
-            
             btn.style.borderColor = "#00f0ff";
             setTimeout(() => { btn.style.borderColor = "#333"; }, 200);
         }
     }
 
-    // 4. Attach event listeners automatically
+    // 4. Attach event handlers
     document.addEventListener('DOMContentLoaded', () => {
         loadAllLikes();
 
