@@ -3,30 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Model Vault | FMD50XP</title>
+    <title>3D Model Vault | Test Page</title>
     
+    <!-- Model Viewer & Supabase SDKs -->
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
-        /* 1. BRAND FOUNDATION (SOLID BLACK, CYAN, PINK) */
         :root {
-            --primary: #00f0ff;  /* Neon Cyan */
-            --accent: #ff007a;   /* Neon Pink */
-            --bg: #050505;       /* Pure Deep Black */
-            --card-bg: #080f14;   /* Dark Theme Card Background */
+            --primary: #00f0ff;
+            --accent: #ff007a;
+            --bg: #050505;
+            --card-bg: #080f14;
         }
 
         body { 
             background-color: var(--bg); 
             color: #e0e0e0; 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            font-family: sans-serif; 
             margin: 0; 
-            padding: 0; 
-            line-height: 1.6;
-            overflow-x: hidden;
+            padding: 0;
         }
 
-        /* 2. NAVIGATION BAR */
+        /* NAVIGATION BAR */
         nav {
             background: #000;
             border-bottom: 1px solid #222;
@@ -49,1134 +48,323 @@
         nav a {
             color: var(--primary);
             text-decoration: none;
-            font-size: 0.85em;
             font-weight: bold;
-            letter-spacing: 1px;
-            transition: 0.3s;
         }
 
-        nav a:hover { 
-            color: var(--accent); 
-            text-shadow: 0 0 8px var(--accent); 
-        }
-
-        /* 3. HEADER & CENTRAL COMMENT LINK */
+        /* HEADER */
         .header-section { 
             text-align: center; 
-            padding: 40px 10px; 
+            padding: 30px 10px; 
             border-bottom: 2px solid #222; 
         }
 
-        h1 { 
-            color: var(--primary); 
-            text-transform: uppercase; 
-            letter-spacing: 3px; 
-            font-size: 1.8em; 
-            margin-bottom: 10px; 
-        }
-
-        .emoji-key-box {
-            text-align: center;
-            margin: 15px 0;
-            padding: 10px;
-        }
-
-        .key-item {
-            margin: 0 10px;
-            font-size: 0.9em;
-            color: #aaa;
-        }
+        h1 { color: var(--primary); margin-bottom: 5px; }
 
         .comment-hub-btn {
             display: inline-block;
-            margin-top: 15px;
-            padding: 12px 30px;
-            background: transparent;
+            margin-top: 10px;
+            padding: 10px 20px;
             border: 2px solid var(--accent);
             color: #fff;
             text-decoration: none;
+            border-radius: 20px;
             font-weight: bold;
-            text-transform: uppercase;
-            font-size: 0.9em;
-            letter-spacing: 1px;
-            border-radius: 30px;
-            transition: all 0.3s ease;
         }
 
-        .comment-hub-btn:hover {
-            background: var(--accent);
-            box-shadow: 0 0 15px var(--accent);
-            transform: translateY(-2px);
-        }
-
-        /* 4. GENRE SECTION HEADINGS */
+        /* MAIN CONTENT & GRID */
         .main-content {
             max-width: 1200px; 
             margin: 0 auto;
             padding: 20px;
         }
 
-        .genre-section { 
-            margin-bottom: 60px; 
-        }
+        .genre-section { margin-bottom: 40px; }
         
         .genre-title { 
             color: var(--primary); 
             border-left: 5px solid var(--primary); 
             padding-left: 15px; 
-            margin-bottom: 25px; 
-            font-size: 1.6em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            margin-bottom: 15px; 
         }
 
-        /* 5. 3D MODEL CARDS GRID */
         .gallery-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 30px;
-            align-items: start;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
         }
 
         .model-card {
             background: var(--card-bg);
-            border: 2px solid #00e5ff;
-            border-radius: 18px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            box-sizing: border-box;
-            transition: transform 0.3s ease, border-color 0.3s ease;
-        }
-
-        .model-card:hover { 
-            border-color: var(--accent);
-            transform: translateY(-5px);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 15px;
         }
 
         model-viewer {
             width: 100%;
-            height: 380px;
+            height: 250px;
             background-color: #151515;
+            border-radius: 8px;
         }
 
-        .model-card ul {
-            padding-left: 20px;
-            margin: 10px 0;
-        }
-
-        .model-card li {
-            margin-bottom: 4px;
-        }
-
-        /* 6. REACTION BAR */
+        /* REACTION BUTTONS */
         .interaction-bar {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            padding: 15px 20px 20px;
+            gap: 6px;
+            margin-top: 15px;
         }
 
         .emoji-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 6px 12px;
             background: #111;
             border: 1px solid #333;
-            border-radius: 20px;
+            border-radius: 15px;
             color: #fff;
+            padding: 6px 10px;
             cursor: pointer;
+            font-size: 0.9em;
         }
 
         .emoji-btn:hover {
             border-color: var(--primary);
-            color: var(--primary);
         }
 
-        .count-num { 
-            font-weight: bold; 
-            color: #fff; 
-        }
-
-        @media (min-width: 768px) {
-            h1 { font-size: 2.5em; }
-        }
+        .count-num { font-weight: bold; color: var(--primary); }
     </style>
-    
 </head>
 <body>
 
+    <!-- NAV BAR -->
     <nav>
-    <ul>
-        <li><a href="index.html">HOME</a></li>
-        <li><a href="Atlas_Mutatis.html">ATLAS MUTATIS</a></li>
-        <li><a href="Project.html">PHYSICAL PROJECT</a></li>
-        <li><a href="Games.html">GAMES</a></li>
-        <li><a href="3Dmodel.html">3D MODEL</a></li>
-        <li><a href="Out_of_order.html">My Radio</a></li>
-        <li><a href="contact.html">CONTACT</a></li>
-    </ul>
+        <ul>
+            <li><a href="index.html">HOME</a></li>
+            <li><a href="Atlas_Mutatis.html">ATLAS MUTATIS</a></li>
+            <li><a href="Project.html">PHYSICAL PROJECT</a></li>
+            <li><a href="Games.html">GAMES</a></li>
+            <li><a href="3Dmodel.html">3D MODEL</a></li>
+            <li><a href="Out_of_order.html">My Radio</a></li>
+            <li><a href="contact.html">CONTACT</a></li>
+        </ul>
     </nav>
     
+    <!-- HEADER -->
     <div class="header-section">
-        <h1>3D Character Vault</h1>
-        <p style="color:#888; margin: 0;">Exploring Lore, Myths, and Experimental Concepts</p>
-        
+        <h1>3D Character Vault (Test Layout)</h1>
         <a href="contact.html" class="comment-hub-btn">💬 Open Archive Comments</a>
-
-        <div class="emoji-key-box">
-            <span class="key-item">🧠 Smart</span>
-            <span class="key-item">🔮 Imaginative</span>
-            <span class="key-item">❤️ Love</span>
-            <span class="key-item">👍 Like</span>
-            <span class="key-item">😂 Funny</span>
-            <span class="key-item">😐 Neutral</span>
-            <span class="key-item">👎 Dislike</span>
-            <span class="key-item">😡 Hate</span>
-        </div>
     </div>
 
+    <!-- MAIN CONTENT -->
     <div class="main-content">
 
+        <!-- CATEGORY 1 -->
         <div class="genre-section">
             <h2 class="genre-title">Tragic or Heroes</h2>
             <div class="gallery-grid">
-                <div class="model-card" data-model="aqualon">
-
-                    <model-viewer src="Meshy_AI_Abyssal_Guardian_0509141700_texture.glb" auto-rotate camera-controls shadow-intensity="1"></model-viewer>
-                    <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white">AQUALON</span>
-                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;"><p> <ul><strong>AQUALON</strong>
-                  <li>​Category: Doctor Who Universe (Fan Fiction)</li>
-​                  <li>Classification: Time-Fracturing Aqualumian Warrior</li>
-                  <li>​Origin Planet: Aqualumia's Veil (The Bioluminescent Trench)</li></ul>
-             <ul><strong>​CORE ATTRIBUTES</strong>
-             <li>​Height: 6' 5" (Terrestrial Armor Scaling)</li>
-​              <li>Weight: 310 lbs (High-Density Chitin & Hydro-Regulated Plating)</li>
-​              <li>Armor/Attire: Iridescent Teal Shell with Polished Deep-Sea Alloys</li>
-​              <li>Signature Tell: Flash of Multichannel Polarized Eye Light</li></ul>
-               <ul><strong>​PRIMARY ABILITIES</strong>
-                <li>​The Chronos-Punch: A physical strike delivered with such extreme,
-                    concentrated velocity that it fractures the local spacetime fabric, 
-                    dropping raw kinetic shockwaves into the timeline.</li>
-                <li>​Temporal Morse-Rhythm: Weaponizes his high-impact striking capability to send rhythmic, 
-                  vibrational code backwards and forwards through history to alert allies.</li>
-                <li>​Armored Hydro-Venting: Specialized terrestrial gill filtration units that 
-                 convert moisture in the air into a high-pressure cooling loop, 
-                  keeping his internal muscle fibers from overheating outside of water.</li></ul>
-​                  <ul><strong>PLAYER STATS</strong>
-                  <li>​Stealth: 40/100 (Heavy, armored frame is built for front-line impact, not shadows)</li>
-                   <li>​Durability: 85/100 (Layered bio-chitin protects against deep-sea pressure and heavy laser fire)</li>
-                   <li>​Firepower: 90/100 (Spacetime shattering shockwaves bypass traditional energy shields)</li>
-​                    <li>Tragedy Level: MAX (Ensnared by a mad tycoon's schemes, sacrificing his own future to send a warning across the stars)</li></ul>
-                   <ul><strong>​CARD BIO / FLAVOR TEXT</strong>
-                    <li>​"A noble guardian born from the deep shimmering currents of Aqualumia's Veil.
-                        When the tyrannical Klineman Halpen threatened to harvest his people's legacy, 
-                        Aqualon struck a blow that echoed through the ages. He doesn't just punch through steel—he punches straight through time."</li></ul></p>
-                        </div>
-                    <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="heart">❤️ <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="thumbs_up">👍 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="laugh">😂 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="neutral">😐 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="thumbs_down">👎 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="angry">😡 <span class="count-num">0</span></button>
-
-                </div>
                 
-                <div class="model-card" data-model="crimson Vigil">
-
-                    <model-viewer src="Meshy_AI_Emberbound Paladin_1780570653_image-to-3d-texture-compressed.glb" auto-rotate camera-controls shadow-intensity="1"></model-viewer>
-                    <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white">Crimson Vigil</span>
-                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;"><p><ul><strong>CRIMSON VIGIL</strong>
-                        <li>​Category: Crimson Vigil Universe (Original Fiction)</li>
-                        <li>Classification: Jovian-Enhanced Solar Guardian</li>
-                        <li>Origin: Earth (Empowered by a Jovian Fragment)</li></ul>
-                        <ul><strong>​CORE ATTRIBUTES</strong>
-                         <li>​Height: 5' 2" (Compact, agile stature)</li>
-                         <li>​Weight: 150 lbs (Enhanced by celestial density)</li>
-                         <li>​Armor/Attire: White and crimson armor featuring a knight-themed chest plate and a flowing cape, 
-                             adorned with a custom heraldic symbol.</li>
-                          <li>​Signature Tell: The hum of solar energy building, followed by a brilliant golden glow radiating from her palms.</li></ul>
-                          <ul><strong>​PRIMARY ABILITIES</strong>
-                          <li>​Solar-Palm Discharge: Channels intense, superheated solar plasma energy through her hands,
-                              capable of searing heat or focused blasts.</li>
-                           <li>​Flower-Blade Barrage: Conjures and launches razor-sharp,
-                               white-outlined crimson floral blades that move with lethal precision.</li>
-                           <li>​Jovian Resilience: Possesses the immense physical strength
-                               and durability granted by the Jovian fragment she cracked open as a child.</li></ul>
-                            <ul><strong>​PLAYER STATS</strong>
-​                           <li>Stealth: 30/100 (Built to stand tall as a guardian; not designed for hiding)</li>
-                           <li>​Durability: 90/100 (Resilient enough to withstand extreme pressure and combat damage)</li>
-                            <li>​Firepower: 95/100 (High-intensity solar energy and projectile blade mastery)</li>
-                            <li>​Tragedy Level: MAX (The burden of wielding god-like power while trying to save a sister who no longer recognizes her)</li></ul>
-                            <ul><strong>​CARD BIO / FLAVOR TEXT</strong>
-                             <li>"Born from a broken fragment of a giant planet and a curious child's discovery.
-                                 She stands small, but her light burns with the intensity of the sun and the strength of the stars.
-                                 She battles not for glory, but to find the sister lost to the shadows—the thorn in her side that 
-                                  she hopes to one day bring home."</li></ul></p>
-                        </div>
-                    </div>
-                    <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="heart">❤️ <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="thumbs_up">👍 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="laugh">😂 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="neutral">😐 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="thumbs_down">👎 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="angry">😡 <span class="count-num">0</span></button>
-
-                </div>
-                    <div>
-
-                   <div class="model-card" data-model="boom belly baby">
-                    <model-viewer src="Meshy_AI_Crimson_Core_0502004451_texture.glb" auto-rotate camera-controls shadow-intensity="1"></model-viewer>
-                    <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white">Boom Belly Baby</span>
-                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;"> <p><ul><strong> BOOM BELLY</strong>
-                       <li>​Category: Puppet Master Universe (Fan Fiction)</li>
-                       <li>​Classification: Soul-Infused Wooden Automaton</li>
-                       <li>​Manufacturer: André Toulon / The Puppet Master (1940s Era)</li></ul>
-                       <ul><string>​CORE ATTRIBUTES</string>
-                       <li>​Height: 2' 4" (Standard Toulon Puppet Scale)</li>
-                        <li>​Weight: 14 lbs (Mahogany Wood & Brass Clockwork)</li>
-                        <li>​Armor/Attire: Weathered Brown Leather Jacket</li>
-                         <li>​Signature Tell: Fire-Opal Red Eye Glow</li></ul>
-​                         <ul><strong>PRIMARY ABILITIES</strong>
-                          <li>​The Bomb Bay Unfold: Her central surgical scar mechanically splits open to deploy a polished brass rolling track.</li>
-                         <li>​Gem Generation: Manifests smooth, perfectly spherical red "Stones of the Secret Fire" from her hollow core.</li>
-                          <li>​The Wish-Snap: A sharp snap of her jointed wooden fingers serves as the timed detonator for any deployed gems.</li></ul>
-                           <ul><strong>​PLAYER STATS</strong>
-                           <li>​Stealth: 75/100 (Blends perfectly with inanimate dolls until the trap is set)</li>
-                           <li>​Durability: 60/100 (Sturdy wood-grain frame, but susceptible to extreme impact)</li>
-​                         <li>Firepower: 95/100 (High-yield explosive radius compressed into small jewelry)</li>
-                            <li>Tragedy Level: MAX (Driven by the haunting memory of the workshop explosion)</li></ul>
-                         <ul><strong>​CARD BIO / FLAVOR TEXT</strong>
-                         <li>"Rebuilt from the ashes of a tragic workshop accident, she is Toulon's most explosive creation.
-                             Where a heartbeat should be, a ticking drum countdowns the seconds. When the fingers snap, 
-                             the wish is granted—and the room goes boom."</li></ul></p>
-                        </div>
-                    </div>
-                    <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="heart">❤️ <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="thumbs_up">👍 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="laugh">😂 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="neutral">😐 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="thumbs_down">👎 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="angry">😡 <span class="count-num">0</span></button>
-
-                </div>
-
-                <div class="model-card" data-model="atlantis warrior">
-                    <model-viewer src="Meshy_AI_Icebound_Warden_0514112758_texture-compressed.glb" auto-rotate camera-controls></model-viewer>
-                    <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white">Atlantis Warrior</span>
-                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;"> 
-                            <ul><strong>CHARACTER BASEBALL CARD: NOCTULUC ETHEREAL</strong>
-                                <li>Classification: Immortal Atlantean Guardian</li>
-                                <li>Origin: Deep-Sea Atlantean Caverns</li>
-                            </ul>
-                            <ul><strong>CORE ATTRIBUTES</strong>
-                                <li>Height: 5' 2"</li>
-                                <li>Weight: 185 lbs</li>
-                                <li>Armor: Shifting Atlantean Chitin Alloy</li>
-                                <li>Signature Tell: Unsettling Axolotl Smile & Blue Glow</li>
-                            </ul>
-                            <ul><strong>PRIMARY ABILITIES</strong>
-                                <li>Axolotl Regeneration: Near-instant cellular matrix repair.</li>
-                                <li>The Wombat Butt: Concentrated, high-density armored posterior ram strike.</li>
-                                <li>Neuro-Toxic Venom: Lethal Blue Glaucus predatory toxin contact.</li>
-                            </ul>
-                            <ul><strong>PLAYER STATS</strong>
-                                <li>Stealth: 80/100</li>
-                                <li>Durability: 95/100</li>
-                                <li>Firepower: 90/100</li>
-                                <li>Tragedy Level: MAX</li>
-                            </ul>
-                            <strong>CARD BIO:</strong> 
-                            <p>"Born from the ancient, sunken city of Atlantis... It doesn't just hunt its prey—it toys with them until the final 'zoom, zoom, boom, splat.'"</p>
-                        </div>
-                    </div>
-                    <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="heart">❤️ <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="thumbs_up">👍 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="laugh">😂 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="neutral">😐 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="thumbs_down">👎 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="angry">😡 <span class="count-num">0</span></button>
-
-                </div>
+                <div class="model-card" data-model="test-hero">
+                    <model-viewer src="" auto-rotate camera-controls></model-viewer>
+                    <h3>Test Hero</h3>
+                    <p>Character details go here...</p>
                     
-                
+                    <div class="interaction-bar">
+                        <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="heart">❤️ <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="thumbs_up">👍 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="laugh">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="neutral">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="thumbs_down">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="angry">😡 <span class="count-num">0</span></button>
+                    </div>
+                </div>
 
-        <div class="genre-section">
-
-    <nav>
-    <ul>
-        <li><a href="index.html">HOME</a></li>
-        <li><a href="Atlas_Mutatis.html">ATLAS MUTATIS</a></li>
-        <li><a href="Project.html">PHYSICAL PROJECT</a></li>
-        <li><a href="Games.html">GAMES</a></li>
-        <li><a href="3Dmodel.html">3D MODEL</a></li>
-        <li><a href="Out_of_order.html">My Radio</a></li>
-        <li><a href="contact.html">CONTACT</a></li>
-    </ul>
-    </nav>
-    
-    <div class="header-section">
-        <h1>3D Character Vault</h1>
-        <p style="color:#888; margin: 0;">Exploring Lore, Myths, and Experimental Concepts</p>
-        
-        <a href="contact.html" class="comment-hub-btn">💬 Open Archive Comments</a>
-
-        <div class="emoji-key-box">
-            <span class="key-item">🧠 Smart</span>
-            <span class="key-item">🔮 Imaginative</span>
-            <span class="key-item">❤️ Love</span>
-            <span class="key-item">👍 Like</span>
-            <span class="key-item">😂 Funny</span>
-            <span class="key-item">😐 Neutral</span>
-            <span class="key-item">👎 Dislike</span>
-            <span class="key-item">😡 Hate</span>
+            </div>
         </div>
-    </div>
 
-    <div class="main-content">
-
-        <!-- CATEGORY 1: TRAGIC OR HEROES -->
-        <div class="genre-section">
-            <h2 class="genre-title">Tragic or Heroes</h2>
-            <div class="gallery-grid">
-
-                <!-- CARD 1: AQUALON -->
-                <div class="model-card" data-model="aqualon">
-                    <model-viewer src="Meshy_AI_Abyssal_Guardian_0509141700_texture.glb" auto-rotate camera-controls shadow-intensity="1"></model-viewer>
-                    <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white">AQUALON</span>
-                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;">
-                            <ul><strong>AQUALON</strong>
-                                <li>Category: Doctor Who Universe (Fan Fiction)</li>
-                                <li>Classification: Time-Fracturing Aqualumian Warrior</li>
-                                <li>Origin Planet: Aqualumia's Veil (The Bioluminescent Trench)</li>
-                            </ul>
-                            <ul><strong>CORE ATTRIBUTES</strong>
-                                <li>Height: 6' 5" (Terrestrial Armor Scaling)</li>
-                                <li>Weight: 310 lbs (High-Density Chitin & Hydro-Regulated Plating)</li>
-                                <li>Armor/Attire: Iridescent Teal Shell with Polished Deep-Sea Alloys</li>
-                                <li>Signature Tell: Flash of Multichannel Polarized Eye Light</li>
-                            </ul>
-                            <ul><strong>PRIMARY ABILITIES</strong>
-                                <li>The Chronos-Punch: A physical strike delivered with such extreme, concentrated velocity that it fractures the local spacetime fabric, dropping raw kinetic shockwaves into the timeline.</li>
-                                <li>Temporal Morse-Rhythm: Weaponizes his high-impact striking capability to send rhythmic, vibrational code backwards and forwards through history to alert allies.</li>
-                                <li>Armored Hydro-Venting: Specialized terrestrial gill filtration units that convert moisture in the air into a high-pressure cooling loop, keeping his internal muscle fibers from overheating outside of water.</li>
-                            </ul>
-                            <ul><strong>PLAYER STATS</strong>
-                                <li>Stealth: 40/100 (Heavy, armored frame is built for front-line impact, not shadows)</li>
-                                <li>Durability: 85/100 (Layered bio-chitin protects against deep-sea pressure and heavy laser fire)</li>
-                                <li>Firepower: 90/100 (Spacetime shattering shockwaves bypass traditional energy shields)</li>
-                                <li>Tragedy Level: MAX (Ensnared by a mad tycoon's schemes, sacrificing his own future to send a warning across the stars)</li>
-                            </ul>
-                            <ul><strong>CARD BIO / FLAVOR TEXT</strong>
-                                <li>"A noble guardian born from the deep shimmering currents of Aqualumia's Veil. When the tyrannical Klineman Halpen threatened to harvest his people's legacy, Aqualon struck a blow that echoed through the ages. He doesn't just punch through steel—he punches straight through time."</li>
-                            </ul>
-                        </div>
-                        <div class="interaction-bar">
-                            <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="heart">❤️ <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_up">👍 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="laugh">😂 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="neutral">😐 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_down">👎 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="angry">😡 <span class="count-num">0</span></button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- CARD 2: CRIMSON VIGIL -->
-                <div class="model-card" data-model="crimson Vigil">
-                    <model-viewer src="Meshy_AI_Emberbound Paladin_1780570653_image-to-3d-texture-compressed.glb" auto-rotate camera-controls shadow-intensity="1"></model-viewer>
-                    <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white">Crimson Vigil</span>
-                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;">
-                            <ul><strong>CRIMSON VIGIL</strong>
-                                <li>Category: Crimson Vigil Universe (Original Fiction)</li>
-                                <li>Classification: Jovian-Enhanced Solar Guardian</li>
-                                <li>Origin: Earth (Empowered by a Jovian Fragment)</li>
-                            </ul>
-                            <ul><strong>CORE ATTRIBUTES</strong>
-                                <li>Height: 5' 2" (Compact, agile stature)</li>
-                                <li>Weight: 150 lbs (Enhanced by celestial density)</li>
-                                <li>Armor/Attire: White and crimson armor featuring a knight-themed chest plate and a flowing cape, adorned with a custom heraldic symbol.</li>
-                                <li>Signature Tell: The hum of solar energy building, followed by a brilliant golden glow radiating from her palms.</li>
-                            </ul>
-                            <ul><strong>PRIMARY ABILITIES</strong>
-                                <li>Solar-Palm Discharge: Channels intense, superheated solar plasma energy through her hands, capable of searing heat or focused blasts.</li>
-                                <li>Flower-Blade Barrage: Conjures and launches razor-sharp, white-outlined crimson floral blades that move with lethal precision.</li>
-                                <li>Jovian Resilience: Possesses the immense physical strength and durability granted by the Jovian fragment she cracked open as a child.</li>
-                            </ul>
-                            <ul><strong>PLAYER STATS</strong>
-                                <li>Stealth: 30/100 (Built to stand tall as a guardian; not designed for hiding)</li>
-                                <li>Durability: 90/100 (Resilient enough to withstand extreme pressure and combat damage)</li>
-                                <li>Firepower: 95/100 (High-intensity solar energy and projectile blade mastery)</li>
-                                <li>Tragedy Level: MAX (The burden of wielding god-like power while trying to save a sister who no longer recognizes her)</li>
-                            </ul>
-                            <ul><strong>CARD BIO / FLAVOR TEXT</strong>
-                                <li>"Born from a broken fragment of a giant planet and a curious child's discovery. She stands small, but her light burns with the intensity of the sun and the strength of the stars. She battles not for glory, but to find the sister lost to the shadows—the thorn in her side that she hopes to one day bring home."</li>
-                            </ul>
-                        </div>
-                        <div class="interaction-bar">
-                            <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="heart">❤️ <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_up">👍 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="laugh">😂 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="neutral">😐 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_down">👎 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="angry">😡 <span class="count-num">0</span></button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- CARD 3: BOOM BELLY BABY -->
-                <div class="model-card" data-model="boom belly baby">
-                    <model-viewer src="Meshy_AI_Crimson_Core_0502004451_texture.glb" auto-rotate camera-controls shadow-intensity="1"></model-viewer>
-                    <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white">Boom Belly Baby</span>
-                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;">
-                            <ul><strong>BOOM BELLY</strong>
-                                <li>Category: Puppet Master Universe (Fan Fiction)</li>
-                                <li>Classification: Soul-Infused Wooden Automaton</li>
-                                <li>Manufacturer: André Toulon / The Puppet Master (1940s Era)</li>
-                            </ul>
-                            <ul><strong>CORE ATTRIBUTES</strong>
-                                <li>Height: 2' 4" (Standard Toulon Puppet Scale)</li>
-                                <li>Weight: 14 lbs (Mahogany Wood & Brass Clockwork)</li>
-                                <li>Armor/Attire: Weathered Brown Leather Jacket</li>
-                                <li>Signature Tell: Fire-Opal Red Eye Glow</li>
-                            </ul>
-                            <ul><strong>PRIMARY ABILITIES</strong>
-                                <li>The Bomb Bay Unfold: Her central surgical scar mechanically splits open to deploy a polished brass rolling track.</li>
-                                <li>Gem Generation: Manifests smooth, perfectly spherical red "Stones of the Secret Fire" from her hollow core.</li>
-                                <li>The Wish-Snap: A sharp snap of her jointed wooden fingers serves as the timed detonator for any deployed gems.</li>
-                            </ul>
-                            <ul><strong>PLAYER STATS</strong>
-                                <li>Stealth: 75/100 (Blends perfectly with inanimate dolls until the trap is set)</li>
-                                <li>Durability: 60/100 (Sturdy wood-grain frame, but susceptible to extreme impact)</li>
-                                <li>Firepower: 95/100 (High-yield explosive radius compressed into small jewelry)</li>
-                                <li>Tragedy Level: MAX (Driven by the haunting memory of the workshop explosion)</li>
-                            </ul>
-                            <ul><strong>CARD BIO / FLAVOR TEXT</strong>
-                                <li>"Rebuilt from the ashes of a tragic workshop accident, she is Toulon's most explosive creation. Where a heartbeat should be, a ticking drum countdowns the seconds. When the fingers snap, the wish is granted—and the room goes boom."</li>
-                            </ul>
-                        </div>
-                        <div class="interaction-bar">
-                            <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="heart">❤️ <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_up">👍 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="laugh">😂 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="neutral">😐 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_down">👎 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="angry">😡 <span class="count-num">0</span></button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- CARD 4: ATLANTIS WARRIOR -->
-                <div class="model-card" data-model="atlantis warrior">
-                    <model-viewer src="Meshy_AI_Icebound_Warden_0514112758_texture-compressed.glb" auto-rotate camera-controls></model-viewer>
-                    <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white">Atlantis Warrior</span>
-                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;"> 
-                            <ul><strong>CHARACTER BASEBALL CARD: NOCTULUC ETHEREAL</strong>
-                                <li>Classification: Immortal Atlantean Guardian</li>
-                                <li>Origin: Deep-Sea Atlantean Caverns</li>
-                            </ul>
-                            <ul><strong>CORE ATTRIBUTES</strong>
-                                <li>Height: 5' 2"</li>
-                                <li>Weight: 185 lbs</li>
-                                <li>Armor: Shifting Atlantean Chitin Alloy</li>
-                                <li>Signature Tell: Unsettling Axolotl Smile & Blue Glow</li>
-                            </ul>
-                            <ul><strong>PRIMARY ABILITIES</strong>
-                                <li>Axolotl Regeneration: Near-instant cellular matrix repair.</li>
-                                <li>The Wombat Butt: Concentrated, high-density armored posterior ram strike.</li>
-                                <li>Neuro-Toxic Venom: Lethal Blue Glaucus predatory toxin contact.</li>
-                            </ul>
-                            <ul><strong>PLAYER STATS</strong>
-                                <li>Stealth: 80/100</li>
-                                <li>Durability: 95/100</li>
-                                <li>Firepower: 90/100</li>
-                                <li>Tragedy Level: MAX</li>
-                            </ul>
-                            <strong>CARD BIO:</strong> 
-                            <p>"Born from the ancient, sunken city of Atlantis... It doesn't just hunt its prey—it toys with them until the final 'zoom, zoom, boom, splat.'"</p>
-                        </div>
-                        <div class="interaction-bar">
-                            <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="heart">❤️ <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_up">👍 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="laugh">😂 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="neutral">😐 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_down">👎 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="angry">😡 <span class="count-num">0</span></button>
-                        </div>
-                    </div>
-                </div>
-
-            </div> <!-- END GALLERY GRID -->
-        </div> <!-- END GENRE SECTION -->
-
-        <!-- CATEGORY 2: MERGING MYTHOLOGICAL CREATURES -->
+        <!-- CATEGORY 2 -->
         <div class="genre-section">
             <h2 class="genre-title">Merging Mythological Creatures Across The World</h2>
             <div class="gallery-grid">
                 
-                <!-- CARD 5: AFGHAN AMALGAM -->
-                <div class="model-card" data-model="afghan amalgam">
-                    <model-viewer src="Meshy_AI_The Piper of the Cavern_1779948739_image-to-3d-texture-compressed.glb" auto-rotate camera-controls></model-viewer>
-                    <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white">Afghan Amalgam</span>
-                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;">
-                            <ul><strong>Chimeric Entity: The Afghan Amalgam</strong>
-                                <li>Origin: Afghanistan Hybrid</li>
-                                <li>Classification: Mythological Hybrid Guardian</li>
-                            </ul>
-                            <ul><strong>ANATOMICAL BREAKDOWN</strong>
-                                <li>Core Framework: Stone-textured giant chassis of a Div.</li>
-                                <li>Foundation: Spherical hoof-like round feet of the Pai Girdak.</li>
-                                <li>Vocal Apparatus: Multi-perforated flute-snout of the Siwānis.</li>
-                                <li>Wings/Ears: Peacock feathered wings and loyal hound ears of the Simurgh.</li>
-                            </ul>
-                            <ul><strong>ATTRIBUTES & ABILITIES</strong>
-                                <li>Resonance Haunting: Generates enchanting, hypnotic melodies via flute-snout.</li>
-                                <li>Grounded Paradox: Circular foundation provides unmovable terrain stability.</li>
-                                <li>Celestial Lift: Simurgh wings grant effortless flight capabilities.</li>
-                            </ul>
-                        </div>
-                        <div class="interaction-bar">
-                            <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="heart">❤️ <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_up">👍 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="laugh">😂 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="neutral">😐 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_down">👎 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="angry">😡 <span class="count-num">0</span></button>
-                        </div>
-                        
-                                <!-- CARD 6: ALBANIAN AMALGAM -->
-                <div class="model-card" data-model="albanian amalgam">
-                    <model-viewer src="Meshy_AI_Five-Headed Dragon_1780304430_image-to-3d-texture-compressed.glb" auto-rotate camera-controls></model-viewer>
-                    <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white">Albanian Amalgam</span>
-                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;"> 
-                            <ul><strong>CHARACTER BASEBALL CARD: THE ALBANIAN</strong>
-                                <li>Category: Albanian Mythology Universe</li>
-                                <li>Classification: Multi-Headed Draconic Amalgam</li>
-                                <li>Origin: Peaks and Caverns of Albanian Wilderness</li>
-                            </ul>
-                            <ul><strong>CORE ATTRIBUTES</strong>
-                                <li>Height: 18' 4"</li>
-                                <li>Weight: 2,450 lbs</li>
-                                <li>Armor: High-altitude Himshila crag-skin plates</li>
-                                <li>Signature Tell: Blinding golden Ora aura flashes</li>
-                            </ul>
-                            <ul><strong>PRIMARY ABILITIES</strong>
-                                <li>Four-Fold Strike: Alternates focus with Xhvitnea and Dhombi curses.</li>
-                                <li>Zanat-Claw Onslaught: Fairy-warrior arms swing heavy clubs in sync.</li>
-                                <li>Dhia E Egër Ascent: Giant wings lifting heavy stone chassis into clouds.</li>
-                            </ul>
-                            <ul><strong>PLAYER STATS</strong>
-                                <li>Stealth: 15/100</li>
-                                <li>Durability: 98/100</li>
-                                <li>Firepower: 95/100</li>
-                                <li>Tragedy Level: MAX</li>
-                            </ul>
-                        </div>
-                        <div class="interaction-bar">
-                            <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="heart">❤️ <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_up">👍 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="laugh">😂 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="neutral">😐 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_down">👎 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="angry">😡 <span class="count-num">0</span></button>
-                        </div>
+                <div class="model-card" data-model="test-myth">
+                    <model-viewer src="" auto-rotate camera-controls></model-viewer>
+                    <h3>Test Myth Creature</h3>
+                    <p>Character details go here...</p>
+                    
+                    <div class="interaction-bar">
+                        <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="heart">❤️ <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="thumbs_up">👍 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="laugh">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="neutral">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="thumbs_down">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="angry">😡 <span class="count-num">0</span></button>
                     </div>
                 </div>
 
-            </div> <!-- END GALLERY GRID -->
-        </div> <!-- END GENRE SECTION -->
+            </div>
+        </div>
 
-        <!-- CATEGORY 3: HOROSCOPES & HAIRSTYLES -->
+        <!-- CATEGORY 3 -->
         <div class="genre-section">
             <h2 class="genre-title">Horoscopes & Hairstyles</h2>
             <div class="gallery-grid">
                 
-                <!-- CARD 7: AQUARIUS HAIRSTYLE -->
-                <div class="model-card" data-model="aquarius hairstyle">
-                    <model-viewer src="Meshy_AI_Azure Cascade_1780024665_image-to-3d-texture-compressed.glb" auto-rotate camera-controls></model-viewer>
-                    <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white">Aquarius Hairstyle</span>
-                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;">
-                            <ul><strong>VITAL STATS</strong>
-                                <li>Style Name: The Celestial Waterfall Ponytail</li>
-                                <li>Element: Air (Though symbolized by the Water Bearer, Aquarius is an Air sign)</li>
-                                <li>Ruler Planet: Uranus (Modern) / Saturn (Traditional)</li>
-                            </ul>
-                            <ul><strong>📊 CORE ATTRIBUTES</strong>
-                                <li>Flow of style: Fluid and cascading. It mimics a rushing waterfall, starting from a high, structural base and spilling backward into smooth, wavy currents.</li>
-                                <li>Strength of hold: 88/100</li>
-                                <li>Structure of creation: 45/100</li>
-                                <li>Likely it can be done without supports: Unlikely. Because of the massive, gravity-defying height of the high ponytail base and the dense wrap, it would almost certainly require an internal hair donut, mesh padding, or wire structural supports to keep it from sagging.</li>
-                            </ul>
-                            <ul><strong>⚡ SPECIAL TRAITS</strong>
-                                <li>Chemical needed: Heavy-duty freezing spray (for the sleek side panels), high-shine glossing serum (to give it that metallic, liquid-like sheen), and temporary or permanent aqua/metallic blue hair dye.</li>
-                                <li>Special Cut: Zig-zag blunt bangs (or side-swept panels) styled with sharp, geometric water-wave steps at the bottom edge.</li>
-                                <li>Length of hair need: Very Long (Ex-long/Waist length). A massive amount of length is required to wrap the thick base multiple times and leave enough hair to cascade down the back.</li>
-                            </ul>
-                        </div>
-                        <div class="interaction-bar">
-                            <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="heart">❤️ <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_up">👍 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="laugh">😂 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="neutral">😐 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_down">👎 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="angry">😡 <span class="count-num">0</span></button>
-                        </div>
+                <div class="model-card" data-model="test-style">
+                    <model-viewer src="" auto-rotate camera-controls></model-viewer>
+                    <h3>Test Hairstyle</h3>
+                    <p>Character details go here...</p>
+                    
+                    <div class="interaction-bar">
+                        <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="heart">❤️ <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="thumbs_up">👍 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="laugh">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="neutral">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="thumbs_down">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="angry">😡 <span class="count-num">0</span></button>
                     </div>
                 </div>
 
-                <!-- CARD 8: SCORPIO HAIRSTYLE -->
-                <div class="model-card" data-model="scorpio hairstyle">
-                    <model-viewer src="Meshy_AI_Coiled Crown_1780629312_image-to-3d-texture.glb" auto-rotate camera-controls></model-viewer>
-                    <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white">Scorpio Hairstyle</span>
-                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;"> 
-                            <ul><strong>VITAL STATS</strong>
-                                <li>Style Name: The Scorpion’s Sting Topknot</li>
-                                <li>Element: Water</li>
-                                <li>Ruler Planet: Pluto (Modern) / Mars (Traditional)</li>
-                            </ul>
-                            <ul><strong>📊 CORE ATTRIBUTES</strong>
-                                <li>Flow of style: Coiled, defensive, and striking. The base is tightly wound into an intricate, interwoven bun that explodes upward into a perfectly curved, braided "stinger" arching forward over the crown.</li>
-                                <li>Strength of hold: 95/100 (Immovable, locked down tight)</li>
-                                <li>Structure of creation: 85/100</li>
-                                <li>Likely it can be done without supports: Impossible. The high-arching, braided stinger loops directly into the air and suspends a heavy pendulum crystal right over the forehead. It absolutely requires a rigid, curved internal wire skeleton or structural mesh core to hold that shape without collapsing.</li>
-                            </ul>
-                            <ul><strong>⚡ SPECIAL TRAITS</strong>
-                                <li>Chemical needed: Maximum-strength structural hair gel, ultra-glue setting spray for the sleek baby hair finger waves at the hairline, and high-contrast pastel chalks or semi-permanent dyes (pink, yellow, cyan) woven into a stark platinum-blonde base.</li>
-                                <li>Special Cut: Cleanly shaved or ultra-sleek faded sides with precise edging to keep all the focus on the sharp, symmetrical crown work.</li>
-                                <li>Length of hair need: Extremely Long / Extension-Assisted. The hair needs massive density to construct the interwoven bulb base while leaving enough length for a thick, multi-strand overhead braid and a curled tip.</li>
-                            </ul>
-                        </div>
-                        <div class="interaction-bar">
-                            <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="heart">❤️ <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_up">👍 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="laugh">😂 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="neutral">😐 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_down">👎 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="angry">😡 <span class="count-num">0</span></button>
-                        </div>
-                    </div>
-                </div>
+            </div>
+        </div>
 
-            </div> <!-- END GALLERY GRID -->
-        </div> <!-- END GENRE SECTION -->
-
-        <!-- CATEGORY 4: HUMAN FURRY -->
+        <!-- CATEGORY 4 -->
         <div class="genre-section">
             <h2 class="genre-title">Human Furry</h2>
             <div class="gallery-grid">
                 
-                <!-- CARD 9: SERPENTBOUND HUNTRESS -->
-                <div class="model-card" data-model="serpentbound huntress">
-                    <model-viewer src="Meshy_AI_Serpentbound Huntress_1780577433_image-to-3d-texture-compressed.glb" auto-rotate camera-controls></model-viewer>
-                    <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white">Serpentbound Huntress</span>
-                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;">
-                            <ul><strong>Character Profile: The Sunset Chimera</strong>
-                                <li>Concept: A stealthy, nocturnal apex hunter that blends seamlessly into twilight environments, utilizing gliding capabilities for mobility and a venomous strike for defense.</li>
-                            </ul>
-                            <ul><strong>📊 Core Statistics</strong>
-                                <li>Agility / Mobility: 🏆 9/10 - High marks due to her sugar glider membrane, allowing her to leap from high canopy perches and glide silently over long distances.</li>
-                                <li>Stealth / Camouflage: 🕵️‍♀️ 9.5/10 - The Sunset Jigsaw pattern acts as near-perfect disruptive camouflage during golden hour, dusk, and dawn in dense jungle terrain.</li>
-                                <li>Perception / Tracking: 👁️ 8.5/10 - Massive, light-sensitive sugar glider eyes grant superb night vision, paired with acute wolf-like hearing to pinpoint movement.</li>
-                                <li>Defense / Durability: 🛡️ 6.5/10 - While her upper torso is lean and built for flight, her heavy, segmented scorpion tail and lower wolf-like legs provide robust defense and stability.</li>
-                                <li>Attack Power / Lethality: 🦂 8/10 - Relies heavily on ambush tactics, utilizing a high-velocity stinger strike and sharp wolf claws.</li>
-                            </ul>
-                            <ul><strong>⚡ Special Abilities & Traits</strong>
-                                <li>🍃 Twilight Glide (Sugar Glider Trait): She can extend the membrane between her wrists and ankles to catch updrafts to silently glide across forest canopies or drop down on targets.</li>
-                                <li>🌓 Jigsaw Shroud (Sunset Jigsaw Trait): When stationary among autumn leaves or terracotta terrain, her skin pattern visually breaks up her silhouette.</li>
-                                <li>🔊 Apex Senses (Wolf Trait): Her large ears rotate independently to track acoustic frequencies and detect heartbeats from hundreds of yards away.</li>
-                                <li>🧪 Neurotoxic Stinger (Scorpion Trait): A single strike from her armored tail delivers a fast-acting neurotoxin that paralyzes muscles.</li>
-                            </ul>
-                            <ul><strong>💥 Combat Style</strong>
-                                <li>Preferred Range: Medium to Close Ambush.</li>
-                                <li>Tactics: Stalks from high branches, glides down silently, strikes quickly with her stinger, and retreats back into the canopy until the venom takes effect.</li>
-                            </ul>
-                        </div>
-                        <div class="interaction-bar">
-                            <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="heart">❤️ <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_up">👍 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="laugh">😂 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="neutral">😐 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_down">👎 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="angry">😡 <span class="count-num">0</span></button>
-                        </div>
+                <div class="model-card" data-model="test-furry">
+                    <model-viewer src="" auto-rotate camera-controls></model-viewer>
+                    <h3>Test Furry Character</h3>
+                    <p>Character details go here...</p>
+                    
+                    <div class="interaction-bar">
+                        <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="heart">❤️ <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="thumbs_up">👍 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="laugh">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="neutral">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="thumbs_down">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="angry">😡 <span class="count-num">0</span></button>
                     </div>
                 </div>
 
-                <!-- CARD 10: FLAME-BREATHING GRYPH -->
-                <div class="model-card" data-model="flame-breathing gryph">
-                    <model-viewer src="Meshy_AI_Flame_Breathing_Gryph_0605153522_image-to-3d-texture-compressed.glb" auto-rotate camera-controls></model-viewer>
-                    <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white">Flame-Breathing Gryph</span>
-                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;">
-                            <p>Dossier pending statistical updates.</p>
-                        </div>
-                        <div class="interaction-bar">
-                            <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="heart">❤️ <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_up">👍 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="laugh">😂 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="neutral">😐 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_down">👎 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="angry">😡 <span class="count-num">0</span></button>
-                        </div>
-                    </div>
-                </div>
+            </div>
+        </div>
 
-            </div> <!-- END GALLERY GRID -->
-        </div> <!-- END GENRE SECTION -->
-
-        <!-- CATEGORY 5: UNIQUE ANIMALS -->
+        <!-- CATEGORY 5 -->
         <div class="genre-section">
             <h2 class="genre-title">Unique Animals</h2>
             <div class="gallery-grid">
                 
-                <!-- CARD 11: FAREMANSHAW -->
-                <div class="model-card" data-model="faremanshaw">
-                    <model-viewer src="Meshy_AI_Dusk_Howler_0606144929_image-to-3d-texture-compressed.glb" auto-rotate camera-controls></model-viewer>
-                    <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white">Faremanshaw is this wolf name</span>
-                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;">
-                            <ul><strong>📜 Master Outline: The Twin Hounds of Fairmenshaw</strong>
-                                <li>Genre: Gothic Dark Fantasy Thriller</li>
-                            </ul>
-                            <ul><strong>🪵 The Soul of the Creature</strong>
-                                <li>The Visual: A massive, ancient spirit creature made of living wood, bark, and dark, layered leaves. His gnarled legs look like powerful tree roots, making him a literal extension of the forest.</li>
-                                <li>The Ability: He operates with a single mind that can seamlessly split into two identical, dual-striking wolves mid-attack.</li>
-                                <li>The Spiritual Law: He acts as a supernatural guardian who is bound to answer the cries of the innocent whenever his ghost sisters chant from the misty deep.</li>
-                            </ul>
-                            <ul><strong>🎬 The Story Blueprint</strong>
-                                <li>Act I: The Mother's Gift & The Theft - The mother carves a wooden dog infused with love. Driven by jealousy, the villain steals it to lure the sister to the well, forcing the young boy to flee.</li>
-                                <li>Act II: The Detective's Amnesia - Decades later, the boy is a grit-and-glory detective in his 40s. Touching the wooden dog triggers vivid nightmares of his lost sister, sparking an investigation.</li>
-                                <li>Act III: The Trap & The Well - Clues lead to an ancient stone well in the Fairmenshaw woods. The villain springs a trap with a mob, hurling the detective into the well.</li>
-                                <li>Act IV: Rebirth & Justice - Fusing with ancient roots, he returns to the surface as the wooden wolf to protect the woods and track his framer.</li>
-                                <li>The Climax: "I heard in documentaries that serial killers don't have any emotion. So it's a good thing you are so emotional... because I would probably be scared of my competition."</li>
-                            </ul>
-                        </div>
+                <div class="model-card" data-model="test-animal">
+                    <model-viewer src="" auto-rotate camera-controls></model-viewer>
+                    <h3>Test Animal</h3>
+                    <p>Character details go here...</p>
+                    
+                    <div class="interaction-bar">
                         <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="heart">❤️ <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="thumbs_up">👍 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="laugh">😂 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="neutral">😐 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="thumbs_down">👎 <span class="count-num">0</span></button>
-<button class="emoji-btn" data-emoji="angry">😡 <span class="count-num">0</span></button>
-
-                    </div>
-
-        
-                 <!-- CONTINUATION OF CATEGORY 6: OBJECTS AND PLACES -->
-                <!-- CARD 13: CRIMSON TALLY WHEEL PENDANT -->
-                <div class="model-card" data-model="crimson talky wheel pendant">
-                    <model-viewer src="Meshy_AI_Crimson Tally Wheel Pendant_1780717028_image-to-3d-texture.glb" auto-rotate camera-controls></model-viewer>
-                    <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white">Crimson Tally Wheel Pendant</span>
-                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;">
-                            <p>Custom 3D model heirloom blueprints.</p>
-                        </div>
-                        <div class="interaction-bar">
-                            <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="heart">❤️ <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_up">👍 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="laugh">😂 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="neutral">😐 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_down">👎 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="angry">😡 <span class="count-num">0</span></button>
-                        </div>
+                        <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="heart">❤️ <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="thumbs_up">👍 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="laugh">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="neutral">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="thumbs_down">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="angry">😡 <span class="count-num">0</span></button>
                     </div>
                 </div>
 
-            </div> <!-- END GALLERY GRID -->
-        </div> <!-- END GENRE SECTION -->
-        
-        <!-- CATEGORY 7: REAL PLANET WHAT IF-? -->
+            </div>
+        </div>
+
+        <!-- CATEGORY 6 -->
+        <div class="genre-section">
+            <h2 class="genre-title">Objects and Places</h2>
+            <div class="gallery-grid">
+                
+                <div class="model-card" data-model="test-object">
+                    <model-viewer src="" auto-rotate camera-controls></model-viewer>
+                    <h3>Test Object</h3>
+                    <p>Character details go here...</p>
+                    
+                    <div class="interaction-bar">
+                        <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="heart">❤️ <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="thumbs_up">👍 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="laugh">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="neutral">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="thumbs_down">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="angry">😡 <span class="count-num">0</span></button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- CATEGORY 7 -->
         <div class="genre-section">
             <h2 class="genre-title">Real Planet "What If-?" Planet, Aliens, and Animals</h2>
             <div class="gallery-grid">
                 
-                <!-- CARD 14: THE BERRY-BACK -->
-                <div class="model-card" data-model="the berry-back">
-                    <model-viewer src="Meshy_AI_Crimson_Bristlehog_0605153643_image-to-3d-texture-compressed.glb" auto-rotate camera-controls></model-viewer>
-                    <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white">The Berry-Back</span>
-                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;">
-                            <ul><strong>CHARACTER BASEBALL CARD: THE BERRY-BACK</strong>
-                                <li>Category: Solpe Pulseco Universe (Original Fiction)</li>
-                                <li>Classification: Primal Subterranean Scavenger (Wild Form)</li>
-                                <li>Origin Planet: X-734 (The Geothermal Obsidian Labyrinths)</li>
-                            </ul>
-                            <ul><strong>CORE ATTRIBUTES</strong>
-                                <li>Height: 1' 5" (Low-Profile Subterranean Stature)</li>
-                                <li>Weight: 25 lbs (Compact, High-Density Agility Core)</li>
-                                <li>Armor/Attire: Vibrant, shifting purple hide lined with protective, crystal-like spiky growths across the dorsal ridge; features adaptive, glowing bioluminescent "Ghost" stripes.</li>
-                                <li>Signature Tell: A high-speed, localized distortion in the air as their iridescent stripes rapidly cycle colors to mimic flickering cavern moss.</li>
-                            </ul>
-                            <ul><strong>PRIMARY ABILITIES</strong>
-                                <li>Toxin-Tipped Scurry: Coordinates lightning-fast forward movements with four ultra-sharp, bird-like claw points that secrete a concentrated mineral toxin. A single strike can induce temporary "vibration-blindness" in apex predators.</li>
-                                <li>Atmospheric Hydration: Utilizes an advanced external absorption process, allowing the creature to stay fully hydrated at top speeds simply by sprinting through the mineral-rich purple Spirit-Fog.</li>
-                                <li>Clutter Disorientation: Harnesses acute pack-hunting instincts in wild "clutters" of 20 to 30 to execute high-velocity buzzing maneuvers until the target becomes entirely dizzy.</li>
-                            </ul>
-                            <ul><strong>PLAYER STATS</strong>
-                                <li>Stealth: 95/100 (Blends flawlessly with native Prism-Moss; near-impossible to spot in the deep dark)</li>
-                                <li>Durability: 40/100 (Built for evasion and extreme speed rather than absorbing heavy physical impact)</li>
-                                <li>Speed: 98/100 (Unmatched hyper-agility that makes them the legendary wild baseline for the subterranean Obsidian Derby circuits)</li>
-                                <li>Resonance Discord: MAX (Possesses a sharp, un-tuned, and skittish vibration profile)</li>
-                            </ul>
-                        </div>
-                        <div class="interaction-bar">
-                            <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="heart">❤️ <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_up">👍 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="laugh">😂 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="neutral">😐 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_down">👎 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="angry">😡 <span class="count-num">0</span></button>
-                        </div>
+                <div class="model-card" data-model="test-alien">
+                    <model-viewer src="" auto-rotate camera-controls></model-viewer>
+                    <h3>Test Alien</h3>
+                    <p>Character details go here...</p>
+                    
+                    <div class="interaction-bar">
+                        <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="heart">❤️ <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="thumbs_up">👍 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="laugh">😂 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="neutral">😐 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="thumbs_down">👎 <span class="count-num">0</span></button>
+                        <button class="emoji-btn" data-emoji="angry">😡 <span class="count-num">0</span></button>
                     </div>
                 </div>
 
-                <!-- CARD 15: EMBERMAW DREADWYRM -->
-                <div class="model-card" data-model="embermaw dreadwyrm">
-                    <model-viewer src="Meshy_AI_Embermaw_Dreadwyrm_0605153727_image-to-3d-texture.glb" auto-rotate camera-controls></model-viewer>
-                    <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white">Embermaw Dreadwyrm</span>
-                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;">
-                            <p>Dossier stats pending structural classification inputs.</p>
-                        </div>
-                        <div class="interaction-bar">
-                            <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="heart">❤️ <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_up">👍 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="laugh">😂 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="neutral">😐 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_down">👎 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="angry">😡 <span class="count-num">0</span></button>
-                        </div>
-                    </div>
-                </div>
+            </div>
+        </div>
 
-                <!-- CARD 16: THE OBSIDIAN CRUSH -->
-                <div class="model-card" data-model="the obsidian crush">
-                    <model-viewer src="Meshy_AI_Lunar_Emberwyrm_0606144858_image-to-3d-texture-compressed.glb" auto-rotate camera-controls></model-viewer>
-                    <div style="padding:20px">
-                        <span style="font-weight:bold; font-size:1.2em; color:white">The Obsidian Crush</span>
-                        <div style="font-size:0.85rem; color:#aaa; margin-top: 10px;">
-                            <ul><strong>CHARACTER BASEBALL CARD: THE OBSIDIAN CRUSH</strong>
-                                <li>Category: Solpe Pulseco Universe (Original Fiction)</li>
-                                <li>Classification: Apex Subterranean Juggernaut (Wild Form)</li>
-                                <li>Origin Planet: X-734 (The Geothermal Obsidian Labyrinths)</li>
-                            </ul>
-                            <ul><strong>CORE ATTRIBUTES</strong>
-                                <li>Height: 8' 6" (Heavy-Set Tectonic Stature)</li>
-                                <li>Weight: 1,200 lbs (High-Density Silica & Crystalline Armor)</li>
-                                <li>Armor/Attire: Mirror-polished, deep orange and red glassy body with jagged, raw obsidian shards; every defensive scale is meticulously outlined in a rainbow-pearl iridescence.</li>
-                                <li>Signature Tell: An intense, pulsing magma-orange core radiance that flares violently from within its chest whenever a territorial threat is detected.</li>
-                            </ul>
-                            <ul><strong>PRIMARY ABILITIES</strong>
-                                <li>Tectonic Smasher: Channels massive weight into wide V-shaped crystalline paws to strike cave floors, triggering tactical cave-ins to trap prey beneath heavy rubble.</li>
-                                <li>Infrasonic Warning: Emits a crushing, low-frequency seismic hum that causes physical discomfort and phantom aches in surface intruders.</li>
-                                <li>Silica Reclamation: Bathes in hidden Glass-Pools where silica-heavy water fuses with fractured scales, rapidly cooling and polishing broken armor.</li>
-                            </ul>
-                            <ul><strong>PLAYER STATS</strong>
-                                <li>Stealth: 20/100 (Massive size and heavy footsteps echo through caverns)</li>
-                                <li>Durability: 95/100 (An almost impenetrable living fortress built to withstand crushing rockfalls and magma vents)</li>
-                                <li>Speed: 50/100 (Slow and deliberate while tracking, but capable of devastating straight-line charging bursts)</li>
-                                <li>Resonance Discord: 85/100 (Radiates a jagged, icy vibration profile)</li>
-                            </ul>
-                        </div>
-                        <div class="interaction-bar">
-                            <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="heart">❤️ <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_up">👍 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="laugh">😂 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="neutral">😐 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="thumbs_down">👎 <span class="count-num">0</span></button>
-                            <button class="emoji-btn" data-emoji="angry">😡 <span class="count-num">0</span></button>
-                        </div>
-                    </div>
-                </div>
+    </div>
 
-            </div> <!-- END GALLERY GRID -->
-        </div> <!-- END GENRE SECTION -->
-        
-    </div> <!-- END MAIN CONTENT -->
-            </div></div></div></div></div></div></div></div></div>
-            <!-- SUPABASE REACTION ENGINE SCRIPT -->
+    <!-- SIMPLE SCRIPT TEST -->
     <script>
-    // 1. SUPABASE CREDENTIALS & INITIALIZATION
     const SUPABASE_URL = 'https://jhgcyiswxubqzqtbhain.supabase.co'; 
     const SUPABASE_KEY = 'sb_publishable_0j0PaDVT_pXMJawcf2W8fQ_Lz9B4KoW'; 
     
-    // Check if Supabase SDK loaded properly
     const supabase = (window.supabase && window.supabase.createClient) 
         ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) 
         : null;
 
-    if (!supabase) {
-        console.warn("Supabase SDK not detected or failed to load. Operating in local mode.");
-    }
-
-    // 2. FETCH LIKES FOR ALL CARDS FROM DATABASE
-    async function loadAllLikes() {
-        if (!supabase) return;
-
-        const cards = document.querySelectorAll('.model-card');
-
-        for (let card of cards) {
-            const modelId = card.getAttribute('data-model');
-            if (!modelId) continue;
-
-            try {
-                let { data, error } = await supabase
-                    .from('model_likes')
-                    .select('like_count')
-                    .eq('model_id', modelId)
-                    .single();
-
-                if (error) {
-                    console.log(`No existing counts found for model: ${modelId}`);
-                    continue;
-                }
-
-                if (data && data.like_count) {
-                    const counts = typeof data.like_count === 'string' 
-                        ? JSON.parse(data.like_count) 
-                        : data.like_count;
-                    
-                    const buttons = card.querySelectorAll('.emoji-btn');
-                    buttons.forEach(btn => {
-                        const emojiType = btn.getAttribute('data-emoji');
-                        if (counts[emojiType] !== undefined) {
-                            const countSpan = btn.querySelector('.count-num');
-                            if (countSpan) countSpan.innerText = counts[emojiType];
-                        }
-                    });
-                }
-            } catch (err) {
-                console.warn(`Could not load reaction counts for ${modelId}:`, err);
-            }
-        }
-    }
-
-    // 3. ADD A LIKE WHEN A BUTTON IS CLICKED
-    async function addLike(btn) {
-        const card = btn.closest('.model-card');
-        if (!card) return;
-
-        const modelId = card.getAttribute('data-model');
-        const emojiType = btn.getAttribute('data-emoji');
+    // CLICK HANDLER
+    function handleButtonClick(btn) {
         const counter = btn.querySelector('.count-num');
-
-        if (!modelId || !emojiType) {
-            console.error("Missing data-model on card or data-emoji on button!");
-            return;
+        if (counter) {
+            let currentVal = parseInt(counter.innerText) || 0;
+            counter.innerText = currentVal + 1;
         }
 
-        console.log(`Clicked reaction: ${emojiType} on model: ${modelId}`);
-
-        // Immediate visual feedback (Border flash)
+        // Visual flash feedback
         btn.style.borderColor = "#00f0ff";
-        setTimeout(() => { btn.style.borderColor = "#333"; }, 250);
-
-        // If Supabase is connected, update the database
-        if (supabase) {
-            try {
-                let { data } = await supabase
-                    .from('model_likes')
-                    .select('like_count')
-                    .eq('model_id', modelId)
-                    .single();
-
-                let currentData = {};
-                if (data && data.like_count) {
-                    currentData = typeof data.like_count === 'string' 
-                        ? JSON.parse(data.like_count) 
-                        : data.like_count;
-                }
-
-                // Increment counter
-                currentData[emojiType] = (currentData[emojiType] || 0) + 1;
-
-                // Send back to Supabase
-                const { error } = await supabase
-                    .from('model_likes')
-                    .upsert({ model_id: modelId, like_count: currentData });
-
-                if (!error) {
-                    if (counter) counter.innerText = currentData[emojiType];
-                } else {
-                    console.error("Supabase upsert error:", error);
-                    // Fallback: update on-screen count locally
-                    if (counter) counter.innerText = parseInt(counter.innerText || '0') + 1;
-                }
-            } catch (err) {
-                console.error("Error updating database count:", err);
-                if (counter) counter.innerText = parseInt(counter.innerText || '0') + 1;
-            }
-        } else {
-            // Local fallback count if Supabase isn't connected
-            if (counter) counter.innerText = parseInt(counter.innerText || '0') + 1;
-        }
+        setTimeout(() => { btn.style.borderColor = "#333"; }, 200);
     }
 
-    // 4. GLOBAL CLICK EVENT LISTENER
+    // ATTACH CLICK EVENTS TO ALL EMOJI BUTTONS
     document.addEventListener('DOMContentLoaded', () => {
-        // Load initial reaction counts
-        loadAllLikes();
-
-        // Listen for clicks on emoji buttons
         document.addEventListener('click', (e) => {
             const btn = e.target.closest('.emoji-btn');
             if (btn) {
-                addLike(btn);
+                handleButtonClick(btn);
             }
         });
     });
     </script>
+
 </body>
 </html>
-                
