@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stylist Lookbook // The Aquarius Cut</title>
+  <style>
+    :root {
+      --bg-color: #0b0f14;
+      --card-bg: #161d26;
+      --accent-cyan: #56c2e6;
+      --accent-gold: #cba873;
+      --text-main: #e0e6ed;
+      --text-muted: #8a99ad;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+
+    /* Salon Header */
+    header {
+      text-align: center;
+      padding: 30px 0;
+      border-bottom: 2px solid var(--accent-cyan);
+      margin-bottom: 40px;
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      letter-spacing: 3px;
+      margin: 0;
+      color: #fff;
+      text-transform: uppercase;
+    }
+
+    header p {
+      color: var(--accent-gold);
+      font-style: italic;
+      margin-top: 8px;
+    }
+
+    /* Main Grid Layout */
+    .lookbook-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 30px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .lookbook-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid rgba(86, 194, 230, 0.2);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      color: var(--accent-cyan);
+      border-bottom: 1px solid #233040;
+      padding-bottom: 8px;
+      margin-top: 0;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Video Player Embed */
+    .video-container {
+      position: relative;
+      padding-bottom: 56.25%; /* 16:9 aspect ratio */
+      height: 0;
+      overflow: hidden;
+      border-radius: 8px;
+    }
+
+    .video-container video, .video-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Model Spec Sheet / Trading Card Style */
+    .spec-card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .spec-row {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px dashed #233040;
+      padding-bottom: 6px;
+      font-size: 0.95rem;
+    }
+
+    .spec-label { color: var(--text-muted); }
+    .spec-val { color: var(--accent-gold); font-weight: bold; }
+
+    /* Image Gallery */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .gallery-grid img {
+      width: 100%;
+      border-radius: 6px;
+      border: 1px solid #233040;
+      transition: transform 0.2s ease;
+    }
+
+    .gallery-grid img:hover {
+      transform: scale(1.03);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SALON LOOKBOOK HEADER -->
+  <header>
+    <h1>The Aquarius Cut</h1>
+    <p>3D Hair Sculpture Showcase & Technical Mapping</p>
+  </header>
+
+  <main class="lookbook-grid">
+
+    <!-- 1. FEATURED TURNTABLE / VIDEO DEMO -->
+    <section class="lookbook-card">
+      <h2 class="card-title">01. Style Motion (360° View)</h2>
+      <div class="video-container">
+        <!-- Swap out "hair-turnaround.mp4" with your video file -->
+        <video controls poster="final-sculpt.png">
+          <source src="hair-turnaround.mp4" type="video/mp4">
+          Your browser does not support video playback.
+        </video>
+      </div>
+    </section>
+
+    <!-- 2. TECHNICAL SPECIFICATIONS (BASEBALL CARD LAYOUT) -->
+    <section class="lookbook-card">
+      <h2 class="card-title">02. Stylist Spec Sheet</h2>
+      <div class="spec-card">
+        <div class="spec-row">
+          <span class="spec-label">Style Classification</span>
+          <span class="spec-val">Wave & Pitcher Hybrid</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-label">Zodiac Symbolism</span>
+          <span class="spec-val">♒ Aquarius</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-label">Bangs Mapping</span>
+          <span class="spec-val">Zigzag Water Waves</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-label">Ponytail Mapping</span>
+          <span class="spec-val">Pouring Pitcher Flow</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-label">Natural Texture</span>
+          <span class="spec-val">Full Wild Waves</span>
+        </div>
+        <div class="spec-row">
+          <span class="spec-label">Primary Tone</span>
+          <span class="spec-val">Oceanic Cyan / Bronze</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. BEFORE & AFTER GALLERY -->
+    <section class="lookbook-card" style="grid-column: 1 / -1;">
+      <h2 class="card-title">03. Hair Preparation & Final Mapping</h2>
+      <div class="gallery-grid">
+        <div>
+          <p style="margin-top:0; color:var(--text-muted); font-size:0.85rem;">BEFORE (Natural Waves)</p>
+          <img src="before-hair.png" alt="Untamed natural wavy hair before styling">
+        </div>
+        <div>
+          <p style="margin-top:0; color:var(--text-muted); font-size:0.85rem;">AFTER (Zodiac Blueprint)</p>
+          <img src="mapping-blueprint.png" alt="Final sculpt with Aquarius ponytail and bangs mapping">
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+</body>
+</html>
+
