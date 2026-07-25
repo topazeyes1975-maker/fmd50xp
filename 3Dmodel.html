@@ -7,8 +7,7 @@
     
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-        <style>
+    <style>
         /* 1. BRAND FOUNDATION (SOLID BLACK, CYAN, PINK) */
         :root {
             --primary: #00f0ff;  /* Neon Cyan */
@@ -204,8 +203,8 @@
             h1 { font-size: 2.5em; }
         }
     </style>
-
- <head>
+    
+</head>
 <body>
 
     <nav>
@@ -416,9 +415,6 @@
                 
 
         <div class="genre-section">
-</style>
-</head>
-<body>
 
     <nav>
     <ul>
@@ -1048,16 +1044,23 @@
         </div> <!-- END GENRE SECTION -->
         
     </div> <!-- END MAIN CONTENT -->
-
-        <script>
-    // 1. Supabase Initialization
+            </div></div></div></div></div></div></div></div></div>
+            <!-- SUPABASE REACTION ENGINE SCRIPT -->
+    <script>
+    // 1. SUPABASE CREDENTIALS & INITIALIZATION
     const SUPABASE_URL = 'https://jhgcyiswxubqzqtbhain.supabase.co'; 
     const SUPABASE_KEY = 'sb_publishable_0j0PaDVT_pXMJawcf2W8fQ_Lz9B4KoW'; 
     
-    // Safety check for window.supabase
-    const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+    // Check if Supabase SDK loaded properly
+    const supabase = (window.supabase && window.supabase.createClient) 
+        ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) 
+        : null;
 
-    // 2. Load reaction counts from cloud
+    if (!supabase) {
+        console.warn("Supabase SDK not detected or failed to load. Operating in local mode.");
+    }
+
+    // 2. FETCH LIKES FOR ALL CARDS FROM DATABASE
     async function loadAllLikes() {
         if (!supabase) return;
 
@@ -1074,14 +1077,22 @@
                     .eq('model_id', modelId)
                     .single();
 
+                if (error) {
+                    console.log(`No existing counts found for model: ${modelId}`);
+                    continue;
+                }
+
                 if (data && data.like_count) {
-                    const counts = typeof data.like_count === 'string' ? JSON.parse(data.like_count) : data.like_count;
+                    const counts = typeof data.like_count === 'string' 
+                        ? JSON.parse(data.like_count) 
+                        : data.like_count;
                     
                     const buttons = card.querySelectorAll('.emoji-btn');
                     buttons.forEach(btn => {
                         const emojiType = btn.getAttribute('data-emoji');
                         if (counts[emojiType] !== undefined) {
-                            btn.querySelector('.count-num').innerText = counts[emojiType];
+                            const countSpan = btn.querySelector('.count-num');
+                            if (countSpan) countSpan.innerText = counts[emojiType];
                         }
                     });
                 }
@@ -1091,10 +1102,8 @@
         }
     }
 
-    // 3. Handle emoji click
+    // 3. ADD A LIKE WHEN A BUTTON IS CLICKED
     async function addLike(btn) {
-        if (!supabase) return;
-
         const card = btn.closest('.model-card');
         if (!card) return;
 
@@ -1102,41 +1111,64 @@
         const emojiType = btn.getAttribute('data-emoji');
         const counter = btn.querySelector('.count-num');
 
-        if (!modelId || !emojiType) return;
+        if (!modelId || !emojiType) {
+            console.error("Missing data-model on card or data-emoji on button!");
+            return;
+        }
 
-        try {
-            let { data } = await supabase
-                .from('model_likes')
-                .select('like_count')
-                .eq('model_id', modelId)
-                .single();
+        console.log(`Clicked reaction: ${emojiType} on model: ${modelId}`);
 
-            let currentData = {};
-            if (data && data.like_count) {
-                currentData = typeof data.like_count === 'string' ? JSON.parse(data.like_count) : data.like_count;
+        // Immediate visual feedback (Border flash)
+        btn.style.borderColor = "#00f0ff";
+        setTimeout(() => { btn.style.borderColor = "#333"; }, 250);
+
+        // If Supabase is connected, update the database
+        if (supabase) {
+            try {
+                let { data } = await supabase
+                    .from('model_likes')
+                    .select('like_count')
+                    .eq('model_id', modelId)
+                    .single();
+
+                let currentData = {};
+                if (data && data.like_count) {
+                    currentData = typeof data.like_count === 'string' 
+                        ? JSON.parse(data.like_count) 
+                        : data.like_count;
+                }
+
+                // Increment counter
+                currentData[emojiType] = (currentData[emojiType] || 0) + 1;
+
+                // Send back to Supabase
+                const { error } = await supabase
+                    .from('model_likes')
+                    .upsert({ model_id: modelId, like_count: currentData });
+
+                if (!error) {
+                    if (counter) counter.innerText = currentData[emojiType];
+                } else {
+                    console.error("Supabase upsert error:", error);
+                    // Fallback: update on-screen count locally
+                    if (counter) counter.innerText = parseInt(counter.innerText || '0') + 1;
+                }
+            } catch (err) {
+                console.error("Error updating database count:", err);
+                if (counter) counter.innerText = parseInt(counter.innerText || '0') + 1;
             }
-
-            currentData[emojiType] = (currentData[emojiType] || 0) + 1;
-
-            const { error } = await supabase
-                .from('model_likes')
-                .upsert({ model_id: modelId, like_count: currentData });
-
-            if (!error) {
-                if (counter) counter.innerText = currentData[emojiType];
-                btn.style.borderColor = "#00f0ff";
-                setTimeout(() => { btn.style.borderColor = "#333"; }, 200);
-            }
-        } catch (err) {
-            console.error("Error updating reaction count:", err);
+        } else {
+            // Local fallback count if Supabase isn't connected
+            if (counter) counter.innerText = parseInt(counter.innerText || '0') + 1;
         }
     }
 
-    // 4. Attach event handlers
+    // 4. GLOBAL CLICK EVENT LISTENER
     document.addEventListener('DOMContentLoaded', () => {
+        // Load initial reaction counts
         loadAllLikes();
 
-        // Global event delegation for emoji reactions
+        // Listen for clicks on emoji buttons
         document.addEventListener('click', (e) => {
             const btn = e.target.closest('.emoji-btn');
             if (btn) {
@@ -1145,7 +1177,6 @@
         });
     });
     </script>
-
 </body>
-            </html>
+</html>
                 
