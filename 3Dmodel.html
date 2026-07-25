@@ -10,12 +10,12 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
-        /* 1. BRAND FOUNDATION (SOLID BLACK, CYAN, PINK) */
+        /* 1. BRAND FOUNDATION */
         :root {
             --primary: #00f0ff;  /* Neon Cyan */
             --accent: #ff007a;   /* Neon Pink */
             --bg: #050505;       /* Pure Deep Black */
-            --card-bg: #080f14;   /* Dark Theme Card Background */
+            --card-bg: #080f14;   /* Dark Card Background */
         }
 
         body { 
@@ -234,6 +234,7 @@
     <nav>
         <ul>
             <li><a href="index.html">HOME</a></li>
+            <li><a href="Atlas_Mutatis.html">ATLAS MUTATIS</a></li>
             <li><a href="Project.html">PHYSICAL PROJECT</a></li>
             <li><a href="Games.html">GAMES</a></li>
             <li><a href="3Dmodel.html">3D MODEL</a></li>
@@ -257,7 +258,7 @@
             <div class="gallery-grid">
                 
                 <div class="model-card" data-model="aqualon">
-                    <model-viewer src="YOUR_MODEL_1.glb" auto-rotate camera-controls></model-viewer>
+                    <model-viewer src="Meshy_AI_Abyssal_Guardian_0509141700_texture.glb" auto-rotate camera-controls></model-viewer>
                     <div class="card-details">
                         <h3>Aqualon</h3>
                         <p>Time-Fracturing Aqualumian Warrior</p>
@@ -311,7 +312,7 @@
             <div class="gallery-grid">
                 
                 <div class="model-card" data-model="hairstyle-card">
-                    <model-viewer src="YOUR_MODEL_3.glb" auto-rotate camera-controls></model-viewer>
+                    <model-viewer src="" auto-rotate camera-controls></model-viewer>
                     <div class="card-details">
                         <h3>Character Name</h3>
                         <p>Short Character Tagline</p>
@@ -338,7 +339,7 @@
             <div class="gallery-grid">
                 
                 <div class="model-card" data-model="furry-card">
-                    <model-viewer src="YOUR_MODEL_4.glb" auto-rotate camera-controls></model-viewer>
+                    <model-viewer src="" auto-rotate camera-controls></model-viewer>
                     <div class="card-details">
                         <h3>Character Name</h3>
                         <p>Short Character Tagline</p>
@@ -365,7 +366,7 @@
             <div class="gallery-grid">
                 
                 <div class="model-card" data-model="animal-card">
-                    <model-viewer src="YOUR_MODEL_5.glb" auto-rotate camera-controls></model-viewer>
+                    <model-viewer src="" auto-rotate camera-controls></model-viewer>
                     <div class="card-details">
                         <h3>Character Name</h3>
                         <p>Short Character Tagline</p>
@@ -392,7 +393,7 @@
             <div class="gallery-grid">
                 
                 <div class="model-card" data-model="object-card">
-                    <model-viewer src="YOUR_MODEL_6.glb" auto-rotate camera-controls></model-viewer>
+                    <model-viewer src="" auto-rotate camera-controls></model-viewer>
                     <div class="card-details">
                         <h3>Location or Artifact</h3>
                         <p>Short Description</p>
@@ -419,7 +420,7 @@
             <div class="gallery-grid">
                 
                 <div class="model-card" data-model="alien-card">
-                    <model-viewer src="YOUR_MODEL_7.glb" auto-rotate camera-controls></model-viewer>
+                    <model-viewer src="" auto-rotate camera-controls></model-viewer>
                     <div class="card-details">
                         <h3>Alien Species</h3>
                         <p>Planetary Specimen</p>
@@ -442,17 +443,18 @@
 
     </div>
 
- <!-- REACTION ENGINE SCRIPT -->
+<!-- SAFE REACTION ENGINE SCRIPT -->
     <script>
     const SUPABASE_URL = 'https://jhgcyiswxubqzqtbhain.supabase.co'; 
     const SUPABASE_KEY = 'sb_publishable_0j0PaDVT_pXMJawcf2W8fQ_Lz9B4KoW'; 
     
-    const supabase = (window.supabase && window.supabase.createClient) 
-        ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) 
-        : null;
+    // Attach client to global window safely to prevent duplicate declaration crashes
+    if (!window.supabaseClient && window.supabase && window.supabase.createClient) {
+        window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
 
     async function loadAllLikes() {
-        if (!supabase) return;
+        if (!window.supabaseClient) return;
         const cards = document.querySelectorAll('.model-card');
 
         for (let card of cards) {
@@ -460,7 +462,7 @@
             if (!modelId) continue;
 
             try {
-                let { data, error } = await supabase
+                let { data, error } = await window.supabaseClient
                     .from('model_likes')
                     .select('like_count')
                     .eq('model_id', modelId)
@@ -502,9 +504,9 @@
         btn.style.borderColor = "#00f0ff";
         setTimeout(() => { btn.style.borderColor = "#333"; }, 250);
 
-        if (supabase) {
+        if (window.supabaseClient) {
             try {
-                let { data } = await supabase
+                let { data } = await window.supabaseClient
                     .from('model_likes')
                     .select('like_count')
                     .eq('model_id', modelId)
@@ -519,7 +521,7 @@
 
                 currentData[emojiType] = (currentData[emojiType] || 0) + 1;
 
-                const { error } = await supabase
+                const { error } = await window.supabaseClient
                     .from('model_likes')
                     .upsert({ model_id: modelId, like_count: currentData });
 
