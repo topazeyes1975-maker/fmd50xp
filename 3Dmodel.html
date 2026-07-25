@@ -3,29 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Model Vault | Test Page</title>
+    <title>3D Character Vault</title>
     
     <!-- Model Viewer & Supabase SDKs -->
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
+        /* 1. BRAND FOUNDATION (SOLID BLACK, CYAN, PINK) */
         :root {
-            --primary: #00f0ff;
-            --accent: #ff007a;
-            --bg: #050505;
-            --card-bg: #080f14;
+            --primary: #00f0ff;  /* Neon Cyan */
+            --accent: #ff007a;   /* Neon Pink */
+            --bg: #050505;       /* Pure Deep Black */
+            --card-bg: #080f14;   /* Dark Theme Card Background */
         }
 
         body { 
             background-color: var(--bg); 
             color: #e0e0e0; 
-            font-family: sans-serif; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
             margin: 0; 
-            padding: 0;
+            padding: 0; 
+            line-height: 1.6;
+            overflow-x: hidden;
         }
 
-        /* NAVIGATION BAR */
+        /* 2. NAVIGATION BAR */
         nav {
             background: #000;
             border-bottom: 1px solid #222;
@@ -48,93 +51,186 @@
         nav a {
             color: var(--primary);
             text-decoration: none;
+            font-size: 0.85em;
             font-weight: bold;
+            letter-spacing: 1px;
+            transition: 0.3s;
         }
 
-        /* HEADER */
+        nav a:hover { 
+            color: var(--accent); 
+            text-shadow: 0 0 8px var(--accent); 
+        }
+
+        /* 3. HEADER & HUB LINK */
         .header-section { 
             text-align: center; 
-            padding: 30px 10px; 
+            padding: 40px 10px; 
             border-bottom: 2px solid #222; 
         }
 
-        h1 { color: var(--primary); margin-bottom: 5px; }
+        h1 { 
+            color: var(--primary); 
+            text-transform: uppercase; 
+            letter-spacing: 3px; 
+            font-size: 1.8em; 
+            margin-bottom: 10px; 
+        }
 
         .comment-hub-btn {
             display: inline-block;
-            margin-top: 10px;
-            padding: 10px 20px;
+            margin-top: 15px;
+            padding: 12px 30px;
+            background: transparent;
             border: 2px solid var(--accent);
             color: #fff;
             text-decoration: none;
-            border-radius: 20px;
             font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 1px;
+            border-radius: 30px;
+            transition: all 0.3s ease;
         }
 
-        /* MAIN CONTENT & GRID */
+        .comment-hub-btn:hover {
+            background: var(--accent);
+            box-shadow: 0 0 15px var(--accent);
+            transform: translateY(-2px);
+        }
+
+        /* 4. MAIN CONTENT & GRID */
         .main-content {
             max-width: 1200px; 
             margin: 0 auto;
             padding: 20px;
         }
 
-        .genre-section { margin-bottom: 40px; }
+        .genre-section { 
+            margin-bottom: 60px; 
+        }
         
         .genre-title { 
             color: var(--primary); 
             border-left: 5px solid var(--primary); 
             padding-left: 15px; 
-            margin-bottom: 15px; 
+            margin-bottom: 25px; 
+            font-size: 1.6em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .gallery-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            align-items: start;
         }
 
+        /* 5. MODEL CARDS & DOSSIER BUTTONS */
         .model-card {
             background: var(--card-bg);
             border: 2px solid var(--primary);
-            border-radius: 12px;
-            padding: 15px;
+            border-radius: 18px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .model-card:hover { 
+            border-color: var(--accent);
+            transform: translateY(-5px);
         }
 
         model-viewer {
             width: 100%;
-            height: 250px;
+            height: 320px;
             background-color: #151515;
-            border-radius: 8px;
         }
 
-        /* REACTION BUTTONS */
+        .card-details {
+            padding: 15px;
+            text-align: center;
+        }
+
+        .card-details h3 {
+            color: #fff;
+            margin: 0 0 5px 0;
+            font-size: 1.2em;
+            text-transform: uppercase;
+        }
+
+        .card-details p {
+            color: #aaa;
+            font-size: 0.85em;
+            margin-bottom: 12px;
+        }
+
+        .dossier-btn {
+            display: inline-block;
+            margin: 5px 0 10px;
+            padding: 8px 18px;
+            background: transparent;
+            border: 2px solid var(--accent);
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.85em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .dossier-btn:hover {
+            background: var(--accent);
+            box-shadow: 0 0 12px var(--accent);
+            transform: translateY(-2px);
+        }
+
+        /* 6. REACTION BAR */
         .interaction-bar {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 15px;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 15px 20px;
+            border-top: 1px solid #1a1a1a;
         }
 
         .emoji-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
             background: #111;
             border: 1px solid #333;
-            border-radius: 15px;
+            border-radius: 20px;
             color: #fff;
-            padding: 6px 10px;
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: 0.85em;
         }
 
         .emoji-btn:hover {
             border-color: var(--primary);
+            color: var(--primary);
         }
 
-        .count-num { font-weight: bold; color: var(--primary); }
+        .count-num { 
+            font-weight: bold; 
+            color: var(--primary); 
+        }
+
+        @media (min-width: 768px) {
+            h1 { font-size: 2.5em; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- NAV BAR -->
+    <!-- NAVIGATION BAR -->
     <nav>
         <ul>
             <li><a href="index.html">HOME</a></li>
@@ -149,23 +245,25 @@
     
     <!-- HEADER -->
     <div class="header-section">
-        <h1>3D Character Vault (Test Layout)</h1>
+        <h1>3D Character Vault</h1>
         <a href="contact.html" class="comment-hub-btn">💬 Open Archive Comments</a>
     </div>
 
     <!-- MAIN CONTENT -->
     <div class="main-content">
 
-        <!-- CATEGORY 1 -->
+        <!-- CATEGORY 1: TRAGIC OR HEROES -->
         <div class="genre-section">
             <h2 class="genre-title">Tragic or Heroes</h2>
             <div class="gallery-grid">
                 
-                <div class="model-card" data-model="test-hero">
-                    <model-viewer src="" auto-rotate camera-controls></model-viewer>
-                    <h3>Test Hero</h3>
-                    <p>Character details go here...</p>
-                    
+                <div class="model-card" data-model="aqualon">
+                    <model-viewer src="YOUR_MODEL_1.glb" auto-rotate camera-controls></model-viewer>
+                    <div class="card-details">
+                        <h3>Aqualon</h3>
+                        <p>Time-Fracturing Aqualumian Warrior</p>
+                        <a href="aqualon.html" class="dossier-btn">📜 Open Full Dossier</a>
+                    </div>
                     <div class="interaction-bar">
                         <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
                         <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
@@ -181,16 +279,18 @@
             </div>
         </div>
 
-        <!-- CATEGORY 2 -->
+        <!-- CATEGORY 2: MYTHOLOGICAL MERGES -->
         <div class="genre-section">
             <h2 class="genre-title">Merging Mythological Creatures Across The World</h2>
             <div class="gallery-grid">
                 
-                <div class="model-card" data-model="test-myth">
-                    <model-viewer src="" auto-rotate camera-controls></model-viewer>
-                    <h3>Test Myth Creature</h3>
-                    <p>Character details go here...</p>
-                    
+                <div class="model-card" data-model="atlantis">
+                    <model-viewer src="Meshy_AI_Icebound_Warden_0514112758_texture-compressed.glb" auto-rotate camera-controls></model-viewer>
+                    <div class="card-details">
+                        <h3>Atlantis Guardian</h3>
+                        <p>Immortal Guardian of the Sunken Kingdom</p>
+                        <a href="atlantis.html" class="dossier-btn">📜 Open Full Dossier</a>
+                    </div>
                     <div class="interaction-bar">
                         <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
                         <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
@@ -206,16 +306,18 @@
             </div>
         </div>
 
-        <!-- CATEGORY 3 -->
+        <!-- CATEGORY 3: HOROSCOPES & HAIRSTYLES -->
         <div class="genre-section">
             <h2 class="genre-title">Horoscopes & Hairstyles</h2>
             <div class="gallery-grid">
                 
-                <div class="model-card" data-model="test-style">
-                    <model-viewer src="" auto-rotate camera-controls></model-viewer>
-                    <h3>Test Hairstyle</h3>
-                    <p>Character details go here...</p>
-                    
+                <div class="model-card" data-model="hairstyle-card">
+                    <model-viewer src="YOUR_MODEL_3.glb" auto-rotate camera-controls></model-viewer>
+                    <div class="card-details">
+                        <h3>Character Name</h3>
+                        <p>Short Character Tagline</p>
+                        <a href="character-page.html" class="dossier-btn">📜 Open Full Dossier</a>
+                    </div>
                     <div class="interaction-bar">
                         <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
                         <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
@@ -231,16 +333,18 @@
             </div>
         </div>
 
-        <!-- CATEGORY 4 -->
+        <!-- CATEGORY 4: HUMAN FURRY -->
         <div class="genre-section">
             <h2 class="genre-title">Human Furry</h2>
             <div class="gallery-grid">
                 
-                <div class="model-card" data-model="test-furry">
-                    <model-viewer src="" auto-rotate camera-controls></model-viewer>
-                    <h3>Test Furry Character</h3>
-                    <p>Character details go here...</p>
-                    
+                <div class="model-card" data-model="furry-card">
+                    <model-viewer src="YOUR_MODEL_4.glb" auto-rotate camera-controls></model-viewer>
+                    <div class="card-details">
+                        <h3>Character Name</h3>
+                        <p>Short Character Tagline</p>
+                        <a href="character-page.html" class="dossier-btn">📜 Open Full Dossier</a>
+                    </div>
                     <div class="interaction-bar">
                         <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
                         <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
@@ -256,16 +360,18 @@
             </div>
         </div>
 
-        <!-- CATEGORY 5 -->
+        <!-- CATEGORY 5: UNIQUE ANIMALS -->
         <div class="genre-section">
             <h2 class="genre-title">Unique Animals</h2>
             <div class="gallery-grid">
                 
-                <div class="model-card" data-model="test-animal">
-                    <model-viewer src="" auto-rotate camera-controls></model-viewer>
-                    <h3>Test Animal</h3>
-                    <p>Character details go here...</p>
-                    
+                <div class="model-card" data-model="animal-card">
+                    <model-viewer src="YOUR_MODEL_5.glb" auto-rotate camera-controls></model-viewer>
+                    <div class="card-details">
+                        <h3>Character Name</h3>
+                        <p>Short Character Tagline</p>
+                        <a href="character-page.html" class="dossier-btn">📜 Open Full Dossier</a>
+                    </div>
                     <div class="interaction-bar">
                         <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
                         <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
@@ -281,16 +387,18 @@
             </div>
         </div>
 
-        <!-- CATEGORY 6 -->
+        <!-- CATEGORY 6: OBJECTS AND PLACES -->
         <div class="genre-section">
             <h2 class="genre-title">Objects and Places</h2>
             <div class="gallery-grid">
                 
-                <div class="model-card" data-model="test-object">
-                    <model-viewer src="" auto-rotate camera-controls></model-viewer>
-                    <h3>Test Object</h3>
-                    <p>Character details go here...</p>
-                    
+                <div class="model-card" data-model="object-card">
+                    <model-viewer src="YOUR_MODEL_6.glb" auto-rotate camera-controls></model-viewer>
+                    <div class="card-details">
+                        <h3>Location or Artifact</h3>
+                        <p>Short Description</p>
+                        <a href="character-page.html" class="dossier-btn">📜 Open Full Dossier</a>
+                    </div>
                     <div class="interaction-bar">
                         <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
                         <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
@@ -306,16 +414,18 @@
             </div>
         </div>
 
-        <!-- CATEGORY 7 -->
+        <!-- CATEGORY 7: REAL PLANET WHAT-IF, ALIENS, AND ANIMALS -->
         <div class="genre-section">
             <h2 class="genre-title">Real Planet "What If-?" Planet, Aliens, and Animals</h2>
             <div class="gallery-grid">
                 
-                <div class="model-card" data-model="test-alien">
-                    <model-viewer src="" auto-rotate camera-controls></model-viewer>
-                    <h3>Test Alien</h3>
-                    <p>Character details go here...</p>
-                    
+                <div class="model-card" data-model="alien-card">
+                    <model-viewer src="YOUR_MODEL_7.glb" auto-rotate camera-controls></model-viewer>
+                    <div class="card-details">
+                        <h3>Alien Species</h3>
+                        <p>Planetary Specimen</p>
+                        <a href="character-page.html" class="dossier-btn">📜 Open Full Dossier</a>
+                    </div>
                     <div class="interaction-bar">
                         <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
                         <button class="emoji-btn" data-emoji="crystal">🔮 <span class="count-num">0</span></button>
@@ -333,7 +443,7 @@
 
     </div>
 
-    <!-- SIMPLE SCRIPT TEST -->
+ <!-- REACTION ENGINE SCRIPT -->
     <script>
     const SUPABASE_URL = 'https://jhgcyiswxubqzqtbhain.supabase.co'; 
     const SUPABASE_KEY = 'sb_publishable_0j0PaDVT_pXMJawcf2W8fQ_Lz9B4KoW'; 
@@ -342,25 +452,98 @@
         ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) 
         : null;
 
-    // CLICK HANDLER
-    function handleButtonClick(btn) {
-        const counter = btn.querySelector('.count-num');
-        if (counter) {
-            let currentVal = parseInt(counter.innerText) || 0;
-            counter.innerText = currentVal + 1;
+    async function loadAllLikes() {
+        if (!supabase) return;
+        const cards = document.querySelectorAll('.model-card');
+
+        for (let card of cards) {
+            const modelId = card.getAttribute('data-model');
+            if (!modelId) continue;
+
+            try {
+                let { data, error } = await supabase
+                    .from('model_likes')
+                    .select('like_count')
+                    .eq('model_id', modelId)
+                    .single();
+
+                if (error) continue;
+
+                if (data && data.like_count) {
+                    const counts = typeof data.like_count === 'string' 
+                        ? JSON.parse(data.like_count) 
+                        : data.like_count;
+                    
+                    const buttons = card.querySelectorAll('.emoji-btn');
+                    buttons.forEach(btn => {
+                        const emojiType = btn.getAttribute('data-emoji');
+                        if (counts[emojiType] !== undefined) {
+                            const countSpan = btn.querySelector('.count-num');
+                            if (countSpan) countSpan.innerText = counts[emojiType];
+                        }
+                    });
+                }
+            } catch (err) {
+                console.warn(`Could not load counts for ${modelId}:`, err);
+            }
         }
+    }
+
+    async function addLike(btn) {
+        const card = btn.closest('.model-card');
+        if (!card) return;
+
+        const modelId = card.getAttribute('data-model');
+        const emojiType = btn.getAttribute('data-emoji');
+        const counter = btn.querySelector('.count-num');
+
+        if (!modelId || !emojiType) return;
 
         // Visual flash feedback
         btn.style.borderColor = "#00f0ff";
-        setTimeout(() => { btn.style.borderColor = "#333"; }, 200);
+        setTimeout(() => { btn.style.borderColor = "#333"; }, 250);
+
+        if (supabase) {
+            try {
+                let { data } = await supabase
+                    .from('model_likes')
+                    .select('like_count')
+                    .eq('model_id', modelId)
+                    .single();
+
+                let currentData = {};
+                if (data && data.like_count) {
+                    currentData = typeof data.like_count === 'string' 
+                        ? JSON.parse(data.like_count) 
+                        : data.like_count;
+                }
+
+                currentData[emojiType] = (currentData[emojiType] || 0) + 1;
+
+                const { error } = await supabase
+                    .from('model_likes')
+                    .upsert({ model_id: modelId, like_count: currentData });
+
+                if (!error && counter) {
+                    counter.innerText = currentData[emojiType];
+                } else if (counter) {
+                    counter.innerText = parseInt(counter.innerText || '0') + 1;
+                }
+            } catch (err) {
+                if (counter) counter.innerText = parseInt(counter.innerText || '0') + 1;
+            }
+        } else {
+            if (counter) counter.innerText = parseInt(counter.innerText || '0') + 1;
+        }
     }
 
-    // ATTACH CLICK EVENTS TO ALL EMOJI BUTTONS
     document.addEventListener('DOMContentLoaded', () => {
+        loadAllLikes();
+
         document.addEventListener('click', (e) => {
             const btn = e.target.closest('.emoji-btn');
             if (btn) {
-                handleButtonClick(btn);
+                addLike(btn);
             }
         });
     });
