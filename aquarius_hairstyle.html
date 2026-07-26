@@ -123,6 +123,93 @@
     .gallery-grid img:hover {
       transform: scale(1.03);
     }
+
+    /* --- BASEBALL STAT CARD STYLES --- */
+    .stat-header-badge {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      background: #10161f;
+      border: 1px solid var(--accent-cyan);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      color: var(--accent-cyan);
+      font-weight: 600;
+    }
+
+    .stat-table-wrapper {
+      overflow-x: auto;
+      margin-bottom: 20px;
+    }
+
+    .stat-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+
+    .stat-table th, .stat-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #233040;
+    }
+
+    .stat-table th {
+      color: var(--accent-cyan);
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.5px;
+      background: #111720;
+    }
+
+    .stat-rating {
+      color: var(--accent-gold);
+      font-weight: bold;
+    }
+
+    .stat-subheading {
+      color: var(--accent-gold);
+      font-size: 1rem;
+      margin: 20px 0 10px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-list {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+      font-size: 0.95rem;
+    }
+
+    .stat-list li {
+      padding: 6px 0;
+      border-bottom: 1px dashed #233040;
+      color: var(--text-main);
+    }
+
+    .stat-list strong {
+      color: var(--accent-cyan);
+    }
+
+    .pro-tip-box {
+      background: #10161f;
+      border-left: 3px solid var(--accent-gold);
+      padding: 12px 15px;
+      margin-top: 20px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .pro-tip-box strong {
+      color: var(--accent-gold);
+    }
   </style>
 </head>
 <body>
@@ -147,7 +234,7 @@
       </div>
     </section>
 
-    <!-- 2. TECHNICAL SPECIFICATIONS (BASEBALL CARD LAYOUT) -->
+    <!-- 2. TECHNICAL SPECIFICATIONS -->
     <section class="lookbook-card">
       <h2 class="card-title">02. Stylist Spec Sheet</h2>
       <div class="spec-card">
@@ -190,6 +277,74 @@
           <p style="margin-top:0; color:var(--text-muted); font-size:0.85rem;">AFTER (Zodiac Blueprint)</p>
           <img src="1784989050472.png" alt="Final sculpt with Aquarius ponytail and bangs mapping">
         </div>
+      </div>
+    </section>
+
+    <!-- 4. BASEBALL STAT CARD SECTION (BOTTOM FULL-WIDTH) -->
+    <section class="lookbook-card" style="grid-column: 1 / -1;">
+      <h2 class="card-title">04. Style Stat Card // The Aquarius Crown</h2>
+      
+      <div class="stat-header-badge">
+        <span class="badge">Position: High-Sculpt Architectural Updo</span>
+        <span class="badge">Element: Air / Water-Bearer</span>
+        <span class="badge">Rarity: Master Class</span>
+      </div>
+
+      <!-- STATS TABLE -->
+      <div class="stat-table-wrapper">
+        <table class="stat-table">
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Rating</th>
+              <th>Detail / Metaphor</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Execution Difficulty</strong></td>
+              <td class="stat-rating">9.2 / 10</td>
+              <td><strong>Pro Level:</strong> High precision, micro-sectioning, and structural anchoring required.</td>
+            </tr>
+            <tr>
+              <td><strong>Workday Durability</strong></td>
+              <td class="stat-rating">8.5 / 10</td>
+              <td><strong>All-Day Anchor:</strong> Internal foam/wire frame keeps ponytail elevated without sagging.</td>
+            </tr>
+            <tr>
+              <td><strong>Party / Dance Endurance</strong></td>
+              <td class="stat-rating">7.0 / 10</td>
+              <td><strong>High-Impact Warning:</strong> 2-tier Aquarius zigzag bangs need zero-touch clearance; wind/sweat disrupts sharp edges.</td>
+            </tr>
+            <tr>
+              <td><strong>Prep Time</strong></td>
+              <td class="stat-rating">75–90 min</td>
+              <td><strong>Pre-Game Routine:</strong> Smooth blow-dry, precise geometric cutting, and structural wrapping.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- GEAR & ACCESSORIES -->
+      <h3 class="stat-subheading">🛠️ Gear & Equipment (Accessories)</h3>
+      <ul class="stat-list">
+        <li><strong>Internal Base Anchor:</strong> 1× High-density ponytail foam base insert or structural wire post</li>
+        <li><strong>Tension Binders:</strong> 4× Heavy-duty clear elastic hair bands (stacked base tie)</li>
+        <li><strong>Concealed Support:</strong> 12× Heavy-duty U-shaped hairpins (securing woven cross-wrap)</li>
+        <li><strong>Edge Precision Tool:</strong> 1× Ultra-fine haircutting shears + micro-tooth rat-tail comb</li>
+      </ul>
+
+      <!-- CHEMICAL LOADOUT -->
+      <h3 class="stat-subheading">🧪 Chemical & Product Loadout</h3>
+      <ul class="stat-list">
+        <li><strong>Structural Hold Spray:</strong> Heavy Load (Freeze Spray) — High-octane coat to lock 2-tier zigzag bangs flat and rigid.</li>
+        <li><strong>Sleekness / Flyaway Control:</strong> Medium Load (Edge Control Wax / Pomade) — Applied at scalp and ponytail wrap to eliminate stray hairs.</li>
+        <li><strong>Finishing Polish:</strong> Light Load (High-Shine Gloss Spray) — Adds a crisp metallic satin sheen across panels.</li>
+      </ul>
+
+      <!-- PRO TIP BOX -->
+      <div class="pro-tip-box">
+        💡 <strong>Stylist Pro Tip:</strong> To get the 2-tier Aquarius zigzag bangs completely flat and sharp in real life, hair stylists use flat-iron setting clips on wax-treated hair panels, spray with extreme-freeze hairspray, and let them cure flat before making final angle cuts.
       </div>
     </section>
 
