@@ -1,29 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fhonda's Ogham Master Translator</title>
     <style>
-    p {
-        color: #d4af37;        
-        font-size: 24px;       
-        line-height: 2;      
-        text-align: left;      
-        margin: 20px;          
-    }
     html, body {
         margin: 0;
         padding: 0;
         overflow-x: hidden; 
         width: 100%;
-        background-color: #000000; /* Sets the whole page background dark */
-    }
-    .your-main-container-class {
-        margin: 0 auto;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
+        background-color: #000000; 
     }
     .container { 
         max-width: 600px; 
@@ -36,23 +22,27 @@
         flex-direction: column;
         align-items: center;
     }
-    /* Style for the instruction list to match your gold/dark aesthetic */
     .instructions-box {
         color: #d4af37;
         text-align: left;
         line-height: 1.6;
+        align-items: flex-start; 
+    }
+    .instructions-box h3 {
+        color: #d4af37;
+        width: 100%;
+        text-align: center;
     }
     .instructions-box li {
         margin-bottom: 12px;
     }
-
     input { padding: 15px; width: 85%; border-radius: 5px; border: 2px solid #d4af37; background: #111; color: white; font-size: 1.2rem; margin-bottom: 10px; }
     canvas { background: #000; border: 1px solid #333; box-shadow: 0 0 20px rgba(212, 175, 55, 0.1); margin-top: 20px; }
     </style>
 </head>
 <body>
 
-<!-- Instruction Container (Matches your tool's style) -->
+<!-- Instruction Container -->
 <div class="container instructions-box">
     <h3>How the Tool Works</h3>
     <ul>
@@ -70,6 +60,29 @@
     </ul>
 </div>
 
+<!-- Main Tool Container -->
+<div class="container">
+    <h2 style="color: #d4af37; margin-top: 0;">Fhonda's Master Vine</h2>
+    <input type="text" id="userInput" placeholder="Type English here..." oninput="drawOgham()">
+    <canvas id="oghamCanvas" width="300" height="1200"></canvas>
+</div>
+<!-- Instruction Container (Matches your tool's style) -->
+<div class="container instructions-box">
+    <h3>How the Tool Works</h3>
+    <ul>
+        <li><strong>The Dictionary Layer:</strong> When you type an English word, the program checks a built-in Irish dictionary. If a match is found (like "love" becoming "grá"), it translates it into Irish to honor the original Celtic soul of the script.</li>
+        <li><strong>The Vowel/Consonant Split:</strong> To maintain high accuracy, Traditional Vowels (A, E, I, O, U) are preserved as deep notches (circles) sitting directly on the stem line.</li>
+        <li><strong>Modern Modifications:</strong> Because the original Ogham alphabet lacked certain English letters (like K, P, V, Y, Z), the "line versions" of those characters were modified to spell any modern name or word while keeping vowels as the "heartbeat" of the vine.</li>
+    </ul>
+
+    <h3>Rules of the Line: How to Write the Vine</h3>
+    <ul>
+        <li><strong>The Direction of Growth:</strong> Ogham is read from the bottom up. Always start with the Feather Mark (^) at the base to show where the life of the sentence begins.</li>
+        <li><strong>Sentence Structure (Irish Style):</strong> While English uses Subject-Verb-Object (e.g., "I see the dog"), Irish usually puts the verb first. Put the action word at the bottom of the vine for authenticity.</li>
+        <li><strong>Spacing and Diamonds:</strong> Use a period (.) in the text box to trigger a Diamond Spacer, preventing words from blurring together. This acts like a "knot" in the wood to signal a new word.</li>
+        <li><strong>The Finish:</strong> Always end with the Ritual Cross (+) at the top to "seal" the message and protect the words carved within.</li>
+    </ul>
+</div>
 <!-- Main Tool Container -->
 <div class="container">
     <h2>Fhonda's Master Vine</h2>
