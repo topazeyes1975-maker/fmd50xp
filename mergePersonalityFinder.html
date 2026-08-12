@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hybrid Creature Personality Engine</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #f0f0f0;
+            padding: 20px;
+            max-width: 700px;
+            margin: auto;
+        }
+        .container {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+        }
+        select, button, input[type="range"], input[type="text"] {
+            padding: 8px;
+            margin: 5px 0;
+            font-size: 16px;
+        }
+        input[type="range"] {
+            width: 100%;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .stat-bar-container, .slider-group {
+            margin: 15px 0;
+        }
+        .bar-bg {
+            background: #444;
+            border-radius: 4px;
+            overflow: hidden;
+            height: 20px;
+            width: 100%;
+        }
+        .bar-fill {
+            height: 100%;
+            width: 0%;
+            background-color: #3498db;
+            transition: width 0.5s ease-in-out;
+        }
+        .component-list {
+            margin: 10px 0;
+            font-style: italic;
+            color: #aaa;
+        }
+        hr {
+            border: 0;
+            border-top: 1px solid #444;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Hybrid Creature Personality Engine</h2>
+    
+    <!-- SECTION 1: Automatic Real Animals -->
+    <h3>1. Add Real Animal (Automatic)</h3>
+    <select id="animalSelect">
+        <option value="pitbull">Pitbull</option>
+        <option value="scorpion">Scorpion</option>
+        <option value="beardedDragon">Bearded Dragon</option>
+        <option value="sugarGlider">Sugar Glider</option>
+    </select>
+    <button onclick="addRealAnimal()">Add Real Animal</button>
+
+    <hr>
+
+    <!-- SECTION 2: Manual Mythological / Custom Creature Sliders -->
+    <h3>2. Add Mythological / Custom Creature (Manual Sliders)</h3>
+    <input type="text" id="customName" placeholder="Creature Name (e.g., Dragon, Hydra)" style="width: 95%;">
+    
+    <div class="slider-group">
+        <label>Loyalty / Closeness: <span id="valCustomLoyalty">50</span>%</label>
+        <input type="range" id="customLoyalty" min="0" max="100" value="50" oninput="document.getElementById('valCustomLoyalty').innerText = this.value">
+    </div>
+
+    <div class="slider-group">
+        <label>Zoomies / Energy: <span id="valCustomZoomies">50</span>%</label>
+        <input type="range" id="customZoomies" min="0" max="100" value="50" oninput="document.getElementById('valCustomZoomies').innerText = this.value">
+    </div>
+
+    <div class="slider-group">
+        <label>Danger / Spiciness: <span id="valCustomDanger">50</span>%</label>
+        <input type="range" id="customDanger" min="0" max="100" value="50" oninput="document.getElementById('valCustomDanger').innerText = this.value">
+    </div>
+
+    <div class="slider-group">
+        <label>Drama / Attitude: <span id="valCustomDrama">50</span>%</label>
+        <input type="range" id="customDrama" min="0" max="100" value="50" oninput="document.getElementById('valCustomDrama').innerText = this.value">
+    </div>
+
+    <button onclick="addCustomCreature()">Add Custom Creature to Mix</button>
+
+    <div class="component-list" id="componentList">Current Mix: None</div>
+
+    <hr>
+    
+    <!-- RESULTS SECTION -->
+    <h3>Blended Personality Stats</h3>
+    
+    <div class="stat-bar-container">
+        <span id="labelLoyalty">Loyalty / Closeness: 0%</span>
+        <div class="bar-bg"><div class="bar-fill" id="barLoyalty"></div></div>
+    </div>
+    
+    <div class="stat-bar-container">
+        <span id="labelZoomies">Zoomies / Energy: 0%</span>
+        <div class="bar-bg"><div class="bar-fill" id="barZoomies"></div></div>
+    </div>
+    
+    <div class="stat-bar-container">
+        <span id="labelDanger">Danger / Spiciness: 0%</span>
+        <div class="bar-bg"><div class="bar-fill" id="barDanger"></div></div>
+    </div>
+
+    <div class="stat-bar-container">
+        <span id="labelDrama">Drama / Attitude: 0%</span>
+        <div class="bar-bg"><div class="bar-fill" id="barDrama"></div></div>
+    </div>
+
+    <button onclick="calculateHybrid()" style="width: 100%; margin-top: 15px; background-color: #e67e22;">Calculate Final Hybrid Stats</button>
+</div>
+
+<script>
+    // Preset database for real animals only
+    const expandedAnimalDatabase = {
+    cat: { name: "Cat", loyalty: 50, zoomies: 80, danger: 20, drama: 85 },
+    elephant: { name: "Elephant", loyalty: 90, zoomies: 20, danger: 75, drama: 50 },
+    horse: { name: "Horse", loyalty: 75, zoomies: 70, danger: 60, drama: 65 },
+    crow: { name: "Crow", loyalty: 70, zoomies: 85, danger: 30, drama: 90 },
+    parrot: { name: "Parrot", loyalty: 80, zoomies: 90, danger: 40, drama: 95 },
+    buffalo: { name: "Buffalo", loyalty: 30, zoomies: 40, danger: 85, drama: 35 },
+    cow: { name: "Cow", loyalty: 50, zoomies: 30, danger: 40, drama: 30 },
+    alligator: { name: "Alligator", loyalty: 5, zoomies: 25, danger: 95, drama: 30 },
+    python: { name: "Python", loyalty: 15, zoomies: 15, danger: 70, drama: 40 },
+    hognose: { name: "Hognose Snake", loyalty: 20, zoomies: 30, danger: 25, drama: 95 }, // Maximum drama for the dramatic play-dead reflex!
+    pitbull: { name: "Pitbull", loyalty: 95, zoomies: 50, danger: 10, drama: 20 },
+        scorpion: { name: "Scorpion", loyalty: 5, zoomies: 30, danger: 90, drama: 40 },
+        beardedDragon: { name: "Bearded Dragon", loyalty: 40, zoomies: 10, danger: 15, drama: 80 },
+        sugarGlider: { name: "Sugar Glider", loyalty: 60, zoomies: 100, danger: 20, drama: 70 }
+    };
+
+    let selectedComponents = [];
+
+    function addRealAnimal() {
+        let select = document.getElementById("animalSelect");
+        let key = select.value;
+        let animalData = realAnimalDatabase[key];
+        
+        selectedComponents.push(animalData);
+        updateComponentList();
+    }
+
+    function addCustomCreature() {
+        let nameInput = document.getElementById("customName").value.trim();
+        let name = nameInput !== "" ? nameInput : "Custom Myth";
+
+        let customObj = {
+            name: name,
+            loyalty: parseInt(document.getElementById("customLoyalty").value),
+            zoomies: parseInt(document.getElementById("customZoomies").value),
+            danger: parseInt(document.getElementById("customDanger").value),
+            drama: parseInt(document.getElementById("customDrama").value)
+        };
+
+        selectedComponents.push(customObj);
+        updateComponentList();
+        
+        // Reset custom name field
+        document.getElementById("customName").value = "";
+    }
+
+    function updateComponentList() {
+        let listDiv = document.getElementById("componentList");
+        if (selectedComponents.length === 0) {
+            listDiv.innerHTML = "Current Mix: None";
+            return;
+        }
+        let names = selectedComponents.map(c => c.name).join(" + ");
+        listDiv.innerHTML = "Current Mix: " + names;
+    }
+
+    function calculateHybrid() {
+        if (selectedComponents.length === 0) {
+            alert("Please add at least one component to calculate!");
+            return;
+        }
+
+        let totalLoyalty = 0;
+        let totalZoomies = 0;
+        let totalDanger = 0;
+        let totalDrama = 0;
+        let count = selectedComponents.length;
+
+        // Sum up all stats from both real and custom inputs
+        selectedComponents.forEach(c => {
+            totalLoyalty += c.loyalty;
+            totalZoomies += c.zoomies;
+            totalDanger += c.danger;
+            totalDrama += c.drama;
+        });
+
+        // Average them out
+        let avgLoyalty = Math.round(totalLoyalty / count);
+        let avgZoomies = Math.round(totalZoomies / count);
+        let avgDanger = Math.round(totalDanger / count);
+        let avgDrama = Math.round(totalDrama / count);
+
+        // Update the bar graphs
+        document.getElementById("labelLoyalty").innerText = `Loyalty / Closeness: ${avgLoyalty}%`;
+        document.getElementById("barLoyalty").style.width = avgLoyalty + "%";
+
+        document.getElementById("labelZoomies").innerText = `Zoomies / Energy: ${avgZoomies}%`;
+        document.getElementById("barZoomies").style.width = avgZoomies + "%";
+
+        document.getElementById("labelDanger").innerText = `Danger / Spiciness: ${avgDanger}%`;
+        document.getElementById("barDanger").style.width = avgDanger + "%";
+
+        document.getElementById("labelDrama").innerText = `Drama / Attitude: ${avgDrama}%`;
+        document.getElementById("barDrama").style.width = avgDrama + "%";
+    }
+</script>
+
+</body>
+</html>
