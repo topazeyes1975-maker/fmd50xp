@@ -77,16 +77,16 @@
         <option value="scorpion">Scorpion</option>
         <option value="beardedDragon">Bearded Dragon</option>
         <option value="sugarGlider">Sugar Glider</option>
-        <option value="Cat">Cat</option>
-        <option value="Elephant">Elephant</option>
-        <option value="Alligator"> Alligator</option>
-        <option value="Parrot">Parrot</option>
-        <option value="Horse">Horse</option>
-        <option value="Buffalo">Buffalo</option>
-        <option value="Cow"> Cow</option>
-        <option value="Crow"> Crow</option>
-        <option value="Python">Python</option>
-        <option value="Hognose Snake">Hognose Snake</option>
+        <option value="cat">Cat</option>
+        <option value="elephant">Elephant</option>
+        <option value="alligator">Alligator</option>
+        <option value="parrot">Parrot</option>
+        <option value="horse">Horse</option>
+        <option value="buffalo">Buffalo</option>
+        <option value="cow">Cow</option>
+        <option value="crow">Crow</option>
+        <option value="python">Python</option>
+        <option value="hognose">Hognose Snake</option>
     </select>
     <button onclick="addRealAnimal()">Add Real Animal</button>
 
@@ -149,12 +149,22 @@
 </div>
 
 <script>
-    // Preset database for real animals only
+    // Complete preset database for real animals
     const realAnimalDatabase = {
         pitbull: { name: "Pitbull", loyalty: 95, zoomies: 50, danger: 10, drama: 20 },
         scorpion: { name: "Scorpion", loyalty: 5, zoomies: 30, danger: 90, drama: 40 },
         beardedDragon: { name: "Bearded Dragon", loyalty: 40, zoomies: 10, danger: 15, drama: 80 },
-        sugarGlider: { name: "Sugar Glider", loyalty: 60, zoomies: 100, danger: 20, drama: 70 }
+        sugarGlider: { name: "Sugar Glider", loyalty: 60, zoomies: 100, danger: 20, drama: 70 },
+        cat: { name: "Cat", loyalty: 50, zoomies: 80, danger: 20, drama: 85 },
+        elephant: { name: "Elephant", loyalty: 90, zoomies: 20, danger: 75, drama: 50 },
+        alligator: { name: "Alligator", loyalty: 5, zoomies: 25, danger: 95, drama: 30 },
+        parrot: { name: "Parrot", loyalty: 80, zoomies: 90, danger: 40, drama: 95 },
+        horse: { name: "Horse", loyalty: 75, zoomies: 70, danger: 60, drama: 65 },
+        buffalo: { name: "Buffalo", loyalty: 30, zoomies: 40, danger: 85, drama: 35 },
+        cow: { name: "Cow", loyalty: 50, zoomies: 30, danger: 40, drama: 30 },
+        crow: { name: "Crow", loyalty: 70, zoomies: 85, danger: 30, drama: 90 },
+        python: { name: "Python", loyalty: 15, zoomies: 15, danger: 70, drama: 40 },
+        hognose: { name: "Hognose Snake", loyalty: 20, zoomies: 30, danger: 25, drama: 95 }
     };
 
     let selectedComponents = [];
@@ -183,7 +193,6 @@
         selectedComponents.push(customObj);
         updateComponentList();
         
-        // Reset custom name field
         document.getElementById("customName").value = "";
     }
 
@@ -209,7 +218,6 @@
         let totalDrama = 0;
         let count = selectedComponents.length;
 
-        // Sum up all stats from both real and custom inputs
         selectedComponents.forEach(c => {
             totalLoyalty += c.loyalty;
             totalZoomies += c.zoomies;
@@ -217,13 +225,11 @@
             totalDrama += c.drama;
         });
 
-        // Average them out
         let avgLoyalty = Math.round(totalLoyalty / count);
         let avgZoomies = Math.round(totalZoomies / count);
         let avgDanger = Math.round(totalDanger / count);
         let avgDrama = Math.round(totalDrama / count);
 
-        // Update the bar graphs
         document.getElementById("labelLoyalty").innerText = `Loyalty / Closeness: ${avgLoyalty}%`;
         document.getElementById("barLoyalty").style.width = avgLoyalty + "%";
 
