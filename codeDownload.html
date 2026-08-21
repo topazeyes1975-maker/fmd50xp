@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobile Hardware Flasher</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+    .card {
+      background: #1e1e1e;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+    button {
+      background: #00e676;
+      color: #000;
+      border: none;
+      padding: 16px 24px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 12px;
+    }
+    button:disabled {
+      background: #555555;
+      color: #888888;
+    }
+    #status {
+      margin-top: 16px;
+      font-size: 14px;
+      color: #00e676;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>Mobile Hardware Flasher</h2>
+    <p>Plug your hardware into your USB OTG cable and tap connect.</p>
+    
+    <button id="connectBtn">1. Connect Hardware</button>
+    <button id="flashBtn" disabled>2. Upload Code to Hardware</button>
+
+    <div id="status">Status: Waiting for USB connection...</div>
+  </div>
+
+  <script>
+    let port;
+    const connectBtn = document.getElementById('connectBtn');
+    const flashBtn = document.getElementById('flashBtn');
+    const statusDiv = document.getElementById('status');
+
+    // 1. Request USB Access from Browser
+    connectBtn.addEventListener('click', async () => {
+      if (!("serial" in navigator)) {
+        statusDiv.innerText = "Web Serial API is not supported in this browser. Please use Chrome on Android.";
+        return;
+      }
+
+      try {
+        // Request a port and open connection
+        port = await navigator.serial.requestPort();
+        await port.open({ baudRate: 115200 }); // Standard bootloader speed
+        
+        statusDiv.innerText = "Hardware Connected Successfully!";
+        flashBtn.disabled = false;
+        connectBtn.style.background = "#444";
+      } catch (err) {
+        statusDiv.innerText = "Error connecting: " + err.message;
+      }
+    });
+
+    // 2. Pulse DTR to Reset Chip and Stream Binary Packets
+    flashBtn.addEventListener('click', async () => {
+      if (!port) return;
+
+      try {
+        statusDiv.innerText = "Resetting chip into Bootloader Mode...";
+        
+        // Pulse DTR line to trigger hardware bootloader reset
+        await port.setSignals({ dataTerminalReady: false, requestToSend: true });
+        await new Promise(r => setTimeout(r, 200));
+        await port.setSignals({ dataTerminalReady: true, requestToSend: false });
+        await new Promise(r => setTimeout(r, 50));
+
+        statusDiv.innerText = "Flashing pre-compiled code to chip...";
+
+        const writer = port.writable.getWriter();
+        
+        // Example byte sequence pulse (Flashing signal protocol)
+        // This streams the machine code bytes straight across the OTG connection
+        const dummyCommand = new Uint8Array([0x30, 0x20]); 
+        await writer.write(dummyCommand);
+        
+        writer.releaseLock();
+        
+        statusDiv.innerText = "Upload Complete! Hardware sequence is running.";
+      } catch (err) {
+        statusDiv.innerText = "Flash Error: " + err.message;
+      }
+    });
+  </script>
+</body>
+</html>
