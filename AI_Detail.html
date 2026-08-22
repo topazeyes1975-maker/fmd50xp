@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Master AI Prompt Generator</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #0f172a; color: #f8fafc; padding: 20px; }
+    .card { max-width: 700px; margin: 0 auto; background: #1e293b; padding: 25px; border-radius: 12px; border: 1px solid #334155; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+    .full-width { grid-column: span 2; }
+    label { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; font-weight: 600; }
+    input, select { width: 100%; padding: 10px; margin-top: 5px; background: #0f172a; color: #fff; border: 1px solid #475569; border-radius: 6px; box-sizing: border-box; }
+    button { grid-column: span 2; margin-top: 15px; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    button:hover { background: #1d4ed8; }
+    .btn-secondary { background: #334155; margin-top: 10px; }
+    .btn-secondary:hover { background: #475569; }
+    .output { margin-top: 20px; padding: 15px; background: #090d16; border-left: 4px solid #3b82f6; border-radius: 4px; white-space: pre-wrap; font-family: monospace; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h2>Master AI Prompt Generator</h2>
+  
+  <label for="category">Select Creative Mode</label>
+  <select id="category" onchange="renderFields()">
+    <option value="cinema">1. Cinema / Video / Animation</option>
+    <option value="music">2. Music / Songwriting / Audio</option>
+    <option value="business">3. Business / Writing / Marketing</option>
+  </select>
+
+  <div id="dynamic-form" class="grid"></div>
+
+  <button onclick="buildPrompt()">Generate Master Prompt</button>
+  <button class="btn-secondary" onclick="copyPrompt()">Copy to Clipboard</button>
+
+  <div id="output-box" class="output">Your detailed prompt will assemble here...</div>
+</div>
+
+<script>
+function checkCustom(selectId, inputId) {
+  const sel = document.getElementById(selectId);
+  const inp = document.getElementById(inputId);
+  if (sel.value === 'OTHER') {
+    inp.classList.remove('hidden');
+  } else {
+    inp.classList.add('hidden');
+  }
+}
+
+function renderFields() {
+  const cat = document.getElementById('category').value;
+  const form = document.getElementById('dynamic-form');
+  
+  if (cat === 'cinema') {
+    form.innerHTML = `
+      <div class="full-width">
+        <label>Subject & Action</label>
+        <input type="text" id="field1" placeholder="e.g., A detective searching a foggy pier at midnight">
+      </div>
+      <div>
+        <label>Camera Shot & Angle</label>
+        <select id="field2">
+          <option value="Low-angle tracking shot">Low-angle tracking shot</option>
+          <option value="Aerial drone establishing shot">Aerial drone shot</option>
+          <option value="Extreme close-up macro lens">Extreme close-up macro</option>
+        </select>
+      </div>
+      <div>
+        <label>Lighting & Atmosphere</label>
+        <select id="field3">
+          <option value="dramatic golden hour lighting with long shadows">Golden Hour</option>
+          <option value="high-contrast film noir chiaroscuro lighting">Film Noir Chiaroscuro</option>
+          <option value="vibrant neon glow with wet pavement reflections">Neon Cyberpunk</option>
+        </select>
+      </div>
+      <div class="full-width">
+        <label>Visual Style Presets</label>
+        <select id="styleSelect" onchange="checkCustom('styleSelect', 'customStyle')">
+          <option value="Vintage 35mm film grain, cinematic anamorphic look">Vintage 35mm Film</option>
+          <option value="Gritty Cyberpunk Neon Noir style, teal and magenta grade">Cyberpunk Neon Noir</option>
+          <option value="Dark Fantasy cinematic aesthetic, moody volumetric mist">Dark Fantasy</option>
+          <option value="3D Stylized Animation aesthetic, vibrant lighting">3D Animated / Pixar Style</option>
+          <option value="OTHER">Other / Custom Style...</option>
+        </select>
+        <input type="text" id="customStyle" class="hidden" placeholder="Type your own custom visual style here..." style="margin-top: 8px;">
+      </div>
+    `;
+  } else if (cat === 'music') {
+    form.innerHTML = `
+      <div class="full-width">
+        <label>Song Topic & Concept</label>
+        <input type="text" id="field1" placeholder="e.g., Driving through city streets late at night">
+      </div>
+      <div>
+        <label>Musical Genre</label>
+        <select id="styleSelect" onchange="checkCustom('styleSelect', 'customStyle')">
+          <option value="80s Synthwave / Retrowave">80s Synthwave / Retrowave</option>
+          <option value="Cinematic Orchestral & Epic Strings">Cinematic Orchestral</option>
+          <option value="Lo-Fi Hip-Hop / Chill Beats">Lo-Fi Hip-Hop / Chill</option>
+          <option value="Acoustic Folk / Indie Singer-Songwriter">Acoustic Folk / Indie</option>
+          <option value="OTHER">Other / Custom Genre...</option>
+        </select>
+        <input type="text" id="customStyle" class="hidden" placeholder="Type your own custom genre here..." style="margin-top: 8px;">
+      </div>
+      <div>
+        <label>Key Instruments</label>
+        <input type="text" id="field3" placeholder="e.g., Analog synths, deep bass, electric drums">
+      </div>
+      <div class="full-width">
+        <label>Vocal & Pacing Style</label>
+        <input type="text" id="field4" placeholder="e.g., Mid-tempo (100 BPM), soft reverb-heavy female vocals">
+      </div>
+    `;
+  } else if (cat === 'business') {
+    form.innerHTML = `
+      <div class="full-width">
+        <label>Core Topic / Story Plot / Goal</label>
+        <input type="text" id="field1" placeholder="e.g., Launching a new tool OR Chapter outline for a sci-fi book">
+      </div>
+      <div>
+        <label>Content Format</label>
+        <select id="field2">
+          <option value="Story Plot & Narrative Outline">Story Plot & Narrative Outline</option>
+          <option value="Marketing Copy & Product Pitch">Marketing Copy & Product Pitch</option>
+          <option value="Meeting Agenda & Editorial Summary">Meeting Agenda & Editorial Summary</option>
+        </select>
+      </div>
+      <div>
+        <label>Target Audience</label>
+        <input type="text" id="field3" placeholder="e.g., Sci-fi readers, busy parents, corporate clients">
+      </div>
+      <div class="full-width">
+        <label>Tone of Voice</label>
+        <select id="styleSelect" onchange="checkCustom('styleSelect', 'customStyle')">
+          <option value="Persuasive, authoritative, and highly professional">Professional & Authoritative</option>
+          <option value="Casual, friendly, and conversational">Casual & Conversational</option>
+          <option value="Punchy, direct, and sales-focused">Punchy & Direct (Sales Pitch)</option>
+          <option value="Suspenseful, vivid, and story-driven">Suspenseful & Narrative (Storytelling)</option>
+          <option value="OTHER">Other / Custom Tone...</option>
+        </select>
+        <input type="text" id="customStyle" class="hidden" placeholder="Type your own custom tone of voice here..." style="margin-top: 8px;">
+      </div>
+    `;
+  }
+}
+
+function buildPrompt() {
+  const cat = document.getElementById('category').value;
+  const f1 = document.getElementById('field1')?.value || 'N/A';
+  const f2 = document.getElementById('field2')?.value || 'N/A';
+  const f3 = document.getElementById('field3')?.value || 'N/A';
+  const f4 = document.getElementById('field4')?.value || 'N/A';
+  
+  const selStyle = document.getElementById('styleSelect')?.value;
+  const customVal = document.getElementById('customStyle')?.value;
+  
+  // Use custom text if 'OTHER' is selected, otherwise use dropdown choice
+  const activeStyle = (selStyle === 'OTHER' && customVal) ? customVal : selStyle;
+
+  let result = '';
+
+  if (cat === 'cinema') {
+    result = `${f2} of ${f1}. Lit by ${f3}. Rendered in ${activeStyle}. Ensure high cinematic visual detail and coherent composition.`;
+  } else if (cat === 'music') {
+    result = `Create a ${activeStyle} track centered on the theme: "${f1}". Primary instrumentation includes ${f3}. Vocal/Pacing style: ${f4}. Focus on strong dynamic structure and clean production mix.`;
+  } else if (cat === 'business') {
+    result = `Act as an expert author and strategist. Develop a comprehensive ${f2} focused on: "${f1}". Target audience: ${f3}. Tone of voice: ${activeStyle}. Organize the output into clear, actionable sections with detailed key points.`;
+  }
+
+  document.getElementById('output-box').innerText = result;
+}
+
+function copyPrompt() {
+  const text = document.getElementById('output-box').innerText;
+  navigator.clipboard.writeText(text);
+  alert('Prompt copied to clipboard!');
+}
+
+// Initial Render
+renderFields();
+</script>
+
+</body>
+</html>
