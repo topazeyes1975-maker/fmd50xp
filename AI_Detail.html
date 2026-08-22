@@ -42,9 +42,9 @@
 function checkCustom(selectId, inputId) {
   const sel = document.getElementById(selectId);
   const inp = document.getElementById(inputId);
-  if (sel.value === 'OTHER') {
+  if (sel && sel.value === 'OTHER') {
     inp.classList.remove('hidden');
-  } else {
+  } else if (inp) {
     inp.classList.add('hidden');
   }
 }
@@ -57,23 +57,31 @@ function renderFields() {
     form.innerHTML = `
       <div class="full-width">
         <label>Subject & Action</label>
-        <input type="text" id="field1" placeholder="e.g., A detective searching a foggy pier at midnight">
+        <input type="text" id="subject" placeholder="e.g., A detective searching a foggy pier">
       </div>
       <div>
-        <label>Camera Shot & Angle</label>
-        <select id="field2">
-          <option value="Low-angle tracking shot">Low-angle tracking shot</option>
-          <option value="Aerial drone establishing shot">Aerial drone shot</option>
-          <option value="Extreme close-up macro lens">Extreme close-up macro</option>
+        <label>Time of Day (Lighting Mood)</label>
+        <select id="timeOfDay">
+          <option value="high zenith noon sunlight with crisp bright atmosphere">High Noon (Direct Overhead)</option>
+          <option value="warm golden hour sunset lighting with long soft shadows">Golden Hour / Sunset</option>
+          <option value="cool soft dawn morning light with gentle haze">Early Morning / Dawn</option>
+          <option value="dark moody night lit by soft moonlight and ambient shadows">Night / Midnight</option>
+          <option value="dramatic neon glow and moody artificial streetlights">Night (City / Artificial Lights)</option>
         </select>
       </div>
       <div>
-        <label>Lighting & Atmosphere</label>
-        <select id="field3">
-          <option value="dramatic golden hour lighting with long shadows">Golden Hour</option>
-          <option value="high-contrast film noir chiaroscuro lighting">Film Noir Chiaroscuro</option>
-          <option value="vibrant neon glow with wet pavement reflections">Neon Cyberpunk</option>
+        <label>Light Source Direction</label>
+        <select id="lightDirection">
+          <option value="positioned directly overhead">Directly Overhead</option>
+          <option value="casting from the far left of the frame">From the Left</option>
+          <option value="casting from the far right of the frame">From the Right</option>
+          <option value="backlit from behind the subject creating a strong silhouette/rim light">Behind Subject (Backlit / Silhouette)</option>
+          <option value="angled at a 45-degree side angle">Off-Center Side Light (45 Degrees)</option>
         </select>
+      </div>
+      <div class="full-width">
+        <label>Atmosphere & Weather (Optional)</label>
+        <input type="text" id="weather" placeholder="e.g., Heavy fog, light rain, drifting steam">
       </div>
       <div class="full-width">
         <label>Visual Style Presets</label>
@@ -148,24 +156,33 @@ function renderFields() {
 
 function buildPrompt() {
   const cat = document.getElementById('category').value;
-  const f1 = document.getElementById('field1')?.value || 'N/A';
-  const f2 = document.getElementById('field2')?.value || 'N/A';
-  const f3 = document.getElementById('field3')?.value || 'N/A';
-  const f4 = document.getElementById('field4')?.value || 'N/A';
-  
   const selStyle = document.getElementById('styleSelect')?.value;
   const customVal = document.getElementById('customStyle')?.value;
-  
-  // Use custom text if 'OTHER' is selected, otherwise use dropdown choice
   const activeStyle = (selStyle === 'OTHER' && customVal) ? customVal : selStyle;
 
   let result = '';
 
   if (cat === 'cinema') {
-    result = `${f2} of ${f1}. Lit by ${f3}. Rendered in ${activeStyle}. Ensure high cinematic visual detail and coherent composition.`;
+    const subj = document.getElementById('subject')?.value || 'A compelling scene';
+    const time = document.getElementById('timeOfDay').value;
+    const dir = document.getElementById('lightDirection').value;
+    const weather = document.getElementById('weather')?.value;
+    
+    let lightingText = `Lit by ${time}, with light source ${dir}`;
+    if (weather) {
+      lightingText += `, filtered through ${weather}`;
+    }
+
+    result = `Cinematic shot of ${subj}. ${lightingText}. Rendered in ${activeStyle}. High visual detail, photorealistic atmosphere, coherent composition.`;
   } else if (cat === 'music') {
+    const f1 = document.getElementById('field1')?.value || 'N/A';
+    const f3 = document.getElementById('field3')?.value || 'N/A';
+    const f4 = document.getElementById('field4')?.value || 'N/A';
     result = `Create a ${activeStyle} track centered on the theme: "${f1}". Primary instrumentation includes ${f3}. Vocal/Pacing style: ${f4}. Focus on strong dynamic structure and clean production mix.`;
   } else if (cat === 'business') {
+    const f1 = document.getElementById('field1')?.value || 'N/A';
+    const f2 = document.getElementById('field2')?.value || 'N/A';
+    const f3 = document.getElementById('field3')?.value || 'N/A';
     result = `Act as an expert author and strategist. Develop a comprehensive ${f2} focused on: "${f1}". Target audience: ${f3}. Tone of voice: ${activeStyle}. Organize the output into clear, actionable sections with detailed key points.`;
   }
 
