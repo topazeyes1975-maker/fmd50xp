@@ -5,7 +5,7 @@
   <title>Master AI Prompt Generator</title>
   <style>
     body { font-family: system-ui, sans-serif; background: #0f172a; color: #f8fafc; padding: 20px; }
-    .card { max-width: 700px; margin: 0 auto; background: #1e293b; padding: 25px; border-radius: 12px; border: 1px solid #334155; }
+    .card { max-width: 750px; margin: 0 auto; background: #1e293b; padding: 25px; border-radius: 12px; border: 1px solid #334155; }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
     .full-width { grid-column: span 2; }
     label { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; font-weight: 600; }
@@ -16,6 +16,9 @@
     .btn-secondary:hover { background: #475569; }
     .output { margin-top: 20px; padding: 15px; background: #090d16; border-left: 4px solid #3b82f6; border-radius: 4px; white-space: pre-wrap; font-family: monospace; }
     .hidden { display: none; }
+    .dynamic-group { background: #111827; padding: 14px; border-radius: 8px; border: 1px solid #374151; margin-top: 12px; }
+    .char-preview-thumb { max-height: 80px; border-radius: 4px; margin-top: 8px; border: 1px solid #475569; display: block; }
+    .sub-label { font-size: 0.75rem; color: #cbd5e1; font-weight: normal; margin-top: 6px; display: block; }
   </style>
 </head>
 <body>
@@ -49,6 +52,65 @@ function checkCustom(selectId, inputId) {
   }
 }
 
+// Preview uploaded image file for character
+function handleImagePreview(input, imgId, nameContainerId) {
+  const file = input.files[0];
+  const imgTag = document.getElementById(imgId);
+  const nameTag = document.getElementById(nameContainerId);
+  
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      imgTag.src = e.target.result;
+      imgTag.classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+    nameTag.value = `Reference Image: [${file.name}]`;
+  }
+}
+
+// Generate dynamic inputs for characters with Image & Description support
+function updateCharacterInputs() {
+  const count = parseInt(document.getElementById('charCount').value, 10);
+  const container = document.getElementById('character-fields-container');
+  container.innerHTML = '';
+  
+  for (let i = 1; i <= count; i++) {
+    container.innerHTML += `
+      <div class="dynamic-group">
+        <label style="color: #60a5fa;">Character ${i} Identity & Action</label>
+        
+        <span class="sub-label">Option A: Upload Reference Image</span>
+        <input type="file" accept="image/*" onchange="handleImagePreview(this, 'preview-${i}', 'img-ref-name-${i}')" style="font-size: 0.8rem; padding: 6px;">
+        <input type="hidden" id="img-ref-name-${i}" value="">
+        <img id="preview-${i}" class="char-preview-thumb hidden" alt="Character ${i} Preview">
+
+        <span class="sub-label">Option B: Visual Description (Appearance, Clothing, Features)</span>
+        <input type="text" class="char-desc" placeholder="e.g., Cyberpunk detective in a brown leather trench coat with glowing blue cybernetic eyes">
+
+        <span class="sub-label">Character Action in Scene</span>
+        <input type="text" class="char-action" placeholder="e.g., Drawing a chrome pistol while crouching behind cover">
+      </div>
+    `;
+  }
+}
+
+// Generate dynamic inputs for objects
+function updateObjectInputs() {
+  const count = parseInt(document.getElementById('objCount').value, 10);
+  const container = document.getElementById('object-fields-container');
+  container.innerHTML = '';
+  
+  for (let i = 1; i <= count; i++) {
+    container.innerHTML += `
+      <div class="dynamic-group">
+        <label style="color: #f59e0b;">Key Object ${i}</label>
+        <input type="text" class="obj-input" placeholder="e.g., A rusty vintage car idling under a broken streetlamp">
+      </div>
+    `;
+  }
+}
+
 function renderFields() {
   const cat = document.getElementById('category').value;
   const form = document.getElementById('dynamic-form');
@@ -56,9 +118,35 @@ function renderFields() {
   if (cat === 'cinema') {
     form.innerHTML = `
       <div class="full-width">
-        <label>Subject & Action</label>
-        <input type="text" id="subject" placeholder="e.g., A detective searching a foggy pier">
+        <label>Primary Setting / Location</label>
+        <input type="text" id="setting" placeholder="e.g., A foggy alleyway outside a futuristic nightclub">
       </div>
+
+      <!-- Character Counter -->
+      <div>
+        <label>Number of Characters</label>
+        <select id="charCount" onchange="updateCharacterInputs()">
+          <option value="1">1 Character</option>
+          <option value="2">2 Characters</option>
+          <option value="3">3 Characters</option>
+          <option value="4">4 Characters</option>
+        </select>
+      </div>
+
+      <!-- Object Counter -->
+      <div>
+        <label>Number of Key Objects</label>
+        <select id="objCount" onchange="updateObjectInputs()">
+          <option value="0">0 Key Objects</option>
+          <option value="1">1 Key Object</option>
+          <option value="2">2 Key Objects</option>
+          <option value="3">3 Key Objects</option>
+        </select>
+      </div>
+
+      <div id="character-fields-container" class="full-width"></div>
+      <div id="object-fields-container" class="full-width"></div>
+
       <div>
         <label>Time of Day (Lighting Mood)</label>
         <select id="timeOfDay">
@@ -95,6 +183,10 @@ function renderFields() {
         <input type="text" id="customStyle" class="hidden" placeholder="Type your own custom visual style here..." style="margin-top: 8px;">
       </div>
     `;
+    
+    updateCharacterInputs();
+    updateObjectInputs();
+
   } else if (cat === 'music') {
     form.innerHTML = `
       <div class="full-width">
@@ -163,17 +255,66 @@ function buildPrompt() {
   let result = '';
 
   if (cat === 'cinema') {
-    const subj = document.getElementById('subject')?.value || 'A compelling scene';
+    const setting = document.getElementById('setting')?.value || 'A detailed scene';
     const time = document.getElementById('timeOfDay').value;
     const dir = document.getElementById('lightDirection').value;
     const weather = document.getElementById('weather')?.value;
     
+    // Collect Characters (Image/Description + Action)
+    const descs = document.querySelectorAll('.char-desc');
+    const actions = document.querySelectorAll('.char-action');
+    let charList = [];
+
+    descs.forEach((descInput, idx) => {
+      const imgRefVal = document.getElementById(`img-ref-name-${idx + 1}`)?.value;
+      const descVal = descInput.value.trim();
+      const actionVal = actions[idx]?.value.trim();
+
+      let charIdentity = '';
+      if (imgRefVal && descVal) {
+        charIdentity = `${descVal} (${imgRefVal})`;
+      } else if (imgRefVal) {
+        charIdentity = imgRefVal;
+      } else if (descVal) {
+        charIdentity = descVal;
+      } else {
+        charIdentity = `Character ${idx + 1}`;
+      }
+
+      let charEntry = `Character ${idx + 1} [Identity: ${charIdentity}]`;
+      if (actionVal) {
+        charEntry += ` -> Action: ${actionVal}`;
+      }
+      charList.push(charEntry);
+    });
+
+    // Collect Objects
+    const objInputs = document.querySelectorAll('.obj-input');
+    let objList = [];
+    objInputs.forEach((input, idx) => {
+      if (input.value.trim() !== '') {
+        objList.push(`Key Object ${idx + 1}: ${input.value.trim()}`);
+      }
+    });
+
     let lightingText = `Lit by ${time}, with light source ${dir}`;
     if (weather) {
       lightingText += `, filtered through ${weather}`;
     }
 
-    result = `Cinematic shot of ${subj}. ${lightingText}. Rendered in ${activeStyle}. High visual detail, photorealistic atmosphere, coherent composition.`;
+    // Assemble Prompt
+    result = `Cinematic shot set in ${setting}.\n`;
+    
+    if (charList.length > 0) {
+      result += `\nCharacter Details & Actions:\n- ${charList.join('\n- ')}\n`;
+    }
+    
+    if (objList.length > 0) {
+      result += `\nKey Scene Objects:\n- ${objList.join('\n- ')}\n`;
+    }
+
+    result += `\nLighting & Environment: ${lightingText}.\nRendered in ${activeStyle}. High visual detail, photorealistic atmosphere, coherent composition.`;
+
   } else if (cat === 'music') {
     const f1 = document.getElementById('field1')?.value || 'N/A';
     const f3 = document.getElementById('field3')?.value || 'N/A';
