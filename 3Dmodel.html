@@ -183,6 +183,32 @@
             border-radius: 20px;
             transition: all 0.3s ease;
         }
+        /* Styling the link to look like a solid button */
+.download-btn {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #2b6cb0; /* Button background color */
+  color: #ffffff;            /* Text color */
+  text-decoration: none;     /* Removes the default link underline */
+  border-radius: 6px;        /* Rounded corners */
+  font-weight: bold;
+  font-family: sans-serif;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+/* Hover effect when the user hovers over the button */
+.download-btn:hover {
+  background-color: #1a4971; /* Darkens the button slightly on hover */
+  transform: translateY(-2px); /* Gives a subtle lift effect */
+}
+
+/* Active effect when clicked */
+.download-btn:active {
+  transform: translateY(0);
+}
+        
 
         .dossier-btn:hover {
             background: var(--accent);
@@ -263,6 +289,10 @@
                         <h3>Aqualon</h3>
                         <p>Time-Fracturing Aqualumian Warrior</p>
                         <a href="aqualon.html" class="dossier-btn">📜 Open Full Dossier</a>
+                        <form action="Meshy_AI_Abyssal_Guardian_0509141700_texture.glb" method="get">
+                        <button type="submit" class="download-btn">Download GLB</button>
+                        </form>
+                        
                     </div>
                     <div class="interaction-bar">
                         <button class="emoji-btn" data-emoji="brain">🧠 <span class="count-num">0</span></button>
