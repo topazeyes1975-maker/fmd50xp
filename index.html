@@ -165,9 +165,14 @@
     .ticker {
         display: inline-block;
         white-space: nowrap;
-        animation: scroll 25s linear infinite;
+        animation: scroll 90s linear infinite;
         color: #fff; 
         font-weight: bold;
+            /* Pauses the text when someone touches or hovers over the ticker */
+    .ticker-wrap:hover .ticker {
+        animation-play-state: paused;
+    }
+        
     }
     @keyframes scroll {
         0% { transform: translateX(100%); }
@@ -273,11 +278,10 @@
 
     <div class="ticker-wrap">
         <div class="ticker">
-            <span>● BREAKING: All pages but the radio should be up and running. </span>
-            <span>● STATUS: Still working on the video game page and marketing code page.</span>
-            <span>● NEW LOG: New in the gaming room we have a lottery checker, that really works. we also have a merging creature personality finder. You'll find all these in the gaming section.</span>
-            <span>⚪ Coming Soon: multi weapon that is a blowgun, dagger, taser, throw ball, and walking stuff all in one. This will be located on the project page soon. We also have a new 3D character that will be placed into the 3D section.
-            The radio station is going to be, once I get it recording done. What I'm struggling with is going to be me and gemini's conversation of each project that way you'll know how the process goes about and that will be on the radio station.</span>
+            <span>● BREAKING: so the radio page has been changed to a video game that I've been working on you can watch the changes as I work on it. </span>
+            <span>● STATUS: Still working on the video game page and working on 3D models upgrade</span>
+            <span>● NEW LOG: New on the lottery that was new is now has a prediction lottery numbers added to it. Also added a converter for GBL which works great. I added a AI prompt maker.</span>
+            <span>⚪ Coming Soon: multi weapon that is a blowgun, dagger, taser, throw ball, and walking stuff all in one. This will be located on the project page soon.</span>
         </div>
     </div>
 
