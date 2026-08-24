@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Abyssal Hybrid Dossier</title>
+<style>
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    padding: 20px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: #e2e8f0;
+    background-color: #060913;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: #09101f;
+    border: 1px solid #16233b;
+    border-radius: 8px;
+    padding: 24px;
+  }
+
+  /* Header Section */
+  .header {
+    border-bottom: 2px solid #00f2fe;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+  }
+
+  .classification {
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: #ff416c;
+    text-transform: uppercase;
+    font-weight: bold;
+  }
+
+  h1 {
+    font-size: 26px;
+    margin: 6px 0 4px 0;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    text-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+  }
+
+  .subtitle {
+    font-size: 13px;
+    color: #8ab4f8;
+    font-style: italic;
+  }
+
+  /* Status Grid */
+  .status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .status-card {
+    background: #0d1527;
+    border: 1px solid #1e2d4a;
+    border-radius: 6px;
+    padding: 12px;
+  }
+
+  .status-label {
+    font-size: 10px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+
+  .status-value {
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .status-sub {
+    font-size: 10px;
+    color: #94a3b8;
+    margin-top: 2px;
+  }
+
+  /* Section Titles */
+  h2 {
+    font-size: 16px;
+    color: #4facfe;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border-left: 3px solid #00f2fe;
+    padding-left: 10px;
+    margin: 24px 0 12px 0;
+  }
+
+  /* Plot Teaser Log Entries */
+  .log-container {
+    background: #0d1527;
+    border: 1px solid #16233b;
+    border-radius: 6px;
+    padding: 16px;
+  }
+
+  .log-entry {
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px dashed #1e2d4a;
+  }
+
+  .log-entry:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .log-header {
+    margin-bottom: 4px;
+  }
+
+  .log-time {
+    font-family: monospace;
+    font-size: 11px;
+    color: #ff416c;
+    font-weight: bold;
+    margin-right: 8px;
+  }
+
+  .log-tag {
+    background: rgba(0, 242, 254, 0.15);
+    color: #00f2fe;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  .log-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #f1f5f9;
+    margin: 4px 0;
+  }
+
+  .log-text {
+    font-size: 12px;
+    color: #94a3b8;
+  }
+
+  /* Power Spectrum Table */
+  .power-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #0d1527;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid #16233b;
+  }
+
+  .power-table th {
+    background: #162238;
+    color: #38bdf8;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid #233554;
+  }
+
+  .power-table td {
+    padding: 10px 12px;
+    font-size: 12px;
+    border-bottom: 1px solid #16233b;
+    color: #cbd5e1;
+  }
+
+  .meter-bg {
+    background: #1e293b;
+    height: 10px;
+    border-radius: 5px;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .meter-fill {
+    height: 100%;
+    border-radius: 5px;
+  }
+
+  .fill-high { background: linear-gradient(90deg, #00f2fe, #4facfe); width: 88%; }
+  .fill-mid { background: linear-gradient(90deg, #f6d365, #fda085); width: 64%; }
+  .fill-vital { background: linear-gradient(90deg, #ff416c, #ff4b2b); width: 95%; }
+
+  .footer {
+    margin-top: 24px;
+    padding-top: 12px;
+    border-top: 1px solid #1e2d4a;
+    font-size: 10px;
+    color: #64748b;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="classification">✦ Classified Telemetric Overview ✦</div>
+    <h1>Abyssal Hybrid Registry & Log</h1>
+    <div class="subtitle">Biomechanical & Bioluminescent Entity Dossier — Deep Trench Sector VII</div>
+  </div>
+
+  <!-- STATUS DASHBOARD -->
+  <div class="status-grid">
+    <div class="status-card">
+      <div class="status-label">Primary Subject</div>
+      <div class="status-value" style="color: #00f2fe;">HYBRID-01</div>
+      <div class="status-sub">Mantis-Aquatic Phenotype</div>
+    </div>
+    <div class="status-card">
+      <div class="status-label">Current Power Output</div>
+      <div class="status-value" style="color: #ff416c;">9.42 GW</div>
+      <div class="status-sub">Bioluminescent Surge Active</div>
+    </div>
+    <div class="status-card">
+      <div class="status-label">Aether Core Flux</div>
+      <div class="status-value" style="color: #38bdf8;">98.4%</div>
+      <div class="status-sub">Resonant Frequency Matched</div>
+    </div>
+    <div class="status-card">
+      <div class="status-label">Threat Index</div>
+      <div class="status-value" style="color: #f59e0b;">LEVEL IV</div>
+      <div class="status-sub">Adaptive Wing Matrix</div>
+    </div>
+  </div>
+
+  <!-- PLOT TEASERS / LOG ENTRIES -->
+  <h2>Chronological Plot Intel & Key Events</h2>
+  <div class="log-container">
+    <div class="log-entry">
+      <div class="log-header">
+        <span class="log-time">LOG: 001.04</span>
+        <span class="log-tag">Origin Arc</span>
+      </div>
+      <div class="log-title">The Fusion Protocol & The Deep Sea Breach</div>
+      <div class="log-text">
+        Early telemetry records confirm the successful integration of avian-insectoid wing geometry with abyssal crustacean chitin. The subject retains full amphibious capabilities and high-speed multi-atmosphere flight.
+      </div>
+    </div>
+
+    <div class="log-entry">
+      <div class="log-header">
+        <span class="log-time">LOG: 003.12</span>
+        <span class="log-tag">Plot Catalyst</span>
+      </div>
+      <div class="log-title">The Sunken Citadel Signal</div>
+      <div class="log-text">
+        An anomalous frequency emitted from the trench floor has triggered localized bioluminescent pulsing along the subject's carapace. Power reserves spiked by +240% during initial reception.
+      </div>
+    </div>
+
+    <div class="log-entry">
+      <div class="log-header">
+        <span class="log-time">LOG: 007.89</span>
+        <span class="log-tag">Climax Threat</span>
+      </div>
+      <div class="log-title">Resonant Awakening</div>
+      <div class="log-text">
+        The dual-entity synchronism has reached critical threshold. Wings and dorsal fins now channel identical electromagnetic radiation, revealing a hidden energy grid spanning the oceanic abyssal zone.
+      </div>
+    </div>
+  </div>
+
+  <!-- POWER STATUS MATRIX -->
+  <h2>Power System & Capability Metrics</h2>
+  <table class="power-table">
+    <thead>
+      <tr>
+        <th style="width: 25%;">System Module</th>
+        <th style="width: 25%;">Power Vector</th>
+        <th style="width: 35%;">Energy Capacity</th>
+        <th style="width: 15%;">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Prismatic Wing Array</strong></td>
+        <td>Bioluminescent / Flight</td>
+        <td><div class="meter-bg"><div class="meter-fill fill-high"></div></div></td>
+        <td><span style="color: #00f2fe; font-weight: bold;">88% ACTIVE</span></td>
+      </tr>
+      <tr>
+        <td><strong>Abyssal Headpiece Core</strong></td>
+        <td>Compound Vision / Sonar</td>
+        <td><div class="meter-bg"><div class="meter-fill fill-vital"></div></div></td>
+        <td><span style="color: #ff416c; font-weight: bold;">95% OPTIMAL</span></td>
+      </tr>
+      <tr>
+        <td><strong>Armor Chitin Lattice</strong></td>
+        <td>Pressure / Shielding</td>
+        <td><div class="meter-bg"><div class="meter-fill fill-mid"></div></div></td>
+        <td><span style="color: #f6d365; font-weight: bold;">64% NOMINAL</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    INTERNAL STORY ARCHIVE • DEEP SEA CHRONICLES • TRANSMISSION ENCRYPTED
+  </div>
+</div>
+
+</body>
+</html>
