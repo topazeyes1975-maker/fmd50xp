@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/RecordRTC/5.6.2/RecordRTC.min.js"></script>
+  
   <title>Thematic Credit FX Generator</title>
   <style>
     :root {
@@ -200,7 +203,8 @@
 
     <div id="entries-container"></div>
   </div>
-
+<button id="downloadBtn" onclick="downloadCreditsVideo()">Download Credits Video</button>
+  
   <script>
     const defaultData = [
       { category: "EXECUTIVE PRODUCER", names: "Fonda Dutton", effect: "fx_executive_producer" },
@@ -1105,6 +1109,42 @@
     }
 
     initUI();
+    
+async function downloadCreditsVideo() {
+  const btn = document.getElementById('downloadBtn');
+  // Make sure this ID matches the container wrapping your credits animation
+  const creditsArea = document.getElementById('credits-container'); 
+  
+  btn.innerText = "Recording Video... Please Wait";
+  btn.disabled = true;
+
+  // 1. Capture the visual frames of the credits program
+  const canvas = await html2canvas(creditsArea);
+  const stream = canvas.captureStream(30); // 30 frames per second
+  
+  // 2. Set up the video recorder
+  const recorder = new RecordRTC(stream, {
+    type: 'video',
+    mimeType: 'video/webm'
+  });
+
+  recorder.startRecording();
+
+  // 3. Set recording time (10000 = 10 seconds). Adjust this to match your credit length!
+  setTimeout(() => {
+    recorder.stopRecording(() => {
+      const videoBlob = recorder.getBlob();
+      
+      // 4. Trigger the automatic file download
+      invokeSaveAsDialog(videoBlob, 'movie_credits.webm');
+      
+      btn.innerText = "Download Credits Video";
+      btn.disabled = false;
+    });
+  }, 10000); 
+}
+
+  
   </script>
 </body>
 </html>
