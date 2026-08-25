@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thematic Credit FX Generator</title>
+  <style>
+    :root {
+      --bg: #0d0d11;
+      --panel: #16161e;
+      --accent: #ff2a5f;
+      --accent-glow: #ff2a5faa;
+      --text: #e0e0e6;
+      --border: #262636;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .stage-area {
+      width: 100%;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      padding: 10px;
+      border-bottom: 2px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    canvas {
+      width: 100%;
+      max-width: 960px;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      background: #050508;
+      border: 1px solid #1a1a24;
+      border-radius: 4px;
+    }
+
+    .stage-info {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background: rgba(0, 0, 0, 0.75);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      backdrop-filter: blur(4px);
+      z-index: 10;
+    }
+
+    .controls-panel {
+      flex: 1;
+      width: 100%;
+      background: var(--panel);
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 1.1rem;
+      letter-spacing: 0.5px;
+      color: #fff;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #888899;
+    }
+
+    select, input, textarea {
+      background: #0d0d11;
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.9rem;
+    }
+
+    textarea {
+      resize: vertical;
+      height: 45px;
+    }
+
+    .card {
+      background: #111117;
+      border: 1px solid var(--border);
+      padding: 12px;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn-remove {
+      background: transparent;
+      border: none;
+      color: #ff5555;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      flex: 1;
+      font-size: 0.9rem;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .btn-secondary {
+      background: #2a2a3a;
+    }
+
+    @media (min-width: 900px) {
+      body {
+        flex-direction: row;
+      }
+      .stage-area {
+        flex: 1;
+        height: 100vh;
+        border-bottom: none;
+        border-left: 2px solid var(--border);
+        order: 2;
+      }
+      .controls-panel {
+        width: 420px;
+        height: 100vh;
+        order: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Stage Area -->
+  <div class="stage-area">
+    <div class="stage-info" id="status-bar">Ready to render sequence.</div>
+    <canvas id="stage" width="960" height="540"></canvas>
+  </div>
+
+  <!-- Controls Panel -->
+  <div class="controls-panel">
+    <h2>Full Credit Sequence Builder</h2>
+    <p style="font-size: 0.75rem; color: #777788; margin: 0;">Complete 18-Department cinematic credit suite with dedicated Canvas FX drivers.</p>
+    
+    <div class="btn-group">
+      <button type="button" onclick="startSequence()">▶ Render & Play Sequence</button>
+      <button type="button" class="btn-secondary" onclick="addCreditCard()">+ Category</button>
+    </div>
+
+    <div id="entries-container"></div>
+  </div>
+
+  <script>
+    const defaultData = [
+      { category: "EXECUTIVE PRODUCER", names: "Fonda Dutton", effect: "fx_executive_producer" },
+      { category: "PRODUCED BY", names: "Morgan Blake", effect: "fx_produced_by" },
+      { category: "PRODUCTION DESIGNER", names: "Arthur Pendelton", effect: "fx_production_designer" },
+      { category: "DIRECTED BY", names: "Fonda Dutton", effect: "fx_directed_by" },
+      { category: "1ST ASSISTANT DIRECTOR", names: "Liam Sterling", effect: "fx_1st_ad" },
+      { category: "WRITTEN BY", names: "Alex Mercer", effect: "ink_typewriter" },
+      { category: "STARRING", names: "Marcus Vance\nElena Rostova", effect: "glitch_flash" },
+      { category: "CO-STARRING", names: "David Miller\nSarah Connor", effect: "fx_co_starring" },
+      { category: "CASTING BY", names: "Harper & Associates", effect: "fx_casting_by" },
+      { category: "DIRECTOR OF PHOTOGRAPHY", names: "Chloe Bennett", effect: "camera_aperture" },
+      { category: "MUSIC COMPOSED BY", names: "CyberPulse Systems", effect: "audio_waveform" },
+      { category: "SOUND DESIGN & RE-RECORDING", names: "Echo Chamber Audio", effect: "fx_sound_design" },
+      { category: "POST-PRODUCTION", names: "OmniPost Media", effect: "fx_post_production" },
+      { category: "VISUAL EFFECTS SUPERVISOR", names: "Apex FX Studios", effect: "particle_shatter" },
+      { category: "STUNT COORDINATOR", names: "Jaxson Steel", effect: "fx_stunt_coordinator" },
+      { category: "MAKEUP & HAIR DESIGNER", names: "Sienna Ray", effect: "fx_makeup_hair" },
+      { category: "COSTUME DESIGNER", names: "Evangeline Cross", effect: "fx_costume_designer" },
+      { category: "EDITED BY", names: "Julian Vance", effect: "fx_edited_by" },
+      { category: "GAFFER / CHIEF LIGHTING", names: "Rayden Watts", effect: "fx_gaffer" }
+    ];
+
+    const effectOptions = [
+      { value: "fx_executive_producer", label: "Executive Producer (Gold Coins & Dollar Rain)" },
+      { value: "fx_produced_by", label: "Produced By (Golden Radiant Glow Beam)" },
+      { value: "fx_production_designer", label: "Production Designer (Prism Rainbow Beam)" },
+      { value: "fx_directed_by", label: "Directed By (Bow & Arrow Shaft Flight)" },
+      { value: "fx_1st_ad", label: "1st Assistant Director (Guiding Pull Arrows)" },
+      { value: "ink_typewriter", label: "Writer (Typewriter & Blinking Cursor)" },
+      { value: "glitch_flash", label: "Starring (Orbiting Starburst Cluster)" },
+      { value: "fx_co_starring", label: "Co-Starring (Shooting Star Drag Trail)" },
+      { value: "fx_casting_by", label: "Casting By (Magic Wand & Glitter Shower)" },
+      { value: "camera_aperture", label: "Cinematography (Camera Flash & Polaroid Roll)" },
+      { value: "audio_waveform", label: "Music (Fluid Ribbon Waves)" },
+      { value: "fx_sound_design", label: "Sound Design (Bouncing VU Equalizer Bars)" },
+      { value: "fx_post_production", label: "Post-Production (Dripping Neon Energy Frame)" },
+      { value: "particle_shatter", label: "Visual Effects (Alien Sci-Fi Particle Grid)" },
+      { value: "fx_stunt_coordinator", label: "Stunt Coordinator (Tumbling Letters & Bounce Bar)" },
+      { value: "fx_makeup_hair", label: "Makeup & Hair (Hair Wave Strands & Paint Splatters)" },
+      { value: "fx_costume_designer", label: "Costume Designer (Garment Shears & Needle Thread)" },
+      { value: "fx_edited_by", label: "Edited By (Torn Film Strip & Glowing Splice)" },
+      { value: "fx_gaffer", label: "Gaffer / Lighting (Sweeping Spotlight Beam)" }
+    ];
+
+    const container = document.getElementById('entries-container');
+    const canvas = document.getElementById('stage');
+    const ctx = canvas.getContext('2d');
+    let animationFrameId = null;
+
+    function initUI() {
+      container.innerHTML = '';
+      defaultData.forEach((item, index) => {
+        createCardUI(item, index);
+      });
+    }
+
+    function createCardUI(data, index) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      
+      const optionsHTML = effectOptions.map(opt => 
+        `<option value="${opt.value}" ${data.effect === opt.value ? 'selected' : ''}>${opt.label}</option>`
+      ).join('');
+
+      card.innerHTML = `
+        <div class="card-header">
+          <label>Sequence Card #${index + 1}</label>
+          <button class="btn-remove" onclick="removeCard(${index})">✕</button>
+        </div>
+        <div class="form-group">
+          <label>Category Title</label>
+          <input type="text" class="card-category" value="${data.category}">
+        </div>
+        <div class="form-group">
+          <label>Names (One per line)</label>
+          <textarea class="card-names">${data.names}</textarea>
+        </div>
+        <div class="form-group">
+          <label>Thematic Visual FX</label>
+          <select class="card-effect">
+            ${optionsHTML}
+          </select>
+        </div>
+      `;
+      container.appendChild(card);
+    }
+
+    function addCreditCard() {
+      defaultData.push({
+        category: "NEW DEPARTMENT",
+        names: "Crew Member Name",
+        effect: "fx_produced_by"
+      });
+      initUI();
+    }
+
+    function removeCard(index) {
+      defaultData.splice(index, 1);
+      initUI();
+    }
+
+    function getSequenceData() {
+      const cards = document.querySelectorAll('.card');
+      const data = [];
+      cards.forEach(card => {
+        data.push({
+          category: card.querySelector('.card-category').value.toUpperCase(),
+          names: card.querySelector('.card-names').value.split('\n').filter(n => n.trim() !== ''),
+          effect: card.querySelector('.card-effect').value
+        });
+      });
+      return data;
+    }
+
+    function startSequence() {
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+      const sequence = getSequenceData();
+      if (sequence.length === 0) return;
+
+      const totalDurationSec = 90;
+      const timePerCard = totalDurationSec / sequence.length;
+      let startTime = null;
+
+      function renderFrame(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const elapsed = (timestamp - startTime) / 1000;
+
+        ctx.fillStyle = '#050508';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const cardIndex = Math.min(
+          Math.floor(elapsed / timePerCard),
+          sequence.length - 1
+        );
+        const cardProgress = (elapsed % timePerCard) / timePerCard;
+        const currentCard = sequence[cardIndex];
+
+        document.getElementById('status-bar').innerText = 
+          `Playing: ${currentCard.category} (${(elapsed).toFixed(1)}s / ${totalDurationSec}s)`;
+
+        if (elapsed < totalDurationSec) {
+          drawThematicEffect(ctx, currentCard, cardProgress, canvas.width, canvas.height);
+          animationFrameId = requestAnimationFrame(renderFrame);
+        } else {
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 36px "Segoe UI"';
+          ctx.textAlign = 'center';
+          ctx.fillText("END OF CREDITS", canvas.width / 2, canvas.height / 2);
+          document.getElementById('status-bar').innerText = "Sequence Complete!";
+        }
+      }
+
+      animationFrameId = requestAnimationFrame(renderFrame);
+    }
+
+    function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius, color) {
+      let rot = Math.PI / 2 * 3;
+      let x = cx;
+      let y = cy;
+      let step = Math.PI / spikes;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - outerRadius);
+      for (let i = 0; i < spikes; i++) {
+        x = cx + Math.cos(rot) * outerRadius;
+        y = cy + Math.sin(rot) * outerRadius;
+        ctx.lineTo(x, y);
+        rot += step;
+
+        x = cx + Math.cos(rot) * innerRadius;
+        y = cy + Math.sin(rot) * innerRadius;
+        ctx.lineTo(x, y);
+        rot += step;
+      }
+      ctx.lineTo(cx, cy - outerRadius);
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 15;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawStandardText(ctx, card, centerX, centerY) {
+      ctx.fillStyle = '#8888aa';
+      ctx.font = '20px "Segoe UI"';
+      ctx.textAlign = 'center';
+      ctx.fillText(card.category, centerX, centerY - 30);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 38px "Segoe UI"';
+      card.names.forEach((name, idx) => {
+        ctx.fillText(name, centerX, centerY + 20 + (idx * 45));
+      });
+    }
+
+    function drawThematicEffect(ctx, card, progress, width, height) {
+      const centerX = width / 2;
+      const centerY = height / 2;
+      
+      let alpha = 1;
+      if (progress < 0.15) alpha = progress / 0.15;
+      else if (progress > 0.85) alpha = (1 - progress) / 0.15;
+
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+
+      switch (card.effect) {
+        // --- 1. EXECUTIVE PRODUCER: Gold Coins & Dollar Rain ---
+        case 'fx_executive_producer': {
+          ctx.shadowColor = '#ffe600';
+          ctx.shadowBlur = 15;
+          ctx.fillStyle = '#ffd700';
+          ctx.font = 'bold 22px "Segoe UI"';
+          ctx.textAlign = 'center';
+          ctx.fillText(card.category, centerX, centerY - 50);
+
+          const particleCount = 24;
+          for (let i = 0; i < particleCount; i++) {
+            const speed = 1.5 + (i % 3) * 0.8;
+            const px = (centerX - 300) + ((i * 37) % 600);
+            const py = ((progress * 400 * speed) + (i * 25)) % height;
+            
+            ctx.save();
+            ctx.translate(px, py);
+
+            if (i % 2 === 0) {
+              const coinSpin = Math.sin((progress * 10) + i);
+              ctx.scale(coinSpin, 1);
+              ctx.beginPath();
+              ctx.arc(0, 0, 8, 0, Math.PI * 2);
+              ctx.fillStyle = '#ffcc00';
+              ctx.shadowColor = '#ffea66';
+              ctx.shadowBlur = 8;
+              ctx.fill();
+              ctx.strokeStyle = '#997a00';
+              ctx.lineWidth = 1.5;
+              ctx.stroke();
+            } else {
+              const floatWiggle = Math.sin((progress * 6) + i) * 10;
+              ctx.rotate((Math.sin(progress * 4 + i) * 20 * Math.PI) / 180);
+              ctx.fillStyle = '#85bb65';
+              ctx.shadowColor = '#2e5618';
+              ctx.shadowBlur = 4;
+              ctx.fillRect(-12 + floatWiggle, -6, 24, 12);
+              ctx.strokeStyle = '#ffffff';
+              ctx.lineWidth = 1;
+              ctx.strokeRect(-12 + floatWiggle, -6, 24, 12);
+            }
+            ctx.restore();
+          }
+
+          if (progress > 0.1) {
+            const popProgress = Math.min(1, (progress - 0.1) / 0.3);
+            const scale = 0.5 + (popProgress * 0.5);
+
+            ctx.save();
+            ctx.translate(centerX, centerY + 20);
+            ctx.scale(scale, scale);
+            ctx.shadowColor = '#ffcc00';
+            ctx.shadowBlur = 20;
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 44px "Segoe UI"';
+            card.names.forEach((name, idx) => {
+              ctx.fillText(name, 0, idx * 50);
+            });
+            ctx.restore();
+          }
+          break;
+        }
+
+        // --- 2. PRODUCED BY: Golden Radiant Glow Beam ---
+        case 'fx_produced_by': {
+          const glowRadius = 50 + Math.sin(progress * Math.PI * 4) * 30;
+          const gradient = ctx.createRadialGradient(centerX, centerY, 10, centerX, centerY, 300);
+          gradient.addColorStop(0, `rgba(255, 215, 0, ${0.4 * alpha})`);
+          gradient.addColorStop(1, 'rgba(0,0,0,0)');
+          
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, width, height);
+          ctx.fillStyle = '#ffd700';
+          ctx.font = '22px "Segoe UI"';
+          ctx.textAlign = 'center';
+          ctx.fillText(card.category, centerX, centerY - 40);
+
+          ctx.shadowColor = '#ffe600';
+          ctx.shadowBlur = glowRadius;
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 42px "Segoe UI"';
+          card.names.forEach((name, idx) => {
+            ctx.fillText(name, centerX, centerY + 20 + (idx * 50));
+          });
+          break;
+        }
+
+        // --- 3. PRODUCTION DESIGNER: Prism Rainbow Beam ---
+        case 'fx_production_designer': {
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '20px "Segoe UI"';
+          ctx.textAlign = 'center';
+          ctx.fillText(card.category, centerX, centerY - 70);
+
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+          ctx.fillRect(centerX - 120, centerY - 50, 240, 4);
+
+          ctx.beginPath();
+          ctx.moveTo(centerX, centerY - 46);
+          ctx.lineTo(centerX - 25, centerY - 15);
+          ctx.lineTo(centerX + 25, centerY - 15);
+          ctx.closePath();
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+          ctx.shadowColor = '#ffffff';
+          ctx.shadowBlur = 10;
+          ctx.fill();
+
+          const colors = ['#ff2a2a', '#ff7f00', '#ffff00', '#00ff00', '#00c8ff', '#8b00ff'];
+          colors.forEach((col, idx) => {
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY - 15);
+            const spread = (idx - 2.5) * 60;
+            ctx.lineTo(centerX + spread - 30, centerY + 120);
+            ctx.lineTo(centerX + spread + 30, centerY + 120);
+            ctx.closePath();
+            ctx.fillStyle = col + '33';
+            ctx.fill();
+          });
+
+          ctx.shadowBlur = 12;
+          card.names.forEach((name, nIdx) => {
+            ctx.fillStyle = colors[(nIdx * 2) % colors.length];
+            ctx.shadowColor = ctx.fillStyle;
+            ctx.font = 'bold 38px "Segoe UI"';
+            ctx.fillText(name, centerX, centerY + 30 + (nIdx * 48));
+          });
+          break;
+        }
+
+        // --- 4. DIRECTED BY: Bow & Arrow Shaft Flight ---
+        case 'fx_directed_by': {
+          ctx.fillStyle = '#ffaa00';
+          ctx.font = '20px "Segoe UI"';
+          ctx.textAlign = 'center';
+          ctx.fillText(card.category, centerX, centerY - 60);
+
+          const arrowFlight = -300 + (progress * 600);
+          ctx.save();
+          ctx.translate(arrowFlight, centerY + 10);
+
+          ctx.strokeStyle = '#ffaa00';
+          ctx.lineWidth = 4;
+          ctx.shadowColor = '#ffaa00';
+          ctx.shadowBlur = 10;
+          ctx.beginPath();
+          ctx.moveTo(-150, 0);
+          ctx.lineTo(150, 0);
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.moveTo(150, 0);
+          ctx.lineTo(130, -10);
+          ctx.lineTo(130, 10);
+          ctx.closePath();
+          ctx.fillStyle = '#ffaa00';
+          ctx.fill();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 36px "Segoe UI"';
+          card.names.forEach((name, idx) => {
+            ctx.fillText(name, 0, (idx * 40) - 10);
+          });
+          ctx.restore();
+          break;
+        }
+
+        // --- 5. 1ST ASSISTANT DIRECTOR: Guiding Pull Arrows ---
+        case 'fx_1st_ad': {
+          ctx.fillStyle = '#00e6ff';
+          ctx.font = '20px "Segoe UI"';
+          ctx.textAlign = 'center';
+          ctx.fillText(card.category, centerX, centerY - 60);
+
+          const pullX = (progress * 500) - 250;
+          ctx.save();
+          ctx.translate(centerX + pullX, centerY + 10);
+
+          for (let a = -1; a <= 1; a += 2) {
+            ctx.fillStyle = '#00e6ff';
+            ctx.beginPath();
+            ctx.moveTo(a * 180, -5);
+            ctx.lineTo(a * 210, 0);
+            ctx.lineTo(a * 180, 5);
+            ctx.fill();
+          }
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 38px "Segoe UI"';
+          ctx.shadowColor = '#00e6ff';
+          ctx.shadowBlur = 10;
+          card.names.forEach((name, idx) => {
+            ctx.fillText(name, 0, idx * 45);
+          });
+          ctx.restore();
+          break;
+        }
+ // --- 6. WRITTEN BY: Typewriter & Blinking Cursor ---
+        case 'ink_typewriter': {
+          const fullCategory = card.category;
+          const catCharsVisible = Math.floor(progress * 2.5 * fullCategory.length);
+          const typedCategory = fullCategory.substring(0, catCharsVisible);
+
+          ctx.fillStyle = '#00ffcc';
+          ctx.font = '20px "Courier New", monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(typedCategory, centerX, centerY - 40);
+
+          if (progress > 0.25) {
+            const nameProgress = (progress - 0.25) / 0.75;
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 38px "Courier New", monospace';
+
+            card.names.forEach((name, idx) => {
+              const nameCharsVisible = Math.floor(nameProgress * 2 * name.length);
+              let typedName = name.substring(0, nameCharsVisible);
+              if (Math.floor(progress * 10) % 2 === 0) typedName += '|';
+              ctx.fillText(typedName, centerX, centerY + 20 + (idx * 45));
+            });
+          }
+          break;
+        }
+
+        // --- 7. STARRING: Orbiting Starburst Cluster ---
+        case 'glitch_flash': {
+          const starCount = 8;
+          for (let i = 0; i < starCount; i++) {
+            const angle = (i * (Math.PI * 2 / starCount)) + (progress * Math.PI * 2);
+            const starX = centerX + Math.cos(angle) * (180 + Math.sin(progress * 5) * 20);
+            const starY = centerY + Math.sin(angle) * (70 + Math.cos(progress * 5) * 10);
+            const starSize = 10 + Math.sin(progress * 10 + i) * 4;
+            drawStar(ctx, starX, starY, 5, starSize, starSize / 2, '#ffcc00');
+          }
+
+          ctx.fillStyle = '#ffcc00';
+          ctx.font = '20px "Segoe UI"';
+          ctx.textAlign = 'center';
+          ctx.fillText(card.category, centerX, centerY - 40);
+
+          ctx.shadowColor = '#ffcc00';
+          ctx.shadowBlur = 10;
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 40px "Segoe UI"';
+          card.names.forEach((name, idx) => {
+            ctx.fillText(name, centerX, centerY + 20 + (idx * 45));
+          });
+          break;
+        }
+
+        // --- 8. CO-STARRING: Shooting Star Drag Trail ---
+        case 'fx_co_starring': {
+          const starX = (progress * (width + 300)) - 150;
+          const starY = centerY - 20;
+
+          ctx.strokeStyle = 'rgba(255, 204, 0, 0.5)';
+          ctx.lineWidth = 6;
+          ctx.shadowColor = '#ffcc00';
+          ctx.shadowBlur = 15;
+          ctx.beginPath();
+          ctx.moveTo(starX - 250, starY);
+          ctx.lineTo(starX, starY);
+          ctx.stroke();
+
+          drawStar(ctx, starX, starY, 5, 18, 9, '#ffffff');
+
+          ctx.save();
+          const clipW = Math.max(0, starX - (centerX - 250));
+          ctx.beginPath();
+          ctx.rect(centerX - 250, 0, clipW, height);
+          ctx.clip();
+
+          ctx.fillStyle = '#ffcc00';
+          ctx.font = '20px "Segoe UI"';
+          ctx.textAlign = 'center';
+          ctx.fillText(card.category, centerX, centerY - 40);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 38px "Segoe UI"';
+          card.names.forEach((name, idx) => {
+            ctx.fillText(name, centerX, centerY + 20 + (idx * 45));
+          });
+          ctx.restore();
+          break;
+        }
+
+        // --- 9. CASTING BY: Magic Wand & Glitter Shower ---
+        case 'fx_casting_by': {
+          ctx.fillStyle = '#ff66cc';
+          ctx.font = '20px "Segoe UI"';
+          ctx.textAlign = 'center';
+          ctx.fillText(card.category, centerX, centerY - 50);
+
+          const wandX = centerX + Math.sin(progress * Math.PI * 4) * 160;
+          const wandY = centerY - 30;
+
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 4;
+          ctx.shadowColor = '#ff66cc';
+          ctx.shadowBlur = 10;
+          ctx.beginPath();
+          ctx.moveTo(wandX + 25, wandY + 25);
+          ctx.lineTo(wandX, wandY);
+          ctx.stroke();
+
+          for (let p = 0; p < 30; p++) {
+            const px = wandX + ((Math.sin(p * 9 + progress * 10) * 120));
+            const py = wandY + ((progress * 150 + p * 10) % 120);
+            ctx.fillStyle = p % 2 === 0 ? '#ffcc00' : '#ff66cc';
+            ctx.fillRect(px, py, 3, 3);
+          }
+
+          if (progress > 0.15) {
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 40px "Segoe UI"';
+            ctx.shadowColor = '#ff66cc';
+            ctx.shadowBlur = 12;
+            card.names.forEach((name, idx) => {
+              ctx.fillText(name, centerX, centerY + 25 + (idx * 45));
+            });
+          }
+          break;
+        }
+
+        // --- 10. CINEMATOGRAPHY: Flash & Polaroid Roll ---
+        case 'camera_aperture': {
+          if (progress < 0.12) {
+            const flashAlpha = 1 - (progress / 0.12);
+            ctx.fillStyle = `rgba(255, 255, 255, ${flashAlpha})`;
+            ctx.fillRect(0, 0, width, height);
+          }
+
+          const polaroidW = 420;
+          const polaroidH = 260;
+          const slideY = centerY - 130 + Math.max(0, (0.15 - progress) * 300);
+
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+          ctx.shadowBlur = 20;
+          ctx.fillStyle = '#f8f8f6';
+          ctx.fillRect(centerX - (polaroidW / 2), slideY, polaroidW, polaroidH);
+
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = '#111118';
+          ctx.fillRect(centerX - (polaroidW / 2) + 20, slideY + 20, polaroidW - 40, 140);
+
+          ctx.fillStyle = '#00e6ff';
+          ctx.font = 'bold 18px "Segoe UI"';
+          ctx.textAlign = 'center';
+          ctx.fillText(card.category, centerX, slideY + 95);
+
+          if (progress > 0.18) {
+            const textRollProgress = Math.min(1, (progress - 0.18) / 0.4);
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(centerX - (polaroidW / 2) + 20, slideY + 160, polaroidW - 40, 90);
+            ctx.clip();
+
+            ctx.fillStyle = '#1a1a24';
+            ctx.font = 'bold 30px "Comic Sans MS", "Segoe UI", cursive';
+            card.names.forEach((name, idx) => {
+              const rollY = slideY + 205 + (idx * 35) + ((1 - textRollProgress) * 40);
+              ctx.fillText(name, centerX, rollY);
+            });
+            ctx.restore();
+          }
+          break;
+        }
+
+        // --- 11. MUSIC: Fluid Ribbon Waves ---
+        case 'audio_waveform': {
+          ctx.save();
+          ctx.lineWidth = 3;
+          
+          for (let w = 0; w < 3; w++) {
+            ctx.beginPath();
+            const colors = ['rgba(255, 0, 100, 0.7)', 'rgba(0, 230, 255, 0.7)', 'rgba(255, 200, 0, 0.7)'];
+            ctx.strokeStyle = colors[w];
+            
+            for (let x = 0; x <= width; x += 10) {
+              const y = centerY + Math.sin((x * 0.015) + (progress * 12) + (w * 1.5)) * (25 + (w * 10));
+              if (x === 0) ctx.moveTo(x, y);
+              else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+          }
+          ctx.restore();
+
+          ctx.fillStyle = '#ff0064';
+          ctx.font = '20px "Segoe UI"';
+          ctx.textAlign = 'center';
+          ctx.fillText(card.category, centerX, centerY - 65);
+
+          ctx.shadowColor = '#ff0064';
+          ctx.shadowBlur = 12;
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 40px "Segoe UI"';
+          card.names.forEach((name, idx) => {
+            ctx.fillText(name, centerX, centerY + 65 + (idx * 45));
+          });
+          break;
+        }
+
+        // --- 12. SOUND DESIGN: Bouncing VU Equalizer Bars ---
+        case 'fx_sound_design': {
+          ctx.fillStyle = '#00ffcc';
+          ctx.font = '20px "Segoe UI"';
+          ctx.textAlign = 'center';
+          ctx.fillText(card.category, centerX, centerY - 70);
+
+          card.names.forEach((name, nIdx) => {
+            const letters = name.split('');
+            const letterSpacing = 28;
+            const startX = centerX - ((letters.length * letterSpacing) / 2) + (letterSpacing / 2);
+            const nameY = centerY + (nIdx * 65);
+
+            letters.forEach((char, cIdx) => {
+              const charX = startX + (cIdx * letterSpacing);
+              
+              const pulseSpeed = progress * 20 + (cIdx * 0.8) + (nIdx * 2);
+              const barHeight = 25 + Math.abs(Math.sin(pulseSpeed)) * 45;
+
+              const barW = 18;
+              const barX = charX - (barW / 2);
+
+              const blockH = 4;
+              const blockGap = 2;
+              const totalBlocks = Math.floor(barHeight / (blockH + blockGap));
+
+              for (let b = 0; b < totalBlocks; b++) {
+                const blockY = nameY - 10 - (b * (blockH + blockGap));
+                if (b > 6) ctx.fillStyle = '#ff3355';
+                else if (b > 4) ctx.fillStyle = '#ffcc00';
+                else ctx.fillStyle = '#00ff88';
+
+                ctx.fillRect(barX, blockY, barW, blockH);
+              }
+
+              const bounceOffset = Math.sin(pulseSpeed) * 6;
+              ctx.shadowColor = '#00ffcc';
+              ctx.shadowBlur = 8;
+              ctx.fillStyle = '#ffffff';
+              ctx.font = 'bold 24px "Courier New", monospace';
+              ctx.fillText(char, charX, nameY + 22 + bounceOffset);
+            });
+          });
+          break;
+        }
+
+        // --- 13. POST-PRODUCTION: Dripping Neon Energy Frame ---
+        case 'fx_post_production': {
+          ctx.fillStyle = '#00ffcc';
+          ctx.font = 'bold 22px "Segoe UI"';
+          ctx.textAlign = 'center';
+          ctx.fillText(card.category, centerX, centerY - 65);
+
+          const frameW = 480;
+          const frameH = 120;
+          const frameX = centerX - (frameW / 2);
+          const frameY = centerY - 20;
+
+          const dripProgress = Math.min(1, progress * 1.5);
+          ctx.strokeStyle = '#00ffcc';
+          ctx.lineWidth = 3;
+          ctx.shadowColor = '#00ffcc';
+          ctx.shadowBlur = 12;
+          ctx.strokeRect(frameX, frameY, frameW, frameH * dripProgress);
+
+          for (let d = 0; d < 8; d++) {
+            const dx = frameX + 40 + (d * 55);
+            const dy = frameY + ((progress * 180 + d * 15) % (frameH + 30));
+            ctx.fillStyle = '#00ffcc';
+            ctx.beginPath();
+            ctx.arc(dx, dy, 4, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          if (progress > 0.2) {
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 38px "Segoe UI"';
+            card.names.forEach((name, idx) => {
+              ctx.fillText(name, centerX, centerY + 25 + (idx * 45));
+            });
+          }
+          break;
+        }
+
+        // --- 14. VISUAL EFFECTS: Alien Sci-Fi Particle Grid ---
+        case 'particle_shatter': {
+          ctx.fillStyle = '#00ff88';
+          for (let i = 0; i < 35; i++) {
+            const px = centerX + Math.cos(i + progress * 5) * (100 + progress * 120);
+            const py = centerY + Math.sin(i + progress * 5) * (50 + progress * 60);
+            ctx.fillRect(px, py, 4, 4);
+          }
+
+          ctx.fillStyle = '#00ff88';
+          ctx.font = '20px "Segoe UI"';
+          ctx.textAlign = 'center';
+          ctx.fillText(card.category, centerX, centerY - 30);
+
+          ctx.shadowColor = '#00ff88';
+          ctx.shadowBlur = 10;
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 38px "Segoe UI"';
+          card.names.forEach((name, idx) => {
+            ctx.fillText(name, centerX, centerY + 20 + (idx * 45));
+          });
+          break;
+        }
+
+        // --- 15. STUNT COORDINATOR: Tumbling Letters & Bounce Bar ---
+        case 'fx_stunt_coordinator': {
+          const barY = centerY - 10;
+          ctx.fillStyle = '#ff3300';
+          ctx.shadowColor = '#ff3300';
+          ctx.shadowBlur = 10;
+          ctx.fillRect(centerX - 180, barY, 360, 6);
+
+          const titleStr = card.category;
+          const letterW = 14;
+          const startX = centerX - ((titleStr.length * letterW) / 2);
+
+          titleStr.split('').forEach((char, idx) => {
+            const dropDelay = idx * 0.03;
+            const letterProg = Math.max(0, Math.min(1, (progress - dropDelay) / 0.3));
+            
+            let lx = startX + (idx * letterW);
+            let ly = (centerY - 120) + (letterProg * 110);
+            
+            if (letterProg >= 1) {
+              const bounce = Math.abs(Math.sin((progress - dropDelay) * 15)) * 12;
+              ly = barY - bounce - 8;
+            }
+
+            ctx.fillStyle = '#ffaa00';
+            ctx.font = 'bold 16px "Segoe UI"';
+            ctx.fillText(char, lx, ly);
+          });
+
+          if (progress > 0.25) {
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 40px "Segoe UI"';
+            ctx.textAlign = 'center';
+            card.names.forEach((name, idx) => {
+              ctx.fillText(name, centerX, centerY + 45 + (idx * 45));
+            });
+          }
+          break;
+        }
+
+        // --- 16. MAKEUP & HAIR: Hair Wave Strands & Paint Splatters ---
+        case 'fx_makeup_hair': {
+          ctx.save();
+          ctx.strokeStyle = 'rgba(255, 105, 180, 0.3)';
+          ctx.lineWidth = 2;
+          for (let s = 0; s < 6; s++) {
+            ctx.beginPath();
+            for (let x = 0; x <= width; x += 20) {
+              const y = centerY + Math.sin((x * 0.01) + (progress * 5) + s) * (30 + s * 5);
+              if (x === 0) ctx.moveTo(x, y);
+              else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+          }
+          ctx.restore();
+
+          const splashColors = ['#ff007f', '#00e6ff', '#ffcc00', '#9933ff'];
+          for (let sp = 0; sp < 12; sp++) {
+            const sx = centerX + Math.cos(sp * 2) * (140 + (sp % 3) * 20);
+            const sy = centerY + Math.sin(sp * 3) * (40 + (sp % 2) * 15);
+            ctx.fillStyle = splashColors[sp % splashColors.length];
+            ctx.beginPath();
+            ctx.arc(sx, sy, 6 + (sp % 4), 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          ctx.fillStyle = '#ff66cc';
+          ctx.font = '20px "Segoe UI"';
+          ctx.textAlign = 'center';
+          ctx.fillText(card.category, centerX, centerY - 45);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 40px "Segoe UI"';
+          card.names.forEach((name, idx) => {
+            ctx.fillText(name, centerX, centerY + 20 + (idx * 45));
+          });
+          break;
+        }
+
+        // --- 17. COSTUME DESIGNER: Garment Shears & Needle Thread ---
+        case 'fx_costume_designer': {
+          ctx.fillStyle = 'rgba(120, 50, 255, 0.2)';
+          ctx.fillRect(centerX - 240, centerY - 80, 480, 160);
+
+          const cutProgress = Math.min(1, progress * 1.8);
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.moveTo(centerX, centerY - 80);
+          ctx.lineTo(centerX, centerY - 80 + (160 * cutProgress));
+          ctx.stroke();
+
+          ctx.fillStyle = '#bb88ff';
+          ctx.font = '20px "Segoe UI"';
+          ctx.textAlign = 'center';
+          ctx.fillText(card.category, centerX, centerY - 45);
+
+          if (progress > 0.3) {
+            const threadProg = (progress - 0.3) * 15;
+            const needleX = centerX + Math.sin(threadProg) * 180;
+            const needleY = centerY + 20;
+
+            ctx.strokeStyle = '#ff3399';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(centerX - 180, needleY);
+            ctx.lineTo(needleX, needleY);
+            ctx.stroke();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 38px "Segoe UI"';
+            card.names.forEach((name, idx) => {
+              ctx.fillText(name, centerX, centerY + 25 + (idx * 45));
+            });
+          }
+          break;
+        }
+
+        // --- 18. EDITED BY: Torn Film Strip & Glowing Splice ---
+        case 'fx_edited_by': {
+          const ripOffset = Math.max(0, (0.25 - progress) * 200);
+
+          for (let side = -1; side <= 1; side += 2) {
+            if (side === 0) continue;
+            ctx.fillStyle = '#181820';
+            ctx.fillRect(centerX + (side * ripOffset) - (side === -1 ? 260 : 0), centerY - 80, 260, 160);
+
+            ctx.fillStyle = '#ffffff';
+            for (let h = -70; h < 70; h += 20) {
+              const hx = side === -1 ? centerX - ripOffset - 20 : centerX + ripOffset + 10;
+              ctx.fillRect(hx, centerY + h, 10, 12);
+            }
+          }
+
+          ctx.fillStyle = '#00e6ff';
+          ctx.font = '20px "Segoe UI"';
+          ctx.textAlign = 'center';
+          ctx.fillText(card.category, centerX, centerY - 45);
+
+          if (progress > 0.2) {
+            ctx.shadowColor = '#00e6ff';
+            ctx.shadowBlur = 15;
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 40px "Segoe UI"';
+            card.names.forEach((name, idx) => {
+              ctx.fillText(name, centerX, centerY + 20 + (idx * 45));
+            });
+          }
+          break;
+        }
+
+        // --- 19. GAFFER / LIGHTING: Sweeping Spotlight Beam ---
+        case 'fx_gaffer': {
+          const spotAngle = Math.sin(progress * Math.PI * 2) * 180;
+          const spotX = centerX + spotAngle;
+
+          const spotGrad = ctx.createRadialGradient(spotX, centerY + 10, 10, spotX, centerY + 10, 180);
+          spotGrad.addColorStop(0, 'rgba(255, 255, 200, 0.45)');
+          spotGrad.addColorStop(1, 'rgba(0,0,0,0)');
+
+          ctx.fillStyle = spotGrad;
+          ctx.fillRect(0, 0, width, height);
+
+          ctx.fillStyle = '#ffddaa';
+          ctx.font = '20px "Segoe UI"';
+          ctx.textAlign = 'center';
+          ctx.fillText(card.category, centerX, centerY - 40);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 40px "Segoe UI"';
+          card.names.forEach((name, idx) => {
+            ctx.fillText(name, centerX, centerY + 20 + (idx * 45));
+          });
+          break;
+        }
+
+        default:
+          drawStandardText(ctx, card, centerX, centerY);
+          break;
+      }
+
+      ctx.restore();
+    }
+
+    initUI();
+  </script>
+</body>
+</html>
+     
