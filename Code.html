@@ -12,11 +12,25 @@
             font-family: sans-serif; 
             padding: 10px; 
         }
-        #alphabet-container { 
+        .grid-header {
+            color: #7c4dff;
+            border-bottom: 2px solid #7c4dff;
+            padding-bottom: 5px;
+            margin-top: 25px;
+            font-size: 16px;
+        }
+        #alphabet-container, #words-container { 
             display: grid; 
             grid-template-columns: repeat(4, 1fr); 
             gap: 8px; 
             margin-bottom: 20px; 
+        }
+        .canvas-box {
+            text-align: center;
+            background: #23123d;
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #4a2882;
         }
         canvas { 
             border: 1px solid #7c4dff; 
@@ -24,12 +38,35 @@
             width: 60px; 
             height: 60px; 
             display: block; 
+            margin: 0 auto;
             touch-action: none; 
             cursor: pointer; 
         }
         .controls { 
             border-top: 2px solid #7c4dff; 
             padding-top: 20px; 
+        }
+        .game-nav-bar {
+            background: #2d1b4e;
+            border: 2px solid #00e676;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .game-btn {
+            background: #00e676;
+            color: #1a0b2e;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0,230,118,0.4);
+        }
+        .game-btn:hover {
+            background: #00c853;
         }
         #messageVisualizer { 
             margin-top: 20px; 
@@ -49,6 +86,16 @@
             flex-direction: column; 
             align-items: center; 
             justify-content: center; 
+        }
+        .side-toggle-btn {
+            margin: 10px;
+            padding: 10px 20px;
+            background: #7c4dff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
         }
         .instructions-box { 
             background: #2d1b4e; 
@@ -72,19 +119,24 @@
 
     <div class="instructions-box">
         <h2 style="margin-top: 0; color: #7c4dff; font-size: 18px;">Welcome to Cipher Codec</h2>
-        <p style="margin-bottom: 15px;">This tool allows you to design your own custom visual alphabet and instantly translate text into your unique symbolic cipher language.</p>
+        <p style="margin-bottom: 15px;">This tool allows you to design your own custom visual alphabet and 40 high-frequency cryptogram word symbols to translate text or power your 3D bluffing Scrabble board.</p>
         
         <h3 style="margin-bottom: 5px; font-size: 15px; color: #7c4dff;">How to Use:</h3>
         <ul style="margin-top: 0; padding-left: 20px;">
-            <li><strong>Create Your Symbols:</strong> Tap on any letter box in the grid below to open the large drawing screen. Draw your custom character, then tap <em>"Save & Close"</em>.</li>
-            <li><strong>Save to the Cloud:</strong> Type a custom passcode or name into the box at the bottom, then click <strong>Save</strong> to lock your alphabet online.</li>
-            <li><strong>Load Your Saved Alphabet:</strong> To bring back your drawings later, just type your passcode into the box and click <strong>Load</strong>.</li>
-            <li><strong>Generate Messages:</strong> Type any word or phrase into the text box and click <strong>Generate</strong> to see it translated into your custom cipher. You can also download the finished key!</li>
+            <li><strong>Create Your Symbols:</strong> Tap on any letter or word box to draw. Word boxes support <strong>Side A (Front)</strong> and <strong>Side B (Back)</strong> designs!</li>
+            <li><strong>Save to the Cloud:</strong> Type a custom passcode or name into the box at the bottom, then click <strong>Save</strong> to lock your complete code online.</li>
+            <li><strong>Load Your Saved Code:</strong> Type your passcode into the box and click <strong>Load</strong> to retrieve your drawings anytime.</li>
+            <li><strong>Launch Game:</strong> Once your code is saved, hit <strong>Play 3D Scrabble Game</strong> to launch the board!</li>
         </ul>
     </div>
 
     <h1>Cipher Codec</h1>
+    
+    <h3 class="grid-header">Single-Letter Alphabet (26)</h3>
     <div id="alphabet-container"></div>
+
+    <h3 class="grid-header">2-Letter & 3-Letter Cryptogram Words (40) [Double-Sided]</h3>
+    <div id="words-container"></div>
 
     <div class="controls">
         <input type="text" id="cipherCode" placeholder="Enter custom passcode or name...">
@@ -96,9 +148,24 @@
         <div id="messageVisualizer"></div>
     </div>
 
+    <!-- Navigation to Game Board Link -->
+    <div class="game-nav-bar">
+        <h3>Ready to play with your custom cipher?</h3>
+        <button class="game-btn" onclick="launchGame()">Play 3D Scrabble Game Link →</button>
+    </div>
+
+    <!-- Magnifier / Dual-Side Drawing Modal -->
     <div id="magnifierOverlay">
+        <div style="color: #00e676; font-weight: bold; font-size: 18px; margin-bottom: 10px;" id="drawingTitle">Editing Symbol</div>
+        
         <canvas id="bigCanvas" width="300" height="300" style="width:300px; height:300px; border:2px solid white; background:#2d1b4e;"></canvas>
-        <br><br>
+        
+        <div id="sideControls" style="display:none; margin-top: 10px;">
+            <button class="side-toggle-btn" id="btnSideA" onclick="switchSide('A')">Editing Side A (Front)</button>
+            <button class="side-toggle-btn" id="btnSideB" onclick="switchSide('B')" style="opacity: 0.5;">Switch to Side B (Back)</button>
+        </div>
+
+        <br>
         <button onclick="closeMagnifier()" style="padding:15px 30px; font-size:20px;">Save & Close</button>
     </div>
     
@@ -109,11 +176,45 @@
         const mySupabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-        const container = document.getElementById('alphabet-container');
-        let currentTargetId = "";
+        
+        // 40 High-Frequency Cryptogram Words (2-letter & 3-letter)
+        const commonWords = [
+            "OF", "TO", "IN", "IT", "IS", "BE", "AS", "AT", "SO", "WE", 
+            "HE", "BY", "OR", "ON", "DO", "IF", "MY", "UP", "AN", "NO",
+            "THE", "AND", "FOR", "WAS", "HIS", "HER", "YOU", "ARE", "NOT", "BUT", 
+            "CAN", "ALL", "ONE", "OUT", "HAD", "HAS", "WAY", "HOW", "SEE", "GET"
+        ];
 
+        // Store off-screen buffers for Side B of 2-letter & 3-letter tiles
+        const sideBData = {};
+
+        const alphaContainer = document.getElementById('alphabet-container');
+        const wordsContainer = document.getElementById('words-container');
+        
+        let currentTargetId = "";
+        let isWordTile = false;
+        let activeSide = 'A';
+        let tempCanvasA = document.createElement('canvas');
+        let tempCanvasB = document.createElement('canvas');
+        tempCanvasA.width = tempCanvasA.height = 300;
+        tempCanvasB.width = tempCanvasB.height = 300;
+
+        // Render Single Letters
         letters.forEach(letter => {
-            container.innerHTML += `<div><small>${letter}</small><canvas id="canvas${letter}" width="60" height="60" onclick="openMagnifier('canvas${letter}')"></canvas></div>`;
+            alphaContainer.innerHTML += `
+                <div class="canvas-box">
+                    <small>${letter}</small>
+                    <canvas id="canvas${letter}" width="60" height="60" onclick="openMagnifier('canvas${letter}', false)"></canvas>
+                </div>`;
+        });
+
+        // Render 40 Cryptogram Words
+        commonWords.forEach(word => {
+            wordsContainer.innerHTML += `
+                <div class="canvas-box">
+                    <small>${word}</small>
+                    <canvas id="canvas_word_${word}" width="60" height="60" onclick="openMagnifier('canvas_word_${word}', true)"></canvas>
+                </div>`;
         });
 
         function setupCanvas(canvas) {
@@ -134,41 +235,137 @@
             canvas.onmousemove = (e) => { if(drawing) { const {x,y} = getCoords(e); ctx.lineTo(x,y); ctx.stroke(); } };
             canvas.onmouseup = () => { drawing = false; };
             
-            // Prevent screen drag while drawing on mobile
             canvas.ontouchstart = (e) => { e.preventDefault(); drawing = true; ctx.beginPath(); const {x,y} = getCoords(e); ctx.moveTo(x,y); };
             canvas.ontouchmove = (e) => { e.preventDefault(); if(drawing) { const {x,y} = getCoords(e); ctx.lineTo(x,y); ctx.stroke(); } };
             canvas.ontouchend = () => { drawing = false; };
         }
 
+        // Attach listeners to all canvases
         letters.forEach(l => setupCanvas(document.getElementById('canvas' + l)));
+        commonWords.forEach(w => setupCanvas(document.getElementById('canvas_word_' + w)));
 
-        function openMagnifier(canvasId) {
+        function openMagnifier(canvasId, wordFlag) {
             currentTargetId = canvasId;
+            isWordTile = wordFlag;
+            activeSide = 'A';
+            
             const overlay = document.getElementById('magnifierOverlay');
             const bigCanvas = document.getElementById('bigCanvas');
             const bigCtx = bigCanvas.getContext('2d');
+            const sideControls = document.getElementById('sideControls');
+            const drawingTitle = document.getElementById('drawingTitle');
+            
+            const labelName = canvasId.replace('canvas_word_', '').replace('canvas', '');
+            drawingTitle.innerText = wordFlag ? `Designing Tile: "${labelName}"` : `Designing Letter: "${labelName}"`;
+
+            // Reset buffers
+            const ctxA = tempCanvasA.getContext('2d');
+            const ctxB = tempCanvasB.getContext('2d');
+            ctxA.fillStyle = '#2d1b4e'; ctxA.fillRect(0,0,300,300);
+            ctxB.fillStyle = '#2d1b4e'; ctxB.fillRect(0,0,300,300);
+
+            // Copy Side A from current thumbnail
             const source = document.getElementById(canvasId);
-            bigCtx.fillStyle = '#2d1b4e'; bigCtx.fillRect(0,0,300,300);
-            bigCtx.drawImage(source, 0, 0, 60, 60, 0, 0, 300, 300);
+            ctxA.drawImage(source, 0, 0, 60, 60, 0, 0, 300, 300);
+
+            if (wordFlag) {
+                sideControls.style.display = 'block';
+                document.getElementById('btnSideA').style.opacity = '1.0';
+                document.getElementById('btnSideB').style.opacity = '0.5';
+
+                // Copy Side B if present
+                if (sideBData[canvasId]) {
+                    const imgB = new Image();
+                    imgB.onload = () => ctxB.drawImage(imgB, 0, 0);
+                    imgB.src = sideBData[canvasId];
+                }
+            } else {
+                sideControls.style.display = 'none';
+            }
+
+            // Display Side A on main canvas
+            bigCtx.drawImage(tempCanvasA, 0, 0);
             overlay.style.display = 'flex';
+            setupCanvas(bigCanvas);
+        }
+
+        function switchSide(side) {
+            if (activeSide === side) return;
+            
+            const bigCanvas = document.getElementById('bigCanvas');
+            const bigCtx = bigCanvas.getContext('2d');
+
+            // Save current screen into temp buffer
+            if (activeSide === 'A') {
+                tempCanvasA.getContext('2d').drawImage(bigCanvas, 0, 0);
+            } else {
+                tempCanvasB.getContext('2d').drawImage(bigCanvas, 0, 0);
+            }
+
+            activeSide = side;
+
+            // Load target buffer
+            if (side === 'A') {
+                bigCtx.drawImage(tempCanvasA, 0, 0);
+                document.getElementById('btnSideA').style.opacity = '1.0';
+                document.getElementById('btnSideB').style.opacity = '0.5';
+            } else {
+                bigCtx.drawImage(tempCanvasB, 0, 0);
+                document.getElementById('btnSideA').style.opacity = '0.5';
+                document.getElementById('btnSideB').style.opacity = '1.0';
+            }
             setupCanvas(bigCanvas);
         }
 
         function closeMagnifier() {
             const bigCanvas = document.getElementById('bigCanvas');
-            const target = document.getElementById(currentTargetId);
-            target.getContext('2d').clearRect(0,0,60,60);
-            target.getContext('2d').drawImage(bigCanvas, 0, 0, 300, 300, 0, 0, 60, 60);
+            
+            if (isWordTile) {
+                // Store active drawing into buffer
+                if (activeSide === 'A') {
+                    tempCanvasA.getContext('2d').drawImage(bigCanvas, 0, 0);
+                } else {
+                    tempCanvasB.getContext('2d').drawImage(bigCanvas, 0, 0);
+                }
+                
+                // Set main thumbnail to Side A
+                const target = document.getElementById(currentTargetId);
+                target.getContext('2d').clearRect(0,0,60,60);
+                target.getContext('2d').drawImage(tempCanvasA, 0, 0, 300, 300, 0, 0, 60, 60);
+
+                // Save Side B into memory registry
+                sideBData[currentTargetId] = tempCanvasB.toDataURL();
+            } else {
+                const target = document.getElementById(currentTargetId);
+                target.getContext('2d').clearRect(0,0,60,60);
+                target.getContext('2d').drawImage(bigCanvas, 0, 0, 300, 300, 0, 0, 60, 60);
+            }
+
             document.getElementById('magnifierOverlay').style.display = 'none';
         }
 
         async function saveAll() {
             const code = document.getElementById('cipherCode').value;
             if (!code) { alert("Please enter a custom passcode first!"); return; }
-            let dataToSave = {};
-            letters.forEach(l => dataToSave[l] = document.getElementById('canvas' + l).toDataURL());
+            
+            let dataToSave = {
+                alphabet: {},
+                words_sideA: {},
+                words_sideB: {}
+            };
+
+            // Save Letters
+            letters.forEach(l => dataToSave.alphabet[l] = document.getElementById('canvas' + l).toDataURL());
+
+            // Save Word Tiles (Side A & B)
+            commonWords.forEach(w => {
+                const id = 'canvas_word_' + w;
+                dataToSave.words_sideA[w] = document.getElementById(id).toDataURL();
+                dataToSave.words_sideB[w] = sideBData[id] || null;
+            });
+
             const { error } = await mySupabase.from('codelock').upsert([{ Code: code, alphabet_data: dataToSave }]);
-            error ? alert("Error: " + error.message) : alert("Saved to cloud!");
+            error ? alert("Error: " + error.message) : alert("Saved full code set to cloud!");
         }
 
         async function loadAll() {
@@ -178,29 +375,51 @@
             if (error) { 
                 alert("Could not find that code!"); 
             } else if (data) {
-                const loadPromises = letters.map(l => {
+                const payload = data.alphabet_data;
+
+                // Backward compatibility if payload is flat object
+                const alphaMap = payload.alphabet || payload; 
+                const wordAMap = payload.words_sideA || {};
+                const wordBMap = payload.words_sideB || {};
+
+                // Load Alphabets
+                const alphaPromises = letters.map(l => {
                     return new Promise((resolve) => {
                         const canvas = document.getElementById('canvas' + l);
                         const ctx = canvas.getContext('2d');
                         ctx.clearRect(0, 0, 60, 60);
-                        
-                        if (data.alphabet_data && data.alphabet_data[l]) {
+                        if (alphaMap[l]) {
                             const img = new Image();
                             img.crossOrigin = "anonymous"; 
-                            img.onload = () => { 
-                                ctx.drawImage(img, 0, 0, 60, 60); 
-                                resolve();
-                            };
+                            img.onload = () => { ctx.drawImage(img, 0, 0, 60, 60); resolve(); };
                             img.onerror = () => resolve();
-                            img.src = data.alphabet_data[l];
-                        } else {
-                            resolve();
-                        }
+                            img.src = alphaMap[l];
+                        } else resolve();
                     });
                 });
-                
-                await Promise.all(loadPromises);
-                alert("Loaded from cloud!");
+
+                // Load Word Tiles
+                const wordPromises = commonWords.map(w => {
+                    return new Promise((resolve) => {
+                        const id = 'canvas_word_' + w;
+                        const canvas = document.getElementById(id);
+                        const ctx = canvas.getContext('2d');
+                        ctx.clearRect(0, 0, 60, 60);
+
+                        if (wordBMap[w]) sideBData[id] = wordBMap[w];
+
+                        if (wordAMap[w]) {
+                            const img = new Image();
+                            img.crossOrigin = "anonymous";
+                            img.onload = () => { ctx.drawImage(img, 0, 0, 60, 60); resolve(); };
+                            img.onerror = () => resolve();
+                            img.src = wordAMap[w];
+                        } else resolve();
+                    });
+                });
+
+                await Promise.all([...alphaPromises, ...wordPromises]);
+                alert("Loaded code set from cloud!");
             }
         }
 
@@ -242,6 +461,15 @@
             exp.style.display = "none";
         }
 
+        function launchGame() {
+            const code = document.getElementById('cipherCode').value;
+            if (!code) {
+                alert("Tip: Save your custom passcode first so your tiles load on the game board!");
+            }
+            // Passes the current cipher passcode into the game page via URL query parameter
+            window.location.href = `scrabble_game.html?code=${encodeURIComponent(code)}`;
+        }
+
         // Supabase Keep-Alive Ping
         async function pingSupabase() {
             try {
@@ -255,8 +483,6 @@
 
                 if (response.ok) {
                     console.log('Supabase keep-alive ping successful.');
-                } else {
-                    console.warn('Keep-alive ping returned status:', response.status);
                 }
             } catch (error) {
                 console.error('Error sending keep-alive ping:', error);
