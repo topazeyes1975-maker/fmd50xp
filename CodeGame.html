@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Cipher Scrabble - Live Database Match</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #0d0907; font-family: sans-serif; color: white; }
+        
+        /* Modal for Entering Secret Passcodes */
+        #code-modal {
+            position: fixed; inset: 0; background: rgba(13, 9, 7, 0.95);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 100; gap: 15px; padding: 20px; text-align: center;
+        }
+        .modal-box {
+            background: rgba(30, 18, 12, 0.95); border: 2px solid #d4af37;
+            padding: 25px; border-radius: 8px; width: 90%; max-width: 400px;
+            display: flex; flex-direction: column; gap: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+        }
+
+        #ui-overlay {
+            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+            display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 10;
+            width: 90%; max-width: 600px; display: none;
+        }
+        .scoreboard {
+            display: flex; justify-content: space-between; width: 100%;
+            background: rgba(30, 18, 12, 0.95); padding: 8px 16px; border-radius: 6px;
+            border: 2px solid #8b5a2b; font-size: 15px; font-weight: bold;
+        }
+        .play-panel {
+            background: rgba(45, 25, 15, 0.95); border: 1px solid #d4af37;
+            padding: 10px; border-radius: 6px; width: 100%; text-align: center;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        input[type="text"], input[type="password"] {
+            padding: 8px; font-size: 16px; border-radius: 4px; border: 1px solid #8b5a2b;
+            background: #1a0f0a; color: #ffd700; text-align: center; font-weight: bold;
+        }
+        .btn {
+            border: none; padding: 10px 18px; font-size: 14px; font-weight: bold;
+            border-radius: 4px; cursor: pointer; transition: transform 0.1s;
+        }
+        .btn-submit { background: #d4af37; color: #1a0f0a; }
+        .btn-challenge { background: #b22222; color: white; }
+        .btn-pass { background: #2e8b57; color: white; }
+        .btn:hover { transform: scale(1.05); }
+        #verdict-box {
+            font-size: 15px; font-weight: bold; padding: 8px 14px; border-radius: 4px;
+            display: none; text-align: center; width: 100%;
+        }
+        .truth-verdict { background: #2e8b57; color: white; }
+        .bluff-verdict { background: #b22222; color: white; }
+        #status-msg { font-size: 12px; color: #ffd700; display: none; }
+    </style>
+    <!-- Three.js Engine -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Supabase JS Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <!-- Step 1: Secret Passcode Entry Screen -->
+    <div id="code-modal">
+        <div class="modal-box">
+            <h2 style="color: #d4af37; margin: 0;">Enter Secret Cipher Keys</h2>
+            <p style="font-size: 13px; color: #ccc; margin: 0;">Enter your passcodes from your saved drawing keys. The game will fetch each player's custom artwork from Supabase!</p>
+            
+            <label style="font-size: 14px; text-align: left;">Player 1 Passcode:</label>
+            <input type="password" id="p1-code-input" placeholder="e.g. KEY123" />
+
+            <label style="font-size: 14px; text-align: left;">Player 2 Passcode:</label>
+            <input type="password" id="p2-code-input" placeholder="e.g. KEY456" />
+
+            <button class="btn btn-submit" id="start-btn" onclick="startGameWithCodes()" style="margin-top: 10px;">Connect & Load Board</button>
+            <div id="status-msg">Querying Supabase database...</div>
+        </div>
+    </div>
+
+    <!-- Step 2: Main Game Interface -->
+    <div id="ui-overlay">
+        <div class="scoreboard">
+            <div>P1 Score: <span id="p1-score" style="color:#4caf50;">0</span></div>
+            <div>Active: <span id="current-player" style="color:#ffd700;">Player 1</span></div>
+            <div>P2 Score: <span id="p2-score" style="color:#ff9800;">0</span></div>
+        </div>
+
+        <div class="play-panel" id="placement-panel">
+            <span style="font-size: 13px; color: #ddd;">Click a rack tile, then click a board space to lay it down!</span>
+            <input type="text" id="claimed-word-input" placeholder="Declare what word these symbols spell..." />
+            <button class="btn btn-submit" onclick="submitPlacedWord()">Submit Play & Proclaim</button>
+        </div>
+
+        <div class="play-panel" id="bluff-panel" style="display: none;">
+            <div id="bluff-declaration-text" style="font-size: 16px; font-weight: bold; color: #ffd700;"></div>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button class="btn btn-pass" onclick="resolveTurn(false)">Accept Play (Believe)</button>
+                <button class="btn btn-challenge" onclick="resolveTurn(true)">Call Bluff!</button>
+            </div>
+        </div>
+
+        <div id="verdict-box"></div>
+    </div>
+
+    <script>
+        // --- 1. Supabase Live Connection Configuration ---
+        const SUPABASE_URL = 'https://jhgcyiswxubqzqtbhain.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_0j0PaDVT_pXMJawcf2W8fQ_Lz9B4KoW';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let p1CipherKey = "", p2CipherKey = "";
+        let p1CipherData = {}, p2CipherData = {};
+
+        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        let p1Score = 0, p2Score = 0;
+        let activePlayer = 1;
+        let rackTiles = [];
+        let pendingPlaced = [];
+        let selectedRackIdx = null;
+
+        // --- 2. Database Fetch & Passcode Validation ---
+        async function startGameWithCodes() {
+            p1CipherKey = document.getElementById('p1-code-input').value.trim();
+            p2CipherKey = document.getElementById('p2-code-input').value.trim();
+
+            if (!p1CipherKey || !p2CipherKey) {
+                alert("Both players must enter their secret cipher code to start!");
+                return;
+            }
+
+            const statusMsg = document.getElementById('status-msg');
+            const startBtn = document.getElementById('start-btn');
+            statusMsg.style.display = 'block';
+            startBtn.disabled = true;
+
+            try {
+                // Fetch Player 1 Code Record from 'codelock' table
+                const { data: dataP1, error: err1 } = await supabaseClient
+                    .from('codelock')
+                    .select('*')
+                    .eq('passcode', p1CipherKey);
+
+                // Fetch Player 2 Code Record from 'codelock' table
+                const { data: dataP2, error: err2 } = await supabaseClient
+                    .from('codelock')
+                    .select('*')
+                    .eq('passcode', p2CipherKey);
+
+                if (err1 || !dataP1 || dataP1.length === 0) {
+                    alert(`Player 1 Passcode "${p1CipherKey}" was not found in Supabase! Check the key and try again.`);
+                    statusMsg.style.display = 'none';
+                    startBtn.disabled = false;
+                    return;
+                }
+
+                if (err2 || !dataP2 || dataP2.length === 0) {
+                    alert(`Player 2 Passcode "${p2CipherKey}" was not found in Supabase! Check the key and try again.`);
+                    statusMsg.style.display = 'none';
+                    startBtn.disabled = false;
+                    return;
+                }
+
+                // Assign retrieved drawings/maps
+                p1CipherData = dataP1[0];
+                p2CipherData = dataP2[0];
+
+                document.getElementById('code-modal').style.display = 'none';
+                document.getElementById('ui-overlay').style.display = 'flex';
+
+                init3DScene();
+                dealRack();
+
+            } catch (err) {
+                alert("Error connecting to Supabase database. Please check your network or credentials.");
+                console.error(err);
+                statusMsg.style.display = 'none';
+                startBtn.disabled = false;
+            }
+        }
+
+        // --- 3. Three.js 3D Game Engine ---
+        let scene, camera, renderer, woodMat, gridCells = [];
+
+        function init3DScene() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0d0907);
+
+            camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 10, 10);
+            camera.lookAt(0, -0.5, 0);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            document.body.appendChild(renderer.domElement);
+
+            scene.add(new THREE.AmbientLight(0xfff0dd, 0.9));
+            const mainLight = new THREE.DirectionalLight(0xffe8d6, 1.2);
+            mainLight.position.set(8, 15, 8);
+            mainLight.castShadow = true;
+            scene.add(mainLight);
+
+            // Procedural Wood Texture
+            const canvas = document.createElement('canvas');
+            canvas.width = 256; canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#4a2c1b'; ctx.fillRect(0, 0, 256, 256);
+            ctx.fillStyle = '#2b1810';
+            for (let i = 0; i < 40; i++) {
+                ctx.globalAlpha = 0.08;
+                ctx.fillRect(Math.random() * 256, 0, Math.random() * 8 + 1, 256);
+            }
+            woodMat = new THREE.MeshStandardMaterial({ map: new THREE.CanvasTexture(canvas), roughness: 0.6 });
+
+            // Wooden Board Base
+            const boardMesh = new THREE.Mesh(new THREE.BoxGeometry(11, 0.4, 11), woodMat);
+            boardMesh.position.y = -0.2;
+            scene.add(boardMesh);
+
+            // 7x7 Grid Placement Cells
+            const cellGeo = new THREE.PlaneGeometry(0.65, 0.65);
+            const cellMat = new THREE.MeshBasicMaterial({ color: 0x3a271d, side: THREE.DoubleSide, transparent: true, opacity: 0.3 });
+
+            for (let r = 0; r < 7; r++) {
+                for (let c = 0; c < 7; c++) {
+                    const cell = new THREE.Mesh(cellGeo, cellMat.clone());
+                    cell.rotation.x = -Math.PI / 2;
+                    cell.position.set((c - 3) * 0.72, 0.01, (r - 3) * 0.72);
+                    cell.userData = { row: r, col: c, occupied: false };
+                    scene.add(cell);
+                    gridCells.push(cell);
+                }
+            }
+
+            // Player Hand Rack
+            const rackMesh = new THREE.Mesh(new THREE.BoxGeometry(5.5, 0.25, 0.7), woodMat);
+            rackMesh.position.set(0, 0.1, 4.6);
+            rackMesh.rotation.x = -0.2;
+            scene.add(rackMesh);
+
+            setupRaycaster();
+            animate();
+        }
+
+        // Generate dynamic 3D tile material using custom graphic or fallback symbol
+        function createTileTexture(imageUrl, letter) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256; canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#8b5a2b'; ctx.fillRect(0, 0, 256, 256);
+            ctx.fillStyle = '#5c3a1b'; ctx.fillRect(8, 8, 240, 240);
+
+            const texture = new THREE.CanvasTexture(canvas);
+
+            if (imageUrl) {
+                const img = new Image();
+                img.onload = () => {
+                    ctx.drawImage(img, 16, 16, 224, 224);
+                    texture.needsUpdate = true;
+                };
+                img.src = imageUrl;
+            } else {
+                ctx.fillStyle = '#f5e6d3';
+                ctx.font = 'bold 90px serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(letter, 128, 128);
+                texture.needsUpdate = true;
+            }
+
+            return texture;
+        }
+
+        // Deal 7 dynamic tiles to rack
+        function dealRack() {
+            rackTiles.forEach(t => scene.remove(t.mesh));
+            rackTiles = [];
+
+            const activeData = (activePlayer === 1) ? p1CipherData : p2CipherData;
+
+            for (let i = 0; i < 7; i++) {
+                const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
+                
+                // Get image URL stored under that letter in Supabase, if available
+                const drawnImageUrl = (activeData && activeData[randomLetter]) ? activeData[randomLetter] : null;
+
+                const tileTex = createTileTexture(drawnImageUrl, randomLetter);
+                const tileMat = [
+                    woodMat, woodMat,
+                    new THREE.MeshStandardMaterial({ map: tileTex, roughness: 0.3 }),
+                    woodMat, woodMat, woodMat
+                ];
+
+                const mesh = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.16, 0.62), tileMat);
+                mesh.position.set(-2.1 + (i * 0.7), 0.25, 4.55);
+                mesh.rotation.x = -0.2;
+                mesh.userData = { rackIdx: i, letter: randomLetter };
+
+                scene.add(mesh);
+                rackTiles.push({ mesh, letter: randomLetter, inRack: true });
+            }
+        }
+
+        // --- 4. Tile Selection & Board Placement ---
+        function setupRaycaster() {
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+
+            window.addEventListener('pointerdown', (e) => {
+                mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+                raycaster.setFromCamera(mouse, camera);
+
+                // Check Rack Tile Click
+                const rackHits = raycaster.intersectObjects(rackTiles.map(t => t.mesh));
+                if (rackHits.length > 0) {
+                    const idx = rackHits[0].object.userData.rackIdx;
+                    if (rackTiles[idx].inRack) {
+                        selectedRackIdx = idx;
+                        rackTiles.forEach((t, i) => t.mesh.position.y = (i === idx) ? 0.45 : 0.25);
+                    }
+                    return;
+                }
+
+                // Check Board Space Click
+                if (selectedRackIdx !== null) {
+                    const cellHits = raycaster.intersectObjects(gridCells);
+                    if (cellHits.length > 0) {
+                        const cell = cellHits[0].object;
+                        if (!cell.userData.occupied) {
+                            const tileObj = rackTiles[selectedRackIdx];
+                            tileObj.mesh.position.set(cell.position.x, 0.1, cell.position.z);
+                            tileObj.mesh.rotation.x = 0;
+                            tileObj.inRack = false;
+                            cell.userData.occupied = true;
+
+                            pendingPlaced.push({ tileObj, cell, actualLetter: tileObj.letter });
+                            selectedRackIdx = null;
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- 5. Turn Submission & Bluff Judgement Engine ---
+        let isLying = false, currentDeclaredWord = "";
+
+        function submitPlacedWord() {
+            const input = document.getElementById('claimed-word-input').value.trim().toUpperCase();
+            if (pendingPlaced.length === 0) {
+                alert("Place at least one tile on the board first!"); return;
+            }
+            if (!input) {
+                alert("Please declare what word you claim these symbols spell!"); return;
+            }
+
+            currentDeclaredWord = input;
+            const actualWord = pendingPlaced.map(p => p.actualLetter).join('');
+            isLying = (actualWord !== currentDeclaredWord);
+
+            document.getElementById('placement-panel').style.display = 'none';
+            document.getElementById('bluff-panel').style.display = 'flex';
+            document.getElementById('bluff-declaration-text').innerText = 
+                `Player ${activePlayer} placed ${pendingPlaced.length} tiles under code [${activePlayer === 1 ? p1CipherKey : p2CipherKey}] claiming it spells: "${currentDeclaredWord}"`;
+        }
+
+        function resolveTurn(calledBluff) {
+            const verdictBox = document.getElementById('verdict-box');
+            document.getElementById('bluff-panel').style.display = 'none';
+            verdictBox.style.display = 'block';
+
+            const pts = pendingPlaced.length * 5;
+
+            if (calledBluff) {
+                if (isLying) {
+                    if (activePlayer === 1) p2Score += pts; else p1Score += pts;
+                    verdictBox.className = "bluff-verdict";
+                    verdictBox.innerText = `BLUFF CAUGHT! Word was NOT "${currentDeclaredWord}". Player ${activePlayer} loses turn and ${pts} pts awarded to challenger!`;
+                    pendingPlaced.forEach(p => { p.cell.userData.occupied = false; scene.remove(p.tileObj.mesh); });
+                } else {
+                    if (activePlayer === 1) { p1Score += pts; p2Score = Math.max(0, p2Score - pts); }
+                    else { p2Score += pts; p1Score = Math.max(0, p1Score - pts); }
+                    verdictBox.className = "truth-verdict";
+                    verdictBox.innerText = `TRUTH! Word was honest! Player ${activePlayer} scores ${pts} pts. Opponent loses ${pts} pts!`;
+                }
+            } else {
+                if (activePlayer === 1) p1Score += pts; else p2Score += pts;
+                verdictBox.className = "truth-verdict";
+                verdictBox.innerText = `Play Accepted! Player ${activePlayer} scores ${pts} pts.`;
+            }
+
+            document.getElementById('p1-score').innerText = p1Score;
+            document.getElementById('p2-score').innerText = p2Score;
+
+            setTimeout(() => {
+                verdictBox.style.display = 'none';
+                document.getElementById('placement-panel').style.display = 'flex';
+                document.getElementById('claimed-word-input').value = "";
+                pendingPlaced = [];
+                activePlayer = activePlayer === 1 ? 2 : 1;
+                document.getElementById('current-player').innerText = `Player ${activePlayer}`;
+                dealRack();
+            }, 4000);
+        }
+
+        function animate() { requestAnimationFrame(animate); if (renderer) renderer.render(scene, camera); }
+
+        window.addEventListener('resize', () => {
+            if (camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        });
+    </script>
+</body>
+</html>
+
