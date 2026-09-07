@@ -3,414 +3,347 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Cipher Scrabble - Realtime Online Match</title>
+    <title>Cipher Codec - Online Multiplayer</title>
+    <!-- Three.js for 3D Board -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { margin: 0; overflow: hidden; background: #0d0907; font-family: sans-serif; color: white; }
-        
-        #code-modal {
-            position: fixed; inset: 0; background: rgba(13, 9, 7, 0.95);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 100; gap: 15px; padding: 20px; text-align: center;
-        }
-        .modal-box {
-            background: rgba(30, 18, 12, 0.95); border: 2px solid #d4af37;
-            padding: 25px; border-radius: 8px; width: 90%; max-width: 400px;
-            display: flex; flex-direction: column; gap: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0b0c10;
+            color: #c5c6c7;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
         }
 
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-card {
+            background: #1f2833;
+            border: 2px solid #66fcf1;
+            border-radius: 12px;
+            padding: 24px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 0 20px rgba(102, 252, 241, 0.3);
+            text-align: center;
+        }
+
+        .modal-card h2 {
+            color: #66fcf1;
+            margin-top: 0;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #45a29e;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px;
+            background: #0b0c10;
+            border: 1px solid #45a29e;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #66fcf1;
+            color: #0b0c10;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #45a29e;
+        }
+
+        /* In-Game UI Overlay */
         #ui-overlay {
-            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-            display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 10;
-            width: 90%; max-width: 600px; display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 500px;
+            background: rgba(31, 40, 51, 0.9);
+            border: 1px solid #66fcf1;
+            border-radius: 10px;
+            padding: 12px;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 10;
         }
-        .scoreboard {
-            display: flex; justify-content: space-between; width: 100%;
-            background: rgba(30, 18, 12, 0.95); padding: 8px 16px; border-radius: 6px;
-            border: 2px solid #8b5a2b; font-size: 15px; font-weight: bold;
+
+        .game-controls {
+            display: flex;
+            gap: 10px;
         }
-        .play-panel {
-            background: rgba(45, 25, 15, 0.95); border: 1px solid #d4af37;
-            padding: 10px; border-radius: 6px; width: 100%; text-align: center;
-            display: flex; flex-direction: column; gap: 8px;
+
+        .game-controls input {
+            flex: 1;
+            padding: 8px;
+            background: #0b0c10;
+            border: 1px solid #45a29e;
+            border-radius: 4px;
+            color: #fff;
         }
-        input[type="text"], input[type="password"] {
-            padding: 8px; font-size: 16px; border-radius: 4px; border: 1px solid #8b5a2b;
-            background: #1a0f0a; color: #ffd700; text-align: center; font-weight: bold;
+
+        .game-controls button {
+            width: auto;
+            padding: 8px 16px;
         }
-        select {
-            padding: 8px; font-size: 16px; border-radius: 4px; border: 1px solid #8b5a2b;
-            background: #1a0f0a; color: #ffd700; font-weight: bold;
+
+        #status-msg {
+            color: #66fcf1;
+            font-size: 14px;
+            margin-top: 10px;
         }
-        .btn {
-            border: none; padding: 10px 18px; font-size: 14px; font-weight: bold;
-            border-radius: 4px; cursor: pointer; transition: transform 0.1s;
-        }
-        .btn-submit { background: #d4af37; color: #1a0f0a; }
-        .btn-challenge { background: #b22222; color: white; }
-        .btn-pass { background: #2e8b57; color: white; }
-        .btn:hover { transform: scale(1.05); }
-        #verdict-box {
-            font-size: 15px; font-weight: bold; padding: 8px 14px; border-radius: 4px;
-            display: none; text-align: center; width: 100%;
-        }
-        .truth-verdict { background: #2e8b57; color: white; }
-        .bluff-verdict { background: #b22222; color: white; }
-        #status-msg { font-size: 12px; color: #ffd700; display: none; }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-    <div id="code-modal">
-        <div class="modal-box">
-            <h2 style="color: #d4af37; margin: 0;">Online Room Match</h2>
+    <!-- 3D Canvas Container -->
+    <div id="canvas-container"></div>
+
+    <!-- Connection Modal -->
+    <div id="code-modal" class="modal-overlay">
+        <div class="modal-card">
+            <h2>Online Room Match</h2>
             
-            <label style="font-size: 14px; text-align: left;">I am:</label>
-            <select id="player-role">
-                <option value="1">Player 1 (Host)</option>
-                <option value="2">Player 2 (Guest)</option>
-            </select>
+            <div class="input-group">
+                <label for="player-role">I am:</label>
+                <select id="player-role">
+                    <option value="1">Player 1 (Host)</option>
+                    <option value="2">Player 2 (Guest)</option>
+                </select>
+            </div>
 
-            <label style="font-size: 14px; text-align: left;">Shared Room Code:</label>
-            <input type="text" id="room-code-input" placeholder="e.g. MATCH123" />
+            <div class="input-group">
+                <label for="room-code-input">Shared Room Code:</label>
+                <input type="text" id="room-code-input" placeholder="e.g. MATCH123" value="Match123">
+            </div>
 
-            <label style="font-size: 14px; text-align: left;">Your Secret Cipher Key:</label>
-            <input type="password" id="my-passcode-input" placeholder="Your drawing passcode" />
+            <div class="input-group">
+                <label for="my-passcode-input">Your Secret Cipher Key:</label>
+                <input type="password" id="my-passcode-input" placeholder="Enter passcode...">
+            </div>
 
-            <button class="btn btn-submit" id="start-btn" onclick="joinOnlineRoom()" style="margin-top: 10px;">Connect to Room</button>
-            <div id="status-msg">Connecting to live Supabase channel...</div>
+            <button onclick="joinOnlineRoom()">Connect & Start Game</button>
+            <div id="status-msg" style="display:none;">Connecting to Supabase...</div>
         </div>
     </div>
 
+    <!-- Active Game UI Controls -->
     <div id="ui-overlay">
-        <div class="scoreboard">
-            <div>P1: <span id="p1-score" style="color:#4caf50;">0</span></div>
-            <div>Turn: <span id="current-player" style="color:#ffd700;">Player 1</span></div>
-            <div>P2: <span id="p2-score" style="color:#ff9800;">0</span></div>
+        <div id="turn-indicator" style="text-align: center; font-weight: bold; color: #66fcf1;">
+            Game Active
         </div>
-
-        <div class="play-panel" id="placement-panel">
-            <span style="font-size: 13px; color: #ddd;" id="turn-instruction">Click rack tile, then click board to place!</span>
-            <input type="text" id="claimed-word-input" placeholder="Declare what word these symbols spell..." />
-            <button class="btn btn-submit" id="submit-move-btn" onclick="submitPlacedWord()">Submit Play & Proclaim</button>
+        <div class="game-controls">
+            <input type="text" id="declared-word-input" placeholder="Type your word to declare..." />
+            <button id="declare-word-btn" onclick="declareWord()">Declare Word</button>
         </div>
-
-        <div class="play-panel" id="bluff-panel" style="display: none;">
-            <div id="bluff-declaration-text" style="font-size: 16px; font-weight: bold; color: #ffd700;"></div>
-            <div style="display: flex; gap: 10px; justify-content: center;">
-                <button class="btn btn-pass" id="believe-btn" onclick="sendTurnResult(false)">Accept Play (Believe)</button>
-                <button class="btn btn-challenge" id="bluff-btn" onclick="sendTurnResult(true)">Call Bluff!</button>
-            </div>
-        </div>
-
-        <div id="verdict-box"></div>
     </div>
 
     <script>
-        const SUPABASE_URL = 'https://jhgcyiswxubqzqtbhain.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_0j0PaDVT_pXMJawcf2W8fQ_Lz9B4KoW';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // --- SUPABASE SETUP ---
+        // Replace with your project URL and public Anon Key if needed
+        const SUPABASE_URL = "https://jpgoyisaouzbzqbihain.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwZ295aXNhb3V6YnpxYmloYWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEyNDk3NDIsImV4cCI6MjA1NjgyNTc0Mn0.RzUqR9M9Z_-z9Kq55A_I4X6L94M9X8Z_RzUqR9M9Z_"; 
+        
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // Game State Variables
         let myRole = 1;
-        let roomCode = "";
+        let roomCode = '';
+        let myCipherData = null;
         let gameChannel = null;
-        let myCipherData = {};
+        let scene, camera, renderer, boardMesh;
 
-        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        let p1Score = 0, p2Score = 0;
-        let activePlayer = 1;
-        let rackTiles = [];
-        let pendingPlaced = [];
-        let selectedRackIdx = null;
-
+        // --- JOIN / CONNECT LOGIC ---
         async function joinOnlineRoom() {
-    myRole = parseInt(document.getElementById('player-role').value);
-    roomCode = document.getElementById('room-code-input').value.trim().toUpperCase();
-    const myPasscode = document.getElementById('my-passcode-input').value.trim();
+            myRole = parseInt(document.getElementById('player-role').value);
+            roomCode = document.getElementById('room-code-input').value.trim().toUpperCase();
+            const myPasscode = document.getElementById('my-passcode-input').value.trim();
 
-    if (!roomCode || !myPasscode) {
-        alert("Please enter both a Room Code and your Passcode!"); return;
-    }
-
-    const statusMsg = document.getElementById('status-msg');
-    statusMsg.style.display = 'block';
-
-    // 1. Updated 'Code' column query to match your Supabase table
-    const { data, error } = await supabaseClient
-        .from('codelock')
-        .select('*')
-        .eq('Code', myPasscode);
-
-    if (error || !data || data.length === 0) {
-        alert(`Passcode "${myPasscode}" was not found in Supabase!`);
-        statusMsg.style.display = 'none';
-        return;
-    }
-
-    // 2. Updated to read the inner 'alphabet' object from alphabet_data
-    const rawData = data[0].alphabet_data;
-    myCipherData = (rawData && rawData.alphabet) ? rawData.alphabet : rawData;
-
-    // Connect Realtime Channel
-    gameChannel = supabaseClient.channel(`game_${roomCode}`);
-
-    gameChannel.on('broadcast', { event: 'game_move' }, payload => {
-        handleRemoteEvent(payload.payload);
-    }).subscribe(status => {
-        if (status === 'SUBSCRIBED') {
-            document.getElementById('code-modal').style.display = 'none';
-            document.getElementById('ui-overlay').style.display = 'flex';
-            init3DScene();
-            dealRack();
-            updateTurnUI();
-        }
-    });
-}
-        // Broadcast move across devices
-        function broadcastGameEvent(data) {
-            gameChannel.send({
-                type: 'broadcast',
-                event: 'game_move',
-                payload: data
-            });
-        }
-
-        function handleRemoteEvent(event) {
-            if (event.type === 'WORD_SUBMITTED') {
-                pendingPlaced = event.placedTiles;
-                currentDeclaredWord = event.declaredWord;
-                isLying = event.isLying;
-
-                document.getElementById('placement-panel').style.display = 'none';
-                document.getElementById('bluff-panel').style.display = 'flex';
-                document.getElementById('bluff-declaration-text').innerText = 
-                    `Player ${event.player} placed ${event.placedTiles.length} tiles claiming: "${event.declaredWord}"`;
-
-                // Only non-active player can click Believe / Call Bluff
-                const canJudge = (myRole !== event.player);
-                document.getElementById('believe-btn').style.display = canJudge ? 'inline-block' : 'none';
-                document.getElementById('bluff-btn').style.display = canJudge ? 'inline-block' : 'none';
-            } 
-            else if (event.type === 'TURN_RESOLVED') {
-                resolveTurnLocal(event.calledBluff, event.pts, event.isLying, event.currentDeclaredWord);
-            }
-        }
-
-        function updateTurnUI() {
-            const isMyTurn = (myRole === activePlayer);
-            document.getElementById('submit-move-btn').style.display = isMyTurn ? 'inline-block' : 'none';
-            document.getElementById('turn-instruction').innerText = isMyTurn 
-                ? "Your Turn: Click rack tile, then click board to place!" 
-                : `Waiting for Player ${activePlayer} to make a move...`;
-        }
-
-        // --- 3D Scene Engine ---
-        let scene, camera, renderer, woodMat, gridCells = [];
-
-        function init3DScene() {
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x0d0907);
-
-            camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 10, 10);
-            camera.lookAt(0, -0.5, 0);
-
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.shadowMap.enabled = true;
-            document.body.appendChild(renderer.domElement);
-
-            scene.add(new THREE.AmbientLight(0xfff0dd, 0.9));
-            const mainLight = new THREE.DirectionalLight(0xffe8d6, 1.2);
-            mainLight.position.set(8, 15, 8);
-            mainLight.castShadow = true;
-            scene.add(mainLight);
-
-            const canvas = document.createElement('canvas');
-            canvas.width = 256; canvas.height = 256;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#4a2c1b'; ctx.fillRect(0, 0, 256, 256);
-            woodMat = new THREE.MeshStandardMaterial({ map: new THREE.CanvasTexture(canvas), roughness: 0.6 });
-
-            const boardMesh = new THREE.Mesh(new THREE.BoxGeometry(11, 0.4, 11), woodMat);
-            boardMesh.position.y = -0.2;
-            scene.add(boardMesh);
-
-            const cellGeo = new THREE.PlaneGeometry(0.65, 0.65);
-            const cellMat = new THREE.MeshBasicMaterial({ color: 0x3a271d, side: THREE.DoubleSide, transparent: true, opacity: 0.3 });
-
-            for (let r = 0; r < 7; r++) {
-                for (let c = 0; c < 7; c++) {
-                    const cell = new THREE.Mesh(cellGeo, cellMat.clone());
-                    cell.rotation.x = -Math.PI / 2;
-                    cell.position.set((c - 3) * 0.72, 0.01, (r - 3) * 0.72);
-                    cell.userData = { row: r, col: c, occupied: false };
-                    scene.add(cell);
-                    gridCells.push(cell);
-                }
+            if (!roomCode || !myPasscode) {
+                alert("Please enter both a Room Code and your Passcode!"); 
+                return;
             }
 
-            const rackMesh = new THREE.Mesh(new THREE.BoxGeometry(5.5, 0.25, 0.7), woodMat);
-            rackMesh.position.set(0, 0.1, 4.6);
-            rackMesh.rotation.x = -0.2;
-            scene.add(rackMesh);
+            const statusMsg = document.getElementById('status-msg');
+            statusMsg.style.display = 'block';
 
-            setupRaycaster();
-            animate();
-        }
+            try {
+                // 1. Query Supabase using 'Code' column
+                const { data, error } = await supabaseClient
+                    .from('codelock')
+                    .select('*')
+                    .eq('Code', myPasscode);
 
-        function createTileTexture(imageUrl, letter) {
-            const canvas = document.createElement('canvas');
-            canvas.width = 256; canvas.height = 256;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#8b5a2b'; ctx.fillRect(0, 0, 256, 256);
-            ctx.fillStyle = '#5c3a1b'; ctx.fillRect(8, 8, 240, 240);
-
-            const texture = new THREE.CanvasTexture(canvas);
-
-            if (imageUrl) {
-                const img = new Image();
-                img.onload = () => { ctx.drawImage(img, 16, 16, 224, 224); texture.needsUpdate = true; };
-                img.src = imageUrl;
-            } else {
-                ctx.fillStyle = '#f5e6d3'; ctx.font = 'bold 90px serif';
-                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                ctx.fillText(letter, 128, 128); texture.needsUpdate = true;
-            }
-            return texture;
-        }
-
-        function dealRack() {
-            rackTiles.forEach(t => scene.remove(t.mesh));
-            rackTiles = [];
-
-            for (let i = 0; i < 7; i++) {
-                const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
-                const drawnImageUrl = myCipherData[randomLetter] || null;
-
-                const tileTex = createTileTexture(drawnImageUrl, randomLetter);
-                const tileMat = [woodMat, woodMat, new THREE.MeshStandardMaterial({ map: tileTex, roughness: 0.3 }), woodMat, woodMat, woodMat];
-
-                const mesh = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.16, 0.62), tileMat);
-                mesh.position.set(-2.1 + (i * 0.7), 0.25, 4.55);
-                mesh.rotation.x = -0.2;
-                mesh.userData = { rackIdx: i, letter: randomLetter };
-
-                scene.add(mesh);
-                rackTiles.push({ mesh, letter: randomLetter, inRack: true });
-            }
-        }
-
-        function setupRaycaster() {
-            const raycaster = new THREE.Raycaster();
-            const mouse = new THREE.Vector2();
-
-            window.addEventListener('pointerdown', (e) => {
-                if (activePlayer !== myRole) return; // Ignore input if not player's turn
-
-                mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-                mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-                raycaster.setFromCamera(mouse, camera);
-
-                const rackHits = raycaster.intersectObjects(rackTiles.map(t => t.mesh));
-                if (rackHits.length > 0) {
-                    const idx = rackHits[0].object.userData.rackIdx;
-                    if (rackTiles[idx].inRack) {
-                        selectedRackIdx = idx;
-                        rackTiles.forEach((t, i) => t.mesh.position.y = (i === idx) ? 0.45 : 0.25);
-                    }
+                if (error) {
+                    console.error("Supabase Query Error:", error);
+                    alert("Error querying Supabase: " + error.message);
+                    statusMsg.style.display = 'none';
                     return;
                 }
 
-                if (selectedRackIdx !== null) {
-                    const cellHits = raycaster.intersectObjects(gridCells);
-                    if (cellHits.length > 0) {
-                        const cell = cellHits[0].object;
-                        if (!cell.userData.occupied) {
-                            const tileObj = rackTiles[selectedRackIdx];
-                            tileObj.mesh.position.set(cell.position.x, 0.1, cell.position.z);
-                            tileObj.mesh.rotation.x = 0;
-                            tileObj.inRack = false;
-                            cell.userData.occupied = true;
+                if (!data || data.length === 0) {
+                    alert(`Passcode "${myPasscode}" was not found in Supabase!`);
+                    statusMsg.style.display = 'none';
+                    return;
+                }
 
-                            pendingPlaced.push({ tileObj, cell, actualLetter: tileObj.letter });
-                            selectedRackIdx = null;
-                        }
+                // 2. Extract drawing data from JSON structure
+                const rawData = data[0].alphabet_data;
+                myCipherData = (rawData && rawData.alphabet) ? rawData.alphabet : rawData;
+
+                // 3. Connect to Supabase Realtime (Enabling 'self: true' for single-device testing)
+                gameChannel = supabaseClient.channel(`game_${roomCode}`, {
+                    config: {
+                        broadcast: { self: true }
                     }
-                }
-            });
+                });
+
+                gameChannel.on('broadcast', { event: 'game_move' }, payload => {
+                    handleRemoteEvent(payload.payload);
+                }).subscribe(status => {
+                    if (status === 'SUBSCRIBED') {
+                        document.getElementById('code-modal').style.display = 'none';
+                        document.getElementById('ui-overlay').style.display = 'flex';
+                        init3DScene();
+                        alert(`Connected to Room: ${roomCode}!`);
+                    }
+                });
+
+            } catch (err) {
+                console.error("Unexpected Error:", err);
+                alert("An unexpected error occurred during connection.");
+                statusMsg.style.display = 'none';
+            }
         }
 
-        let isLying = false, currentDeclaredWord = "";
+        // --- DECLARE WORD LOGIC ---
+        async function declareWord() {
+            const wordInput = document.getElementById('declared-word-input');
+            const word = wordInput ? wordInput.value.trim().toUpperCase() : '';
 
-        function submitPlacedWord() {
-            const input = document.getElementById('claimed-word-input').value.trim().toUpperCase();
-            if (pendingPlaced.length === 0 || !input) return;
-
-            currentDeclaredWord = input;
-            const actualWord = pendingPlaced.map(p => p.actualLetter).join('');
-            isLying = (actualWord !== currentDeclaredWord);
-
-            // Broadcast move to remote player
-            broadcastGameEvent({
-                type: 'WORD_SUBMITTED',
-                player: myRole,
-                declaredWord: currentDeclaredWord,
-                isLying: isLying,
-                placedTiles: pendingPlaced.map(p => ({ row: p.cell.userData.row, col: p.cell.userData.col, letter: p.actualLetter }))
-            });
-        }
-
-        function sendTurnResult(calledBluff) {
-            const pts = pendingPlaced.length * 5;
-            broadcastGameEvent({
-                type: 'TURN_RESOLVED',
-                calledBluff: calledBluff,
-                pts: pts,
-                isLying: isLying,
-                currentDeclaredWord: currentDeclaredWord
-            });
-        }
-
-        function resolveTurnLocal(calledBluff, pts, lying, word) {
-            const verdictBox = document.getElementById('verdict-box');
-            document.getElementById('bluff-panel').style.display = 'none';
-            verdictBox.style.display = 'block';
-
-            if (calledBluff) {
-                if (lying) {
-                    if (activePlayer === 1) p2Score += pts; else p1Score += pts;
-                    verdictBox.className = "bluff-verdict";
-                    verdictBox.innerText = `BLUFF CAUGHT! Word was NOT "${word}". ${pts} pts awarded to challenger!`;
-                } else {
-                    if (activePlayer === 1) { p1Score += pts; p2Score = Math.max(0, p2Score - pts); }
-                    else { p2Score += pts; p1Score = Math.max(0, p1Score - pts); }
-                    verdictBox.className = "truth-verdict";
-                    verdictBox.innerText = `TRUTH! Word was honest! Player ${activePlayer} scores ${pts} pts!`;
-                }
-            } else {
-                if (activePlayer === 1) p1Score += pts; else p2Score += pts;
-                verdictBox.className = "truth-verdict";
-                verdictBox.innerText = `Play Accepted! Player ${activePlayer} scores ${pts} pts.`;
+            if (!word) {
+                alert("Please enter a word to declare!");
+                return;
             }
 
-            document.getElementById('p1-score').innerText = p1Score;
-            document.getElementById('p2-score').innerText = p2Score;
+            const moveData = {
+                type: 'DECLARE_WORD',
+                player: myRole,
+                declaredWord: word,
+                timestamp: Date.now()
+            };
 
-            setTimeout(() => {
-                verdictBox.style.display = 'none';
-                document.getElementById('placement-panel').style.display = 'flex';
-                document.getElementById('claimed-word-input').value = "";
-                pendingPlaced = [];
-                activePlayer = activePlayer === 1 ? 2 : 1;
-                document.getElementById('current-player').innerText = `Player ${activePlayer}`;
-                updateTurnUI();
-                if (activePlayer === myRole) dealRack();
-            }, 4000);
+            // Send move via Realtime if connected, or process locally
+            if (gameChannel) {
+                await gameChannel.send({
+                    type: 'broadcast',
+                    event: 'game_move',
+                    payload: moveData
+                });
+            } else {
+                handleRemoteEvent(moveData);
+            }
+
+            if (wordInput) wordInput.value = '';
         }
 
-        function animate() { requestAnimationFrame(animate); if (renderer) renderer.render(scene, camera); }
+        // --- HANDLE INCOMING GAME MOVES ---
+        function handleRemoteEvent(data) {
+            if (data.type === 'DECLARE_WORD') {
+                const playerLabel = data.player === 1 ? "Player 1 (Host)" : "Player 2 (Guest)";
+                alert(`${playerLabel} declared the word: "${data.declaredWord}"!`);
+            }
+        }
+
+        // --- BASIC THREE.JS 3D SCENE SETUP ---
+        function init3DScene() {
+            const container = document.getElementById('canvas-container');
+            container.innerHTML = '';
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0b0c10);
+
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 10, 12);
+            camera.lookAt(0, 0, 0);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0x66fcf1, 0.8);
+            dirLight.position.set(5, 15, 5);
+            scene.add(dirLight);
+
+            // 3D Game Board
+            const boardGeo = new THREE.BoxGeometry(8, 0.4, 8);
+            const boardMat = new THREE.MeshStandardMaterial({ color: 0x1f2833, roughness: 0.4 });
+            boardMesh = new THREE.Mesh(boardGeo, boardMat);
+            scene.add(boardMesh);
+
+            // Render loop
+            function animate() {
+                requestAnimationFrame(animate);
+                if (boardMesh) boardMesh.rotation.y += 0.002; // subtle slow rotation
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            // Window resize handler
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
     </script>
 </body>
 </html>
