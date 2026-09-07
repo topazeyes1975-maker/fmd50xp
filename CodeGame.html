@@ -125,47 +125,48 @@
         let selectedRackIdx = null;
 
         async function joinOnlineRoom() {
-            myRole = parseInt(document.getElementById('player-role').value);
-            roomCode = document.getElementById('room-code-input').value.trim().toUpperCase();
-            const myPasscode = document.getElementById('my-passcode-input').value.trim();
+    myRole = parseInt(document.getElementById('player-role').value);
+    roomCode = document.getElementById('room-code-input').value.trim().toUpperCase();
+    const myPasscode = document.getElementById('my-passcode-input').value.trim();
 
-            if (!roomCode || !myPasscode) {
-                alert("Please enter both a Room Code and your Passcode!"); return;
-            }
+    if (!roomCode || !myPasscode) {
+        alert("Please enter both a Room Code and your Passcode!"); return;
+    }
 
-            const statusMsg = document.getElementById('status-msg');
-            statusMsg.style.display = 'block';
+    const statusMsg = document.getElementById('status-msg');
+    statusMsg.style.display = 'block';
 
-            // Verify Passcode in Supabase
-            const { data, error } = await supabaseClient
-                .from('codelock')
-                .select('*')
-                .eq('passcode', myPasscode);
+    // 1. Updated 'Code' column query to match your Supabase table
+    const { data, error } = await supabaseClient
+        .from('codelock')
+        .select('*')
+        .eq('Code', myPasscode);
 
-            if (error || !data || data.length === 0) {
-                alert(`Passcode "${myPasscode}" was not found in Supabase!`);
-                statusMsg.style.display = 'none';
-                return;
-            }
+    if (error || !data || data.length === 0) {
+        alert(`Passcode "${myPasscode}" was not found in Supabase!`);
+        statusMsg.style.display = 'none';
+        return;
+    }
 
-            myCipherData = data[0];
+    // 2. Updated to read the inner 'alphabet' object from alphabet_data
+    const rawData = data[0].alphabet_data;
+    myCipherData = (rawData && rawData.alphabet) ? rawData.alphabet : rawData;
 
-            // Connect Realtime Channel
-            gameChannel = supabaseClient.channel(`game_${roomCode}`);
+    // Connect Realtime Channel
+    gameChannel = supabaseClient.channel(`game_${roomCode}`);
 
-            gameChannel.on('broadcast', { event: 'game_move' }, payload => {
-                handleRemoteEvent(payload.payload);
-            }).subscribe(status => {
-                if (status === 'SUBSCRIBED') {
-                    document.getElementById('code-modal').style.display = 'none';
-                    document.getElementById('ui-overlay').style.display = 'flex';
-                    init3DScene();
-                    dealRack();
-                    updateTurnUI();
-                }
-            });
+    gameChannel.on('broadcast', { event: 'game_move' }, payload => {
+        handleRemoteEvent(payload.payload);
+    }).subscribe(status => {
+        if (status === 'SUBSCRIBED') {
+            document.getElementById('code-modal').style.display = 'none';
+            document.getElementById('ui-overlay').style.display = 'flex';
+            init3DScene();
+            dealRack();
+            updateTurnUI();
         }
-
+    });
+}
         // Broadcast move across devices
         function broadcastGameEvent(data) {
             gameChannel.send({
