@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cipher Codec - Online Multiplayer</title>
+    <title>Cipher Codec - 3D Scrabble</title>
     <!-- Three.js for 3D Board -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <!-- Supabase JS Client -->
@@ -16,6 +16,7 @@
             color: #c5c6c7;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
+            user-select: none;
         }
 
         #canvas-container {
@@ -24,7 +25,7 @@
             display: block;
         }
 
-        /* Modal Overlay */
+        /* Modal Overlay for Connection */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -40,17 +41,17 @@
 
         .modal-card {
             background: #1f2833;
-            border: 2px solid #66fcf1;
+            border: 2px solid #d4af37;
             border-radius: 12px;
             padding: 24px;
             width: 90%;
             max-width: 400px;
-            box-shadow: 0 0 20px rgba(102, 252, 241, 0.3);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
             text-align: center;
         }
 
         .modal-card h2 {
-            color: #66fcf1;
+            color: #d4af37;
             margin-top: 0;
         }
 
@@ -63,76 +64,94 @@
             display: block;
             margin-bottom: 5px;
             font-size: 14px;
-            color: #45a29e;
+            color: #d4af37;
         }
 
         .input-group input, .input-group select {
             width: 100%;
             padding: 10px;
             background: #0b0c10;
-            border: 1px solid #45a29e;
+            border: 1px solid #d4af37;
             border-radius: 6px;
             color: #fff;
             font-size: 16px;
             box-sizing: border-box;
         }
 
-        button {
+        .btn-main {
             width: 100%;
             padding: 12px;
-            background: #66fcf1;
+            background: #d4af37;
             color: #0b0c10;
             border: none;
             border-radius: 6px;
             font-weight: bold;
             font-size: 16px;
             cursor: pointer;
-            transition: background 0.2s;
         }
 
-        button:hover {
-            background: #45a29e;
-        }
-
-        /* In-Game UI Overlay */
-        #ui-overlay {
+        /* Top HUD Bar */
+        #top-hud {
             position: fixed;
-            bottom: 20px;
+            top: 10px;
             left: 50%;
             transform: translateX(-50%);
             width: 90%;
-            max-width: 500px;
-            background: rgba(31, 40, 51, 0.9);
-            border: 1px solid #66fcf1;
-            border-radius: 10px;
-            padding: 12px;
+            max-width: 600px;
+            background: rgba(15, 12, 9, 0.9);
+            border: 1px solid #d4af37;
+            border-radius: 8px;
+            padding: 8px 16px;
             display: none;
             flex-direction: column;
-            gap: 10px;
+            gap: 6px;
             z-index: 10;
+            text-align: center;
         }
 
-        .game-controls {
+        .hud-scores {
             display: flex;
-            gap: 10px;
+            justify-content: space-between;
+            font-weight: bold;
+            color: #d4af37;
+            font-size: 14px;
         }
 
-        .game-controls input {
-            flex: 1;
+        .hud-status {
+            font-size: 12px;
+            color: #ccc;
+        }
+
+        .hud-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .hud-controls input {
             padding: 8px;
             background: #0b0c10;
-            border: 1px solid #45a29e;
+            border: 1px solid #d4af37;
             border-radius: 4px;
             color: #fff;
+            text-align: center;
+            font-size: 14px;
         }
 
-        .game-controls button {
-            width: auto;
-            padding: 8px 16px;
+        .hud-controls button {
+            padding: 10px;
+            background: #d4af37;
+            color: #0b0c10;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
         }
 
         #status-msg {
-            color: #66fcf1;
+            color: #d4af37;
             font-size: 14px;
             margin-top: 10px;
         }
@@ -140,10 +159,10 @@
 </head>
 <body>
 
-    <!-- 3D Canvas Container -->
+    <!-- 3D Canvas -->
     <div id="canvas-container"></div>
 
-    <!-- Connection Modal -->
+    <!-- Login/Connection Modal -->
     <div id="code-modal" class="modal-overlay">
         <div class="modal-card">
             <h2>Online Room Match</h2>
@@ -158,7 +177,7 @@
 
             <div class="input-group">
                 <label for="room-code-input">Shared Room Code:</label>
-                <input type="text" id="room-code-input" placeholder="e.g. MATCH123" value="Match123">
+                <input type="text" id="room-code-input" placeholder="e.g. Match123" value="Match123">
             </div>
 
             <div class="input-group">
@@ -166,45 +185,50 @@
                 <input type="password" id="my-passcode-input" placeholder="Enter passcode...">
             </div>
 
-            <button onclick="joinOnlineRoom()">Connect & Start Game</button>
+            <button class="btn-main" onclick="joinOnlineRoom()">Connect & Start Game</button>
             <div id="status-msg" style="display:none;">Connecting to Supabase...</div>
         </div>
     </div>
 
-    <!-- Active Game UI Controls -->
-    <div id="ui-overlay">
-        <div id="turn-indicator" style="text-align: center; font-weight: bold; color: #66fcf1;">
-            Game Active
+    <!-- Top HUD & Play Submission Overlay -->
+    <div id="top-hud">
+        <div class="hud-scores">
+            <span>P1: <span id="p1-score">0</span></span>
+            <span id="turn-label">Turn: Player 1</span>
+            <span>P2: <span id="p2-score">0</span></span>
         </div>
-        <div class="game-controls">
-            <input type="text" id="declared-word-input" placeholder="Type your word to declare..." />
-            <button id="declare-word-btn" onclick="declareWord()">Declare Word</button>
+        <div class="hud-status">Click rack tile, then click board to place!</div>
+        <div class="hud-controls">
+            <input type="text" id="declared-word-input" placeholder="Type your proclaimed word..." />
+            <button id="submit-play-btn" onclick="submitPlay()">Submit Play & Proclaim</button>
         </div>
     </div>
 
     <script>
-        // --- SUPABASE SETUP ---
-        // Replace with your project URL and public Anon Key if needed
+        // --- SUPABASE CREDENTIALS ---
         const SUPABASE_URL = "https://jpgoyisaouzbzqbihain.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwZ295aXNhb3V6YnpxYmloYWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEyNDk3NDIsImV4cCI6MjA1NjgyNTc0Mn0.RzUqR9M9Z_-z9Kq55A_I4X6L94M9X8Z_RzUqR9M9Z_"; 
-        
+
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Game State Variables
+        // --- GAME VARIABLES ---
         let myRole = 1;
         let roomCode = '';
         let myCipherData = null;
         let gameChannel = null;
+        
         let scene, camera, renderer, boardMesh;
+        let rackTiles = [];
+        let selectedTile = null;
 
-        // --- JOIN / CONNECT LOGIC ---
+        // --- JOIN ROOM LOGIC ---
         async function joinOnlineRoom() {
             myRole = parseInt(document.getElementById('player-role').value);
             roomCode = document.getElementById('room-code-input').value.trim().toUpperCase();
             const myPasscode = document.getElementById('my-passcode-input').value.trim();
 
             if (!roomCode || !myPasscode) {
-                alert("Please enter both a Room Code and your Passcode!"); 
+                alert("Please enter both a Room Code and your Passcode!");
                 return;
             }
 
@@ -212,34 +236,25 @@
             statusMsg.style.display = 'block';
 
             try {
-                // 1. Query Supabase using 'Code' column
+                // 1. Query Supabase using 'Code' column (Capital C)
                 const { data, error } = await supabaseClient
                     .from('codelock')
                     .select('*')
                     .eq('Code', myPasscode);
 
-                if (error) {
-                    console.error("Supabase Query Error:", error);
-                    alert("Error querying Supabase: " + error.message);
-                    statusMsg.style.display = 'none';
-                    return;
-                }
-
-                if (!data || data.length === 0) {
+                if (error || !data || data.length === 0) {
                     alert(`Passcode "${myPasscode}" was not found in Supabase!`);
                     statusMsg.style.display = 'none';
                     return;
                 }
 
-                // 2. Extract drawing data from JSON structure
+                // 2. Extract cipher drawing data
                 const rawData = data[0].alphabet_data;
                 myCipherData = (rawData && rawData.alphabet) ? rawData.alphabet : rawData;
 
-                // 3. Connect to Supabase Realtime (Enabling 'self: true' for single-device testing)
+                // 3. Connect Realtime Channel with self-broadcasting enabled for same-screen testing
                 gameChannel = supabaseClient.channel(`game_${roomCode}`, {
-                    config: {
-                        broadcast: { self: true }
-                    }
+                    config: { broadcast: { self: true } }
                 });
 
                 gameChannel.on('broadcast', { event: 'game_move' }, payload => {
@@ -247,102 +262,135 @@
                 }).subscribe(status => {
                     if (status === 'SUBSCRIBED') {
                         document.getElementById('code-modal').style.display = 'none';
-                        document.getElementById('ui-overlay').style.display = 'flex';
-                        init3DScene();
-                        alert(`Connected to Room: ${roomCode}!`);
+                        document.getElementById('top-hud').style.display = 'flex';
+                        init3DGame();
                     }
                 });
 
             } catch (err) {
-                console.error("Unexpected Error:", err);
-                alert("An unexpected error occurred during connection.");
+                console.error("Connection Error:", err);
+                alert("Error connecting to Supabase.");
                 statusMsg.style.display = 'none';
             }
         }
 
-        // --- DECLARE WORD LOGIC ---
-        async function declareWord() {
+        // --- SUBMIT PLAY & PROCLAIM BUTTON LOGIC ---
+        async function submitPlay() {
             const wordInput = document.getElementById('declared-word-input');
-            const word = wordInput ? wordInput.value.trim().toUpperCase() : '';
+            const declaredWord = wordInput ? wordInput.value.trim().toUpperCase() : '';
 
-            if (!word) {
-                alert("Please enter a word to declare!");
+            if (!declaredWord) {
+                alert("Please type a word to proclaim before submitting!");
                 return;
             }
 
             const moveData = {
                 type: 'DECLARE_WORD',
                 player: myRole,
-                declaredWord: word,
+                word: declaredWord,
                 timestamp: Date.now()
             };
 
-            // Send move via Realtime if connected, or process locally
+            // Immediate on-screen confirmation pop-up
+            alert(`Play Submitted! You proclaimed: "${declaredWord}"`);
+
+            // Broadcast to remote player if channel is active
             if (gameChannel) {
                 await gameChannel.send({
                     type: 'broadcast',
                     event: 'game_move',
                     payload: moveData
                 });
-            } else {
-                handleRemoteEvent(moveData);
             }
 
+            // Clear input box
             if (wordInput) wordInput.value = '';
         }
 
-        // --- HANDLE INCOMING GAME MOVES ---
+        // --- RECEIVE REMOTE OR LOCAL MOVES ---
         function handleRemoteEvent(data) {
             if (data.type === 'DECLARE_WORD') {
                 const playerLabel = data.player === 1 ? "Player 1 (Host)" : "Player 2 (Guest)";
-                alert(`${playerLabel} declared the word: "${data.declaredWord}"!`);
+                alert(`${playerLabel} declared the word: "${data.word}"!`);
             }
         }
 
-        // --- BASIC THREE.JS 3D SCENE SETUP ---
-        function init3DScene() {
+        // --- 3D WOOD BOARD & RACK SCENE ---
+        function init3DGame() {
             const container = document.getElementById('canvas-container');
             container.innerHTML = '';
 
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x0b0c10);
 
-            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 10, 12);
-            camera.lookAt(0, 0, 0);
+            camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 11, 10);
+            camera.lookAt(0, -1, 0);
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             container.appendChild(renderer.domElement);
 
             // Lighting
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
             scene.add(ambientLight);
 
-            const dirLight = new THREE.DirectionalLight(0x66fcf1, 0.8);
-            dirLight.position.set(5, 15, 5);
+            const dirLight = new THREE.DirectionalLight(0xfff5e6, 0.6);
+            dirLight.position.set(5, 15, 8);
             scene.add(dirLight);
 
-            // 3D Game Board
-            const boardGeo = new THREE.BoxGeometry(8, 0.4, 8);
-            const boardMat = new THREE.MeshStandardMaterial({ color: 0x1f2833, roughness: 0.4 });
+            // Wood Grid Board (7x7)
+            const boardGeo = new THREE.BoxGeometry(7, 0.3, 7);
+            const boardMat = new THREE.MeshStandardMaterial({ color: 0x8b4513, roughness: 0.5 }); // Wooden brown
             boardMesh = new THREE.Mesh(boardGeo, boardMat);
+            boardMesh.position.y = -0.15;
             scene.add(boardMesh);
+
+            // Grid outline tiles
+            for (let x = -3; x <= 3; x++) {
+                for (let z = -3; z <= 3; z++) {
+                    const cellGeo = new THREE.BoxGeometry(0.9, 0.32, 0.9);
+                    const cellMat = new THREE.MeshStandardMaterial({ color: 0xa0522d, roughness: 0.6 });
+                    const cell = new THREE.Mesh(cellGeo, cellMat);
+                    cell.position.set(x * 0.95, -0.1, z * 0.95);
+                    scene.add(cell);
+                }
+            }
+
+            // Bottom Tile Rack
+            createTileRack();
 
             // Render loop
             function animate() {
                 requestAnimationFrame(animate);
-                if (boardMesh) boardMesh.rotation.y += 0.002; // subtle slow rotation
                 renderer.render(scene, camera);
             }
             animate();
 
-            // Window resize handler
+            // Handle Resize
             window.addEventListener('resize', () => {
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
             });
+        }
+
+        // Build the bottom tile rack
+        function createTileRack() {
+            const rackGeo = new THREE.BoxGeometry(6, 0.2, 1);
+            const rackMat = new THREE.MeshStandardMaterial({ color: 0x5c2c16 });
+            const rack = new THREE.Mesh(rackGeo, rackMat);
+            rack.position.set(0, -0.1, 4.2);
+            scene.add(rack);
+
+            // Sample wooden rack tiles
+            for (let i = -2; i <= 2; i++) {
+                const tileGeo = new THREE.BoxGeometry(0.8, 0.15, 0.8);
+                const tileMat = new THREE.MeshStandardMaterial({ color: 0xcd853f }); // Tan wood
+                const tile = new THREE.Mesh(tileGeo, tileMat);
+                tile.position.set(i * 1.0, 0.08, 4.2);
+                scene.add(tile);
+            }
         }
     </script>
 </body>
