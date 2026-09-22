@@ -11,7 +11,7 @@
       padding: 0;
       user-select: none;
       -webkit-user-select: none;
-      touch-action: none; /* Prevents mobile scrolling while playing */
+      touch-action: none;
     }
     body {
       background-color: #1a1a24;
@@ -122,7 +122,7 @@
       position: relative;
       flex: 1;
       height: 100%;
-      background-color: #2b3a26; /* Field green */
+      background-color: #2b3a26;
     }
     canvas {
       display: block;
@@ -247,7 +247,6 @@
       pointer-events: none;
     }
 
-    /* Responsive adjustments for narrow screens */
     @media (max-width: 600px) {
       #main-layout {
         flex-direction: column;
@@ -263,23 +262,23 @@
 </head>
 <body>
 
-  <!-- STARTER / RULES SCREEN OVERLAY -->
+  <!-- STARTER OVERLAY -->
   <div id="start-screen">
     <div id="start-card">
       <h1>HOLE & HOLD</h1>
       <div class="rules-list">
-        <p><b>1. Scoop Captives:</b> Drive your hole around the field with spinning scoops to collect targets into your inventory.</p>
+        <p><b>1. Scoop Captives:</b> Drive your hole around the field to scoop targets into your inventory.</p>
         
         <div class="target-legend">
-          <div class="legend-item"><span class="dot" style="background:#4caf50;"></span> Small (Safe)</div>
-          <div class="legend-item"><span class="dot" style="background:#ffeb3b;"></span> Medium (Bounces)</div>
-          <div class="legend-item"><span class="dot" style="background:#f44336;"></span> Heavy (Breaks Scoops!)</div>
+          <div class="legend-item"><span class="dot" style="background:#4caf50;"></span> Small (Flees)</div>
+          <div class="legend-item"><span class="dot" style="background:#ffeb3b;"></span> Medium (Flees)</div>
+          <div class="legend-item"><span class="dot" style="background:#f44336;"></span> Heavy Monster (Chases & Breaks Blades!)</div>
         </div>
 
         <p><b>2. Deposit & Contain:</b> Drive to your Home Base pen (top-left) while the gate is open to unload your haul.</p>
         <p><b>3. Lock & Digest:</b> Lock the gate chain tether! Drive inside the locked pen to swallow captives for coins and size growth.</p>
-        <p><b>4. Beware Breakouts:</b> Strong captives left inside the locked pen will attack the chain. If it breaks, they escape!</p>
-        <p><b>5. Controls:</b> Drag with your <b>Finger / Mouse</b> (or WASD/Arrows). Press <b>Spacebar</b> or tap the on-screen <b>GATE</b> button to lock/unlock the pen.</p>
+        <p><b>4. Beware Breakouts:</b> Strong captives trapped inside will attack the chain gate until you enter to eat them.</p>
+        <p><b>5. Controls:</b> Drag with your <b>Finger / Mouse</b> (or WASD/Arrows). Press <b>Spacebar</b> or tap <b>GATE</b> button to lock/unlock.</p>
       </div>
       <button class="btn-start" onclick="startGame()">Start Game</button>
     </div>
@@ -305,7 +304,6 @@
         </div>
       </div>
 
-      <!-- On-screen button for mobile touch controls -->
       <button id="btn-mobile-gate" class="open" onclick="toggleGate()">GATE<br>OPEN</button>
 
       <div id="controls-hint">
@@ -367,7 +365,7 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // Game Economy & Upgrades
+    // Economy & Upgrades
     let coins = 0;
     let scoopTier = 1;
     let scoopCount = 2;
@@ -381,10 +379,10 @@
 
     // Player State
     const player = {
-      x: 300,
-      y: 300,
-      targetX: 300,
-      targetY: 300,
+      x: 350,
+      y: 350,
+      targetX: 350,
+      targetY: 350,
       baseRadius: 28,
       growMultiplier: 1.0,
       speed: 6.0,
@@ -400,10 +398,10 @@
     }
     initBlades();
 
-    // Home Base / Pen Setup
+    // Home Base Setup
     const pen = {
-      x: 80,
-      y: 80,
+      x: 60,
+      y: 60,
       width: 200,
       height: 200,
       gateOpen: true,
@@ -414,32 +412,31 @@
 
     // Target Types & Spawning
     const TARGET_TYPES = {
-      SMALL: { name: 'Small', radius: 10, tier: 1, color: '#4caf50', val: 10, power: 1 },
-      MEDIUM: { name: 'Medium', radius: 16, tier: 2, color: '#ffeb3b', val: 25, power: 3 },
-      HEAVY: { name: 'Heavy', radius: 24, tier: 3, color: '#f44336', val: 60, power: 8 }
+      SMALL: { name: 'Small', radius: 10, tier: 1, color: '#4caf50', val: 10, power: 1, speed: 2.5, detectDist: 180 },
+      MEDIUM: { name: 'Medium', radius: 16, tier: 2, color: '#ffeb3b', val: 25, power: 3, speed: 2.0, detectDist: 160 },
+      HEAVY: { name: 'Heavy', radius: 24, tier: 3, color: '#f44336', val: 60, power: 8, speed: 1.8, detectDist: 250 }
     };
 
     let targets = [];
-    const MAX_TARGETS = 25;
+    const MAX_TARGETS = 22;
 
     function spawnTarget() {
       const rand = Math.random();
       let type = TARGET_TYPES.SMALL;
-      if (rand > 0.6 && rand <= 0.9) type = TARGET_TYPES.MEDIUM;
-      else if (rand > 0.9) type = TARGET_TYPES.HEAVY;
+      if (rand > 0.6 && rand <= 0.88) type = TARGET_TYPES.MEDIUM;
+      else if (rand > 0.88) type = TARGET_TYPES.HEAVY;
 
       let tx, ty;
+      // Ensure targets never spawn inside or right next to Home Base
       do {
-        tx = Math.random() * (canvas.width - 80) + 40;
-        ty = Math.random() * (canvas.height - 80) + 40;
-      } while (tx < pen.x + pen.width + 40 && ty < pen.y + pen.height + 40);
+        tx = Math.random() * (canvas.width - 120) + 60;
+        ty = Math.random() * (canvas.height - 120) + 60;
+      } while (tx < pen.x + pen.width + 60 && ty < pen.y + pen.height + 60);
 
       targets.push({
         x: tx,
         y: ty,
-        type: type,
-        vx: (Math.random() - 0.5) * 1.5,
-        vy: (Math.random() - 0.5) * 1.5
+        type: type
       });
     }
 
@@ -455,7 +452,7 @@
       keys[e.key.toLowerCase()] = false;
     });
 
-    // Pointer Tracking
+    // Pointer Controls
     let isPointerDragging = false;
 
     function handlePointerMove(clientX, clientY) {
@@ -500,7 +497,7 @@
       }
     }
 
-    // Main Game Update Loop
+    // Main Update Loop
     function update() {
       if (!gameStarted) return;
 
@@ -535,15 +532,51 @@
       player.angle += player.rotorSpeed;
       const currentRadius = player.baseRadius * player.growMultiplier;
 
-      // 2. Field Target Logic & Scooping Collisions
+      // 2. Field Target AI & Scooping Logic
       for (let i = targets.length - 1; i >= 0; i--) {
         const t = targets[i];
-        
-        t.x += t.vx;
-        t.y += t.vy;
-        if (t.x < 30 || t.x > canvas.width - 30) t.vx *= -1;
-        if (t.y < 30 || t.y > canvas.height - 30) t.vy *= -1;
+        const distToPlayer = Math.hypot(player.x - t.x, player.y - t.y);
 
+        // Movement AI based on Target Type
+        if (t.type === TARGET_TYPES.HEAVY) {
+          // HEAVY MONSTER: Chases the hole if in range to try to break scoops!
+          if (distToPlayer < t.type.detectDist) {
+            const angle = Math.atan2(player.y - t.y, player.x - t.x);
+            t.x += Math.cos(angle) * t.type.speed;
+            t.y += Math.sin(angle) * t.type.speed;
+          }
+        } else {
+          // SMALL & MEDIUM: Stay stationary UNTIL hole gets close, then flee!
+          if (distToPlayer < t.type.detectDist) {
+            const fleeAngle = Math.atan2(t.y - player.y, t.x - player.x);
+            t.x += Math.cos(fleeAngle) * t.type.speed;
+            t.y += Math.sin(fleeAngle) * t.type.speed;
+          }
+        }
+
+        // Keep targets OUT of the Home Base Pen (Solid Wall Barrier)
+        const margin = t.type.radius + 10;
+        if (t.x > pen.x - margin && t.x < pen.x + pen.width + margin &&
+            t.y > pen.y - margin && t.y < pen.y + pen.height + margin) {
+          
+          // Push target out to closest pen side
+          const dLeft = Math.abs(t.x - (pen.x - margin));
+          const dRight = Math.abs(t.x - (pen.x + pen.width + margin));
+          const dTop = Math.abs(t.y - (pen.y - margin));
+          const dBottom = Math.abs(t.y - (pen.y + pen.height + margin));
+
+          const minDist = Math.min(dLeft, dRight, dTop, dBottom);
+          if (minDist === dLeft) t.x = pen.x - margin;
+          else if (minDist === dRight) t.x = pen.x + pen.width + margin;
+          else if (minDist === dTop) t.y = pen.y - margin;
+          else if (minDist === dBottom) t.y = pen.y + pen.height + margin;
+        }
+
+        // Screen boundary limits
+        t.x = Math.max(30, Math.min(canvas.width - 30, t.x));
+        t.y = Math.max(30, Math.min(canvas.height - 30, t.y));
+
+        // Scoop Collisions
         const bladeDistance = currentRadius + 18;
         const bladeAngleStep = (Math.PI * 2) / player.blades.length;
 
@@ -565,14 +598,16 @@
                 break;
               }
             } else if (t.type.tier === scoopTier + 1) {
-              const angle = Math.atan2(t.y - player.y, t.x - player.x);
-              t.vx = Math.cos(angle) * 5;
-              t.vy = Math.sin(angle) * 5;
+              // Medium mismatch: Bounce away
+              const bounceAngle = Math.atan2(t.y - player.y, t.x - player.x);
+              t.x += Math.cos(bounceAngle) * 30;
+              t.y += Math.sin(bounceAngle) * 30;
             } else {
-              player.blades[b] = false; // Break blade!
-              const angle = Math.atan2(t.y - player.y, t.x - player.x);
-              t.vx = Math.cos(angle) * 3;
-              t.vy = Math.sin(angle) * 3;
+              // Severe mismatch: Heavy Monster breaks blade!
+              player.blades[b] = false;
+              const bounceAngle = Math.atan2(t.y - player.y, t.x - player.x);
+              t.x += Math.cos(bounceAngle) * 20;
+              t.y += Math.sin(bounceAngle) * 20;
             }
           }
         }
@@ -612,11 +647,17 @@
           }
         }
       }
-
-      // 5. Chain Damage & Breakout
+// 5. Chain Damage & Breakout Mechanics
       if (!pen.gateOpen && pen.trapped.length > 0) {
         let totalPower = 0;
-        pen.trapped.forEach(t => totalPower += t.type.power);
+        pen.trapped.forEach(t => {
+          totalPower += t.type.power;
+          // Trapped captives crowd around the chain gate inside
+          const gateTargetX = pen.x + pen.width - 20;
+          const gateTargetY = pen.y + pen.height / 2;
+          t.x += (gateTargetX - t.x) * 0.02;
+          t.y += (gateTargetY - t.y) * 0.02;
+        });
 
         const damage = (totalPower * 0.05) / chainTier;
         pen.chainHp -= damage;
@@ -625,13 +666,12 @@
           pen.chainHp = 0;
           if (!pen.gateOpen) toggleGate();
 
+          // Breakout! Scatter captives back into field
           pen.trapped.forEach(t => {
             targets.push({
               x: pen.x + pen.width + 40 + Math.random() * 50,
               y: pen.y + pen.height / 2 + (Math.random() - 0.5) * 100,
-              type: t.type,
-              vx: 3 + Math.random() * 3,
-              vy: (Math.random() - 0.5) * 4
+              type: t.type
             });
           });
           pen.trapped = [];
@@ -675,7 +715,7 @@
         ctx.stroke();
       }
 
-      // Trapped Captives
+      // Trapped Captives inside Pen
       pen.trapped.forEach(t => {
         ctx.fillStyle = t.type.color;
         ctx.beginPath();
@@ -686,7 +726,7 @@
         ctx.stroke();
       });
 
-      // Targets
+      // Wild Targets on Field
       targets.forEach(t => {
         ctx.fillStyle = t.type.color;
         ctx.beginPath();
