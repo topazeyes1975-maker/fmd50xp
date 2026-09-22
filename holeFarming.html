@@ -2,14 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Harvest & Hold - Prototype</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Harvest & Hold - Mobile & PC</title>
   <style>
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
       user-select: none;
+      -webkit-user-select: none;
+      touch-action: none; /* Prevents mobile scrolling while playing */
     }
     body {
       background-color: #1a1a24;
@@ -17,8 +19,104 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       overflow: hidden;
       display: flex;
+      flex-direction: column;
       height: 100vh;
       width: 100vw;
+    }
+
+    /* Start Screen / Rules Modal */
+    #start-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 20, 28, 0.95);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+    }
+    #start-card {
+      background: #1e2630;
+      border: 3px solid #ffcc00;
+      border-radius: 12px;
+      max-width: 600px;
+      width: 90%;
+      padding: 25px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    #start-card h1 {
+      color: #ffcc00;
+      font-size: 28px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .rules-list {
+      text-align: left;
+      font-size: 14px;
+      color: #d0d7de;
+      line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .rules-list b {
+      color: #76c7c0;
+    }
+    .target-legend {
+      display: flex;
+      justify-content: space-around;
+      background: #14181c;
+      padding: 10px;
+      border-radius: 8px;
+      margin: 5px 0;
+      font-size: 13px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .btn-start {
+      background: #ffcc00;
+      color: #111;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 24px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: transform 0.1s, background 0.2s;
+    }
+    .btn-start:hover {
+      background: #ffe066;
+      transform: scale(1.03);
+    }
+
+    /* Main Game Layout */
+    #main-layout {
+      display: flex;
+      flex: 1;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
     }
     #game-container {
       position: relative;
@@ -34,42 +132,68 @@
     /* UI Overlay */
     #ui-layer {
       position: absolute;
-      top: 15px;
-      left: 15px;
+      top: 10px;
+      left: 10px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
       pointer-events: none;
+      z-index: 5;
     }
     .hud-card {
       background: rgba(15, 20, 25, 0.85);
       border: 2px solid #445566;
       border-radius: 8px;
-      padding: 10px 15px;
-      font-size: 14px;
+      padding: 8px 12px;
+      font-size: 13px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     }
     .hud-card h3 {
-      margin-bottom: 5px;
+      margin-bottom: 3px;
       color: #ffcc00;
-      font-size: 16px;
+      font-size: 14px;
+    }
+    /* Mobile Gate Control Button */
+    #btn-mobile-gate {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      z-index: 10;
+      width: 75px;
+      height: 75px;
+      border-radius: 50%;
+      background: #ff4444;
+      color: white;
+      border: 3px solid #ffffff;
+      font-weight: bold;
+      font-size: 13px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    #btn-mobile-gate.open {
+      background: #28a745;
     }
     /* Sidebar Shop */
     #shop-panel {
-      width: 320px;
+      width: 280px;
       background: #14181c;
       border-left: 3px solid #2a3540;
-      padding: 20px;
+      padding: 15px;
       display: flex;
       flex-direction: column;
-      gap: 15px;
+      gap: 12px;
       overflow-y: auto;
+      z-index: 6;
     }
     #shop-panel h2 {
       color: #ffcc00;
       border-bottom: 2px solid #2a3540;
-      padding-bottom: 10px;
-      font-size: 20px;
+      padding-bottom: 6px;
+      font-size: 18px;
       text-transform: uppercase;
       letter-spacing: 1px;
     }
@@ -77,17 +201,17 @@
       background: #202730;
       border: 1px solid #3b4856;
       border-radius: 8px;
-      padding: 12px;
+      padding: 10px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
     .shop-item h4 {
       color: #76c7c0;
-      font-size: 15px;
+      font-size: 14px;
     }
     .shop-item p {
-      font-size: 12px;
+      font-size: 11px;
       color: #aaa;
     }
     .btn {
@@ -95,7 +219,7 @@
       color: white;
       border: none;
       border-radius: 4px;
-      padding: 8px 12px;
+      padding: 8px 10px;
       font-weight: bold;
       cursor: pointer;
       transition: background 0.2s;
@@ -110,88 +234,132 @@
     .btn-danger {
       background: #dc3545;
     }
-    .btn-danger:hover {
-      background: #bd2130;
-    }
     /* Controls instructions */
     #controls-hint {
       position: absolute;
-      bottom: 15px;
-      left: 15px;
+      bottom: 10px;
+      left: 10px;
       background: rgba(0, 0, 0, 0.7);
-      padding: 8px 12px;
+      padding: 6px 10px;
       border-radius: 6px;
-      font-size: 12px;
+      font-size: 11px;
       color: #ccc;
       pointer-events: none;
+    }
+
+    /* Responsive adjustments for narrow screens */
+    @media (max-width: 600px) {
+      #main-layout {
+        flex-direction: column;
+      }
+      #shop-panel {
+        width: 100%;
+        height: 180px;
+        border-left: none;
+        border-top: 3px solid #2a3540;
+      }
     }
   </style>
 </head>
 <body>
 
-  <div id="game-container">
-    <canvas id="gameCanvas"></canvas>
-    
-    <div id="ui-layer">
-      <div class="hud-card">
-        <h3>PLAYER STATS</h3>
-        <div>Coins: <b id="ui-coins" style="color:#ffcc00;">0</b></div>
-        <div>Hole Size: <b id="ui-holesize">1.0x</b></div>
-        <div>Carried Captives: <b id="ui-carried">0 / 5</b></div>
-      </div>
-      
-      <div class="hud-card">
-        <h3>BASE PEN STATUS</h3>
-        <div>Chain Gate: <b id="ui-gate-status" style="color:#ff4444;">OPEN</b></div>
-        <div>Trapped Captives: <b id="ui-trapped">0</b></div>
-        <div>Chain Integrity: <b id="ui-chain-hp">100 / 100</b></div>
-      </div>
-    </div>
+  <!-- STARTER / RULES SCREEN OVERLAY -->
+  <div id="start-screen">
+    <div id="start-card">
+      <h1>HOLE & HOLD</h1>
+      <div class="rules-list">
+        <p><b>1. Scoop Captives:</b> Drive your hole around the field with spinning scoops to collect targets into your inventory.</p>
+        
+        <div class="target-legend">
+          <div class="legend-item"><span class="dot" style="background:#4caf50;"></span> Small (Safe)</div>
+          <div class="legend-item"><span class="dot" style="background:#ffeb3b;"></span> Medium (Bounces)</div>
+          <div class="legend-item"><span class="dot" style="background:#f44336;"></span> Heavy (Breaks Scoops!)</div>
+        </div>
 
-    <div id="controls-hint">
-      <b>Controls:</b> [WASD / Arrow Keys] Move Hole | [Space] Toggle Base Gate
+        <p><b>2. Deposit & Contain:</b> Drive to your Home Base pen (top-left) while the gate is open to unload your haul.</p>
+        <p><b>3. Lock & Digest:</b> Lock the gate chain tether! Drive inside the locked pen to swallow captives for coins and size growth.</p>
+        <p><b>4. Beware Breakouts:</b> Strong captives left inside the locked pen will attack the chain. If it breaks, they escape!</p>
+        <p><b>5. Controls:</b> Drag with your <b>Finger / Mouse</b> (or WASD/Arrows). Press <b>Spacebar</b> or tap the on-screen <b>GATE</b> button to lock/unlock the pen.</p>
+      </div>
+      <button class="btn-start" onclick="startGame()">Start Game</button>
     </div>
   </div>
 
-  <div id="shop-panel">
-    <h2>Upgrades</h2>
+  <div id="main-layout">
+    <div id="game-container">
+      <canvas id="gameCanvas"></canvas>
+      
+      <div id="ui-layer">
+        <div class="hud-card">
+          <h3>PLAYER STATS</h3>
+          <div>Coins: <b id="ui-coins" style="color:#ffcc00;">0</b></div>
+          <div>Hole Size: <b id="ui-holesize">1.0x</b></div>
+          <div>Carried: <b id="ui-carried">0 / 5</b></div>
+        </div>
+        
+        <div class="hud-card">
+          <h3>BASE PEN STATUS</h3>
+          <div>Gate: <b id="ui-gate-status" style="color:#28a745;">OPEN</b></div>
+          <div>Trapped: <b id="ui-trapped">0</b></div>
+          <div>Chain HP: <b id="ui-chain-hp">100 / 100</b></div>
+        </div>
+      </div>
 
-    <div class="shop-item">
-      <h4>Repair Scoops</h4>
-      <p>Fix all broken blades on your rotor.</p>
-      <button id="btn-repair" class="btn btn-danger" onclick="buyRepair()">Repair ($25)</button>
+      <!-- On-screen button for mobile touch controls -->
+      <button id="btn-mobile-gate" class="open" onclick="toggleGate()">GATE<br>OPEN</button>
+
+      <div id="controls-hint">
+        <b>PC:</b> Click/Drag Mouse or WASD | [Space] Gate<br>
+        <b>Mobile:</b> Drag Finger | Tap Gate Button
+      </div>
     </div>
 
-    <div class="shop-item">
-      <h4>Scoop Power (Tier <span id="lvl-scoop">1</span>)</h4>
-      <p>Increases scoop strength to harvest larger targets without bouncing or breaking blades.</p>
-      <button id="btn-up-scoop" class="btn" onclick="buyScoopUpgrade()">Upgrade ($50)</button>
-    </div>
+    <div id="shop-panel">
+      <h2>Upgrades</h2>
 
-    <div class="shop-item">
-      <h4>Scoop Count (Tier <span id="lvl-count">1</span>)</h4>
-      <p>Add more rotating blades around your hole.</p>
-      <button id="btn-up-count" class="btn" onclick="buyScoopCountUpgrade()">Add Blade ($75)</button>
-    </div>
+      <div class="shop-item">
+        <h4>Repair Scoops</h4>
+        <p>Fix all broken blades on your rotor.</p>
+        <button id="btn-repair" class="btn btn-danger" onclick="buyRepair()">Repair ($25)</button>
+      </div>
 
-    <div class="shop-item">
-      <h4>Chain & Gate Durability (Tier <span id="lvl-chain">1</span>)</h4>
-      <p>Strengthens the chain lock so heavy captives take longer to break out.</p>
-      <button id="btn-up-chain" class="btn" onclick="buyChainUpgrade()">Upgrade ($60)</button>
-    </div>
+      <div class="shop-item">
+        <h4>Scoop Power (Tier <span id="lvl-scoop">1</span>)</h4>
+        <p>Increases strength to harvest larger targets without bouncing or breaking.</p>
+        <button id="btn-up-scoop" class="btn" onclick="buyScoopUpgrade()">Upgrade ($50)</button>
+      </div>
 
-    <div class="shop-item">
-      <h4>Carrying Capacity (Tier <span id="lvl-cap">1</span>)</h4>
-      <p>Increases how many captives your hole can carry back to base at once.</p>
-      <button id="btn-up-cap" class="btn" onclick="buyCapUpgrade()">Upgrade ($40)</button>
+      <div class="shop-item">
+        <h4>Scoop Count (Tier <span id="lvl-count">1</span>)</h4>
+        <p>Add more rotating blades around your hole.</p>
+        <button id="btn-up-count" class="btn" onclick="buyScoopCountUpgrade()">Add Blade ($75)</button>
+      </div>
+
+      <div class="shop-item">
+        <h4>Chain & Gate (Tier <span id="lvl-chain">1</span>)</h4>
+        <p>Strengthens chain lock against heavy breakouts.</p>
+        <button id="btn-up-chain" class="btn" onclick="buyChainUpgrade()">Upgrade ($60)</button>
+      </div>
+
+      <div class="shop-item">
+        <h4>Capacity (Tier <span id="lvl-cap">1</span>)</h4>
+        <p>Carry more captives back to base per run.</p>
+        <button id="btn-up-cap" class="btn" onclick="buyCapUpgrade()">Upgrade ($40)</button>
+      </div>
     </div>
   </div>
 
   <script>
+    let gameStarted = false;
+
+    function startGame() {
+      document.getElementById('start-screen').style.display = 'none';
+      gameStarted = true;
+    }
+
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    // Resize Canvas
     function resizeCanvas() {
       canvas.width = canvas.parentElement.clientWidth;
       canvas.height = canvas.parentElement.clientHeight;
@@ -211,18 +379,20 @@
     let costChain = 60;
     let costCap = 40;
 
-    // Player (Mobile Hole) State
+    // Player State
     const player = {
       x: 300,
       y: 300,
+      targetX: 300,
+      targetY: 300,
       baseRadius: 28,
       growMultiplier: 1.0,
-      speed: 4.5,
+      speed: 6.0,
       carried: [],
       maxCapacity: 5,
       angle: 0,
       rotorSpeed: 0.05,
-      blades: [] // array of boolean: true = intact, false = broken
+      blades: []
     };
 
     function initBlades() {
@@ -232,10 +402,10 @@
 
     // Home Base / Pen Setup
     const pen = {
-      x: 100,
-      y: 100,
-      width: 220,
-      height: 220,
+      x: 80,
+      y: 80,
+      width: 200,
+      height: 200,
       gateOpen: true,
       chainHp: 100,
       maxChainHp: 100,
@@ -258,12 +428,11 @@
       if (rand > 0.6 && rand <= 0.9) type = TARGET_TYPES.MEDIUM;
       else if (rand > 0.9) type = TARGET_TYPES.HEAVY;
 
-      // Spawn away from Home Base
       let tx, ty;
       do {
-        tx = Math.random() * (canvas.width - 100) + 50;
-        ty = Math.random() * (canvas.height - 100) + 50;
-      } while (tx < pen.x + pen.width + 50 && ty < pen.y + pen.height + 50);
+        tx = Math.random() * (canvas.width - 80) + 40;
+        ty = Math.random() * (canvas.height - 80) + 40;
+      } while (tx < pen.x + pen.width + 40 && ty < pen.y + pen.height + 40);
 
       targets.push({
         x: tx,
@@ -276,65 +445,110 @@
 
     for (let i = 0; i < MAX_TARGETS; i++) spawnTarget();
 
-    // Input Controller
+    // Key Controls
     const keys = {};
     window.addEventListener('keydown', e => {
       keys[e.key.toLowerCase()] = true;
-      if (e.code === 'Space') {
-        toggleGate();
-      }
+      if (e.code === 'Space' && gameStarted) toggleGate();
     });
     window.addEventListener('keyup', e => {
       keys[e.key.toLowerCase()] = false;
     });
 
-    function toggleGate() {
-      pen.gateOpen = !pen.gateOpen;
+    // Pointer Tracking
+    let isPointerDragging = false;
+
+    function handlePointerMove(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      player.targetX = clientX - rect.left;
+      player.targetY = clientY - rect.top;
     }
 
-    // Main Update Loop
+    canvas.addEventListener('mousedown', e => {
+      if (!gameStarted) return;
+      isPointerDragging = true;
+      handlePointerMove(e.clientX, e.clientY);
+    });
+    window.addEventListener('mousemove', e => {
+      if (isPointerDragging && gameStarted) handlePointerMove(e.clientX, e.clientY);
+    });
+    window.addEventListener('mouseup', () => { isPointerDragging = false; });
+
+    canvas.addEventListener('touchstart', e => {
+      if (!gameStarted) return;
+      isPointerDragging = true;
+      if (e.touches.length > 0) handlePointerMove(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: false });
+
+    canvas.addEventListener('touchmove', e => {
+      if (isPointerDragging && gameStarted && e.touches.length > 0) {
+        handlePointerMove(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    }, { passive: false });
+
+    window.addEventListener('touchend', () => { isPointerDragging = false; });
+
+    function toggleGate() {
+      pen.gateOpen = !pen.gateOpen;
+      const mobileBtn = document.getElementById('btn-mobile-gate');
+      if (pen.gateOpen) {
+        mobileBtn.innerText = 'GATE\nOPEN';
+        mobileBtn.className = 'open';
+      } else {
+        mobileBtn.innerText = 'GATE\nLOCKED';
+        mobileBtn.className = '';
+      }
+    }
+
+    // Main Game Update Loop
     function update() {
-      // 1. Player Movement
+      if (!gameStarted) return;
+
+      // 1. Hole Movement
       let dx = 0, dy = 0;
+
       if (keys['w'] || keys['arrowup']) dy -= 1;
       if (keys['s'] || keys['arrowdown']) dy += 1;
       if (keys['a'] || keys['arrowleft']) dx -= 1;
       if (keys['d'] || keys['arrowright']) dx += 1;
 
-      if (dx !== 0 && dy !== 0) {
-        dx *= 0.7071;
-        dy *= 0.7071;
+      if (dx !== 0 || dy !== 0) {
+        if (dx !== 0 && dy !== 0) { dx *= 0.7071; dy *= 0.7071; }
+        player.x += dx * player.speed;
+        player.y += dy * player.speed;
+        player.targetX = player.x;
+        player.targetY = player.y;
+      } else if (isPointerDragging) {
+        const pdx = player.targetX - player.x;
+        const pdy = player.targetY - player.y;
+        const dist = Math.hypot(pdx, pdy);
+
+        if (dist > 5) {
+          player.x += (pdx / dist) * Math.min(dist, player.speed);
+          player.y += (pdy / dist) * Math.min(dist, player.speed);
+        }
       }
 
-      player.x += dx * player.speed;
-      player.y += dy * player.speed;
-
-      // Canvas boundary limits
       player.x = Math.max(player.baseRadius, Math.min(canvas.width - player.baseRadius, player.x));
       player.y = Math.max(player.baseRadius, Math.min(canvas.height - player.baseRadius, player.y));
 
-      // Rotor rotation angle
       player.angle += player.rotorSpeed;
-
-      // Effective current hole radius
       const currentRadius = player.baseRadius * player.growMultiplier;
 
       // 2. Field Target Logic & Scooping Collisions
       for (let i = targets.length - 1; i >= 0; i--) {
         const t = targets[i];
         
-        // Wandering
         t.x += t.vx;
         t.y += t.vy;
         if (t.x < 30 || t.x > canvas.width - 30) t.vx *= -1;
         if (t.y < 30 || t.y > canvas.height - 30) t.vy *= -1;
 
-        // Check collision with spinning scoops
         const bladeDistance = currentRadius + 18;
         const bladeAngleStep = (Math.PI * 2) / player.blades.length;
 
         for (let b = 0; b < player.blades.length; b++) {
-          if (!player.blades[b]) continue; // Skip broken blade
+          if (!player.blades[b]) continue;
 
           const bladeAngle = player.angle + b * bladeAngleStep;
           const bladeX = player.x + Math.cos(bladeAngle) * bladeDistance;
@@ -343,9 +557,7 @@
           const distToBlade = Math.hypot(t.x - bladeX, t.y - bladeY);
 
           if (distToBlade < t.type.radius + 12) {
-            // Check Scoop Power Tier vs Target Tier
             if (scoopTier >= t.type.tier) {
-              // Successfully scooped if capacity allows!
               if (player.carried.length < player.maxCapacity) {
                 player.carried.push(t.type);
                 targets.splice(i, 1);
@@ -353,13 +565,11 @@
                 break;
               }
             } else if (t.type.tier === scoopTier + 1) {
-              // Medium mismatch: Bounce off
               const angle = Math.atan2(t.y - player.y, t.x - player.x);
               t.vx = Math.cos(angle) * 5;
               t.vy = Math.sin(angle) * 5;
             } else {
-              // Severe mismatch: HEAVY TARGET STALLS AND BREAKS BLADE!
-              player.blades[b] = false; // Break blade
+              player.blades[b] = false; // Break blade!
               const angle = Math.atan2(t.y - player.y, t.x - player.x);
               t.vx = Math.cos(angle) * 3;
               t.vy = Math.sin(angle) * 3;
@@ -372,11 +582,9 @@
       const inPenZone = (player.x > pen.x && player.x < pen.x + pen.width &&
                          player.y > pen.y && player.y < pen.y + pen.height);
 
-      // Dump carried captives if inside open gate or near open front
       if (pen.gateOpen && player.carried.length > 0) {
         const nearGate = Math.hypot(player.x - (pen.x + pen.width), player.y - (pen.y + pen.height / 2)) < 60;
         if (inPenZone || nearGate) {
-          // Offload captives into the pen
           player.carried.forEach(c => {
             pen.trapped.push({
               type: c,
@@ -390,27 +598,23 @@
 
       // 4. Digestion inside Locked Pen
       if (!pen.gateOpen && inPenZone && pen.trapped.length > 0) {
-        // Player hole swallows trapped captives inside!
         for (let i = pen.trapped.length - 1; i >= 0; i--) {
           const victim = pen.trapped[i];
           const distToHole = Math.hypot(victim.x - player.x, victim.y - player.y);
 
           if (distToHole < currentRadius) {
-            // Swallowed!
             coins += victim.type.val;
             player.growMultiplier += 0.04;
             pen.trapped.splice(i, 1);
           } else {
-            // Pull victim toward hole
             victim.x += (player.x - victim.x) * 0.08;
             victim.y += (player.y - victim.y) * 0.08;
           }
         }
       }
 
-      // 5. Chain Damage & Breakout Mechanics
+      // 5. Chain Damage & Breakout
       if (!pen.gateOpen && pen.trapped.length > 0) {
-        // Trapped captives push against chain
         let totalPower = 0;
         pen.trapped.forEach(t => totalPower += t.type.power);
 
@@ -418,11 +622,9 @@
         pen.chainHp -= damage;
 
         if (pen.chainHp <= 0) {
-          // CHAIN SNAPS! BREAKOUT!
           pen.chainHp = 0;
-          pen.gateOpen = true;
+          if (!pen.gateOpen) toggleGate();
 
-          // Scatter captives back into wild
           pen.trapped.forEach(t => {
             targets.push({
               x: pen.x + pen.width + 40 + Math.random() * 50,
@@ -435,18 +637,17 @@
           pen.trapped = [];
         }
       } else if (pen.gateOpen && pen.chainHp < pen.maxChainHp) {
-        // Passive repair when open & empty
         pen.chainHp = Math.min(pen.maxChainHp, pen.chainHp + 0.2);
       }
 
       updateUI();
     }
 
-    // Rendering Loop
+    // Render Loop
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // 1. Draw Home Base Pen Walls & Chain
+      // Home Base
       ctx.fillStyle = '#1c2419';
       ctx.fillRect(pen.x, pen.y, pen.width, pen.height);
 
@@ -454,12 +655,10 @@
       ctx.lineWidth = 8;
       ctx.strokeRect(pen.x, pen.y, pen.width, pen.height);
 
-      // Gate Opening (Right side of pen)
       const gateY1 = pen.y + 40;
       const gateY2 = pen.y + pen.height - 40;
       ctx.clearRect(pen.x + pen.width - 5, gateY1, 10, gateY2 - gateY1);
 
-      // Draw Chain / Gate status
       if (pen.gateOpen) {
         ctx.strokeStyle = '#44ff44';
         ctx.lineWidth = 4;
@@ -468,7 +667,6 @@
         ctx.lineTo(pen.x + pen.width + 25, gateY1 - 10);
         ctx.stroke();
       } else {
-        // Draw locked chain tether across opening
         ctx.strokeStyle = pen.chainHp < 30 ? '#ff3333' : '#e6ac00';
         ctx.lineWidth = 6;
         ctx.beginPath();
@@ -477,7 +675,7 @@
         ctx.stroke();
       }
 
-      // 2. Draw Trapped Captives in Pen
+      // Trapped Captives
       pen.trapped.forEach(t => {
         ctx.fillStyle = t.type.color;
         ctx.beginPath();
@@ -488,7 +686,7 @@
         ctx.stroke();
       });
 
-      // 3. Draw Wild Targets on Map
+      // Targets
       targets.forEach(t => {
         ctx.fillStyle = t.type.color;
         ctx.beginPath();
@@ -499,10 +697,9 @@
         ctx.stroke();
       });
 
-      // 4. Draw Mobile Hole & Scoops
+      // Mobile Hole & Scoops
       const r = player.baseRadius * player.growMultiplier;
 
-      // Hole Outer Rim
       ctx.fillStyle = '#111';
       ctx.beginPath();
       ctx.arc(player.x, player.y, r, 0, Math.PI * 2);
@@ -511,13 +708,11 @@
       ctx.lineWidth = 3;
       ctx.stroke();
 
-      // Hole Inner Void
       ctx.fillStyle = '#000';
       ctx.beginPath();
       ctx.arc(player.x, player.y, r * 0.8, 0, Math.PI * 2);
       ctx.fill();
 
-      // Rotating Scoops / Blades
       const bladeDistance = r + 16;
       const step = (Math.PI * 2) / player.blades.length;
 
@@ -527,7 +722,6 @@
         const by = player.y + Math.sin(bladeAngle) * bladeDistance;
 
         if (player.blades[i]) {
-          // Intact Blade
           ctx.fillStyle = '#00bcd4';
           ctx.beginPath();
           ctx.arc(bx, by, 10, 0, Math.PI * 2);
@@ -536,7 +730,6 @@
           ctx.lineWidth = 2;
           ctx.stroke();
         } else {
-          // Broken Blade Stub
           ctx.fillStyle = '#555';
           ctx.beginPath();
           ctx.arc(bx, by, 5, 0, Math.PI * 2);
@@ -545,7 +738,6 @@
       }
     }
 
-    // UI & Shop Controls
     function updateUI() {
       document.getElementById('ui-coins').innerText = Math.floor(coins);
       document.getElementById('ui-holesize').innerText = player.growMultiplier.toFixed(2) + 'x';
@@ -563,7 +755,6 @@
       document.getElementById('ui-trapped').innerText = pen.trapped.length;
       document.getElementById('ui-chain-hp').innerText = `${Math.ceil(pen.chainHp)} / ${pen.maxChainHp}`;
 
-      // Update button states
       document.getElementById('btn-repair').disabled = !player.blades.includes(false) || coins < 25;
       document.getElementById('btn-up-scoop').disabled = coins < costScoop;
       document.getElementById('btn-up-count').disabled = coins < costCount;
@@ -622,7 +813,6 @@
       }
     }
 
-    // Main Game Loop Execution
     function loop() {
       update();
       draw();
@@ -632,4 +822,3 @@
   </script>
 </body>
 </html>
-
