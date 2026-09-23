@@ -1,131 +1,371 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Chompy Monster Scrambler Game</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Harvest & Hold - Scrambler Edition</title>
   <style>
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
     }
-    body {
+    html, body {
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
       background-color: #1a1a24;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    /* Start, Game Over & Level Up Screen Overlays */
+    .overlay-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100dvh;
+      background: rgba(15, 20, 28, 0.95);
+      z-index: 100;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
+      padding: 15px;
+      text-align: center;
+    }
+    .modal-card {
+      background: #1e2630;
+      border: 3px solid #ffcc00;
+      border-radius: 12px;
+      max-width: 500px;
+      width: 95%;
+      padding: 20px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 85dvh;
+      overflow-y: auto;
+    }
+    .modal-card h1 {
+      color: #ffcc00;
+      font-size: 24px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .modal-card.game-over { border-color: #ff4444; }
+    .modal-card.game-over h1 { color: #ff4444; }
+    .modal-card.level-up { border-color: #a044ff; }
+    .modal-card.level-up h1 { color: #a044ff; }
+
+    .rules-list {
+      text-align: left;
+      font-size: 12px;
+      color: #d0d7de;
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .rules-list b { color: #76c7c0; }
+    
+    .target-legend {
+      display: flex;
+      justify-content: space-around;
+      background: #14181c;
+      padding: 8px;
+      border-radius: 8px;
+      margin: 4px 0;
+      font-size: 10px;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .btn-action {
+      background: #ffcc00;
+      color: #111;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .btn-restart { background: #ff4444; color: white; }
+    .btn-next { background: #a044ff; color: white; }
+
+    /* Main Layout */
+    #main-layout {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
       overflow: hidden;
     }
     #game-container {
       position: relative;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
-      border-radius: 12px;
-      overflow: hidden;
-      border: 3px solid #3a3a52;
-      /* SET YOUR BACKGROUND IMAGE URL HERE */
-      background-image: url('1790174233379.jpg');
+      flex: 1;
+      width: 100%;
+      background-color: #2b3a26;
+      /* CUSTOM GAME BACKGROUND IMAGE (OPTIONAL) */
+      /* background-image: url('images/game_background.png'); */
       background-size: cover;
       background-position: center;
+      overflow: hidden;
     }
     canvas {
       display: block;
-      /* Soft backdrop overlay ensures characters pop against any background image */
-      background-color: rgba(15, 15, 23, 0.85); 
-    }
-    #ui-layer {
-      position: absolute;
-      top: 15px;
-      left: 15px;
-      right: 15px;
-      display: flex;
-      justify-content: space-between;
-      pointer-events: none;
-      font-weight: bold;
-      font-size: 18px;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-    }
-    .hud-box {
-      background: rgba(0, 0, 0, 0.6);
-      padding: 8px 16px;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    #game-over-screen {
-      position: absolute;
-      top: 0;
-      left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.85);
+      /* Semi-transparent canvas background ensures artwork pops against custom background images */
+      background-color: rgba(43, 58, 38, 0.85);
+    }
+
+    /* HUD UI Overlay */
+    #ui-layer {
+      position: absolute;
+      top: 8px;
+      left: 8px;
       display: flex;
       flex-direction: column;
+      gap: 6px;
+      pointer-events: none;
+      z-index: 5;
+    }
+    .hud-card {
+      background: rgba(15, 20, 25, 0.85);
+      border: 1px solid #445566;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 11px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+    .hud-card h3 {
+      margin-bottom: 2px;
+      color: #ffcc00;
+      font-size: 12px;
+    }
+
+    /* Mobile Gate Control Button */
+    #btn-mobile-gate {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      z-index: 10;
+      width: 65px;
+      height: 65px;
+      border-radius: 50%;
+      background: #ff4444;
+      color: white;
+      border: 2px solid #ffffff;
+      font-weight: bold;
+      font-size: 11px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+      cursor: pointer;
+      display: flex;
       align-items: center;
       justify-content: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
+      text-align: center;
     }
-    #game-over-screen.active {
-      opacity: 1;
-      pointer-events: auto;
+    #btn-mobile-gate.open { background: #28a745; }
+
+    /* Horizontal Scrollable Shop Container */
+    #shop-panel {
+      width: 100%;
+      height: 140px;
+      background: #14181c;
+      border-top: 2px solid #2a3540;
+      display: flex;
+      flex-direction: row;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      padding: 8px;
+      gap: 8px;
+      z-index: 6;
+      touch-action: pan-x;
     }
-    h1 {
-      font-size: 42px;
-      color: #ff4757;
-      margin-bottom: 10px;
+    .shop-item {
+      flex: 0 0 140px;
+      width: 140px;
+      height: 100%;
+      background: #202730;
+      border: 1px solid #3b4856;
+      border-radius: 6px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
-    button {
-      margin-top: 20px;
-      padding: 12px 28px;
-      font-size: 18px;
-      font-weight: bold;
-      color: #fff;
-      background: #2ed573;
+    .shop-item h4 { color: #76c7c0; font-size: 12px; }
+    .shop-item p { font-size: 10px; color: #aaa; line-height: 1.2; }
+    .btn {
+      background: #28a745;
+      color: white;
       border: none;
-      border-radius: 25px;
+      border-radius: 4px;
+      padding: 6px 8px;
+      font-size: 11px;
+      font-weight: bold;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(46, 213, 115, 0.4);
-      transition: transform 0.1s, background 0.2s;
     }
-    button:hover {
-      background: #26af5f;
-      transform: scale(1.05);
+    .btn:disabled { background: #555; cursor: not-allowed; }
+    .btn-danger { background: #dc3545; }
+
+    @media (min-width: 769px) {
+      #main-layout { flex-direction: row; }
+      #shop-panel {
+        width: 250px;
+        height: 100%;
+        border-top: none;
+        border-left: 2px solid #2a3540;
+        flex-direction: column;
+        overflow-x: hidden;
+        overflow-y: auto;
+        touch-action: pan-y;
+      }
+      .shop-item { flex: none; width: 100%; height: auto; gap: 6px; }
     }
   </style>
 </head>
 <body>
 
-  <div id="game-container">
-    <div id="ui-layer">
-      <div class="hud-box">Score: <span id="score">0</span></div>
-      <div class="hud-box">Tier: <span id="tier">Yellow (1)</span></div>
-      <div class="hud-box">Health: <span id="health">100%</span></div>
+  <!-- START OVERLAY -->
+  <div id="start-screen" class="overlay-screen">
+    <div class="modal-card">
+      <h1>HOLE & HOLD: SCRAMBLER</h1>
+      <div class="rules-list">
+        <p><b>1. Scoop Targets:</b> Drag your scrambler around to scoop green targets into inventory.</p>
+        
+        <div class="target-legend">
+          <div class="legend-item"><span class="dot" style="background:#4caf50;"></span> Tier 1 (Green)</div>
+          <div class="legend-item"><span class="dot" style="background:#ffeb3b;"></span> Tier 2 (Yellow)</div>
+          <div class="legend-item"><span class="dot" style="background:#f44336;"></span> Tier 3 (Red)</div>
+          <div class="legend-item"><span class="dot" style="background:#a044ff;"></span> Master Boss</div>
+        </div>
+
+        <p><b>2. Upgrade Buckets:</b> Higher target tiers destroy your buckets until you upgrade your power level!</p>
+        <p><b>3. Master Boss Rule:</b> The Purple Boss ALWAYS breaks buckets. Lure him into the base pen, lock gate, and eat him to WIN!</p>
+      </div>
+      <button class="btn-action" onclick="startGame()">Start Game</button>
+    </div>
+  </div>
+
+  <!-- GAME OVER OVERLAY -->
+  <div id="gameover-screen" class="overlay-screen" style="display: none;">
+    <div class="modal-card game-over">
+      <h1>GAME OVER</h1>
+      <p style="color: #ccc; font-size: 13px;">All bucket chairs broke and you don't have $25 to repair them!</p>
+      <div style="background: #14181c; padding: 10px; border-radius: 8px; text-align: center;">
+        <p style="font-size: 13px;">Level Reached: <b id="go-level" style="color:#a044ff;">1</b></p>
+        <p style="font-size: 13px;">Final Coins: <b id="go-coins" style="color:#ffcc00;">0</b></p>
+      </div>
+      <button class="btn-action btn-restart" onclick="resetGame()">Try Again</button>
+    </div>
+  </div>
+
+  <!-- LEVEL UP OVERLAY -->
+  <div id="levelup-screen" class="overlay-screen" style="display: none;">
+    <div class="modal-card level-up">
+      <h1>LEVEL COMPLETE!</h1>
+      <p style="color: #ccc; font-size: 13px;">You trapped and digested the Master Boss!</p>
+      <div style="background: #14181c; padding: 10px; border-radius: 8px; text-align: center;">
+        <p style="font-size: 13px;">Next Level: <b id="lu-next-level" style="color:#a044ff;">2</b></p>
+        <p style="font-size: 13px;">Coins Kept: <b id="lu-coins" style="color:#ffcc00;">0</b></p>
+      </div>
+      <button class="btn-action btn-next" onclick="nextLevel()">Next Level</button>
+    </div>
+  </div>
+
+  <div id="main-layout">
+    <div id="game-container">
+      <canvas id="gameCanvas"></canvas>
+      
+      <div id="ui-layer">
+        <div class="hud-card">
+          <h3>STAGE INFO</h3>
+          <div>Level: <b id="ui-level" style="color:#a044ff;">1</b></div>
+          <div>Time: <b id="ui-time">00:00</b></div>
+        </div>
+
+        <div class="hud-card">
+          <h3>PLAYER STATS</h3>
+          <div>Coins: <b id="ui-coins" style="color:#ffcc00;">0</b></div>
+          <div>Power Tier: <b id="ui-powertier" style="color:#76c7c0;">1</b></div>
+          <div>Carried: <b id="ui-carried">0 / 5</b></div>
+        </div>
+        
+        <div class="hud-card">
+          <h3>BASE PEN</h3>
+          <div>Gate: <b id="ui-gate-status" style="color:#28a745;">OPEN</b></div>
+          <div>Trapped: <b id="ui-trapped">0</b></div>
+          <div>Chain: <b id="ui-chain-hp">100 / 100</b></div>
+        </div>
+      </div>
+
+      <button id="btn-mobile-gate" class="open" onclick="toggleGate()">GATE<br>OPEN</button>
     </div>
 
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <!-- HORIZONTAL SCROLLABLE SHOP PANEL -->
+    <div id="shop-panel">
+      <div class="shop-item">
+        <h4>Repair Buckets</h4>
+        <p>Fix all broken bucket chairs.</p>
+        <button id="btn-repair" class="btn btn-danger" onclick="buyRepair()">Repair ($25)</button>
+      </div>
 
-    <div id="game-over-screen">
-      <h1>GAME OVER</h1>
-      <p>Final Score: <span id="final-score">0</span></p>
-      <button onclick="resetGame()">Play Again</button>
+      <div class="shop-item">
+        <h4>Power (Tier <span id="lvl-scoop">1</span>)</h4>
+        <p>Harvest higher tier targets safely.</p>
+        <button id="btn-up-scoop" class="btn" onclick="buyScoopUpgrade()">Upgrade ($50)</button>
+      </div>
+
+      <div class="shop-item">
+        <h4>Buckets (Count <span id="lvl-count">2</span>)</h4>
+        <p>Add rotating bucket chairs.</p>
+        <button id="btn-up-count" class="btn" onclick="buyScoopCountUpgrade()">Add ($75)</button>
+      </div>
+
+      <div class="shop-item">
+        <h4>Chain (Tier <span id="lvl-chain">1</span>)</h4>
+        <p>Strengthen gate lock.</p>
+        <button id="btn-up-chain" class="btn" onclick="buyChainUpgrade()">Upgrade ($60)</button>
+      </div>
+
+      <div class="shop-item">
+        <h4>Capacity (Tier <span id="lvl-cap">1</span>)</h4>
+        <p>Carry more captives.</p>
+        <button id="btn-up-cap" class="btn" onclick="buyCapUpgrade()">Upgrade ($40)</button>
+      </div>
     </div>
   </div>
 
   <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-
     // ==========================================
     // IMAGE ASSET MANAGER
-    // Load your custom file paths here!
+    // Load your custom PNG file paths here when ready!
     // ==========================================
     const IMAGES = {
-      // Main Center Player & Animations
+      // Main Center Player & Eating Flash Animations
       player: new Image(),
       mouthOpen: new Image(),
       mouthClosed: new Image(),
@@ -133,179 +373,651 @@
       // Center Scrambler Hub
       spinnerCenter: new Image(),
 
-      // Custom Scoopers (Yellow, Blue, Red, Broken)
-      bucketYellow: new Image(),
-      bucketBlue: new Image(),
-      bucketRed: new Image(),
-      bucketBroken: new Image(),
+      // Custom Scooper Upgrades & Broken State
+      bucketYellow: new Image(), // Tier 1
+      bucketBlue: new Image(),   // Tier 2
+      bucketRed: new Image(),    // Tier 3
+      bucketBroken: new Image(), // Broken State
 
-      // Floating Chompy Monsters
+      // Floating Targets / Monsters
       greenTarget: new Image(),
       yellowTarget: new Image(),
       redTarget: new Image(),
       purpleTarget: new Image()
     };
 
-    // --- ASSIGN YOUR IMAGE FILE PATHS HERE ---
-    IMAGES.mouthClosed.scr = '1790168610235.png'
-    IMAGES.mouthOpen.scr ='1790168649784.png'
-     IMAGES.spinnerCenter.src = '1790167375036 (1).png';
-     IMAGES.bucketYellow.src  = '1790167375036~4.jpg';
-    IMAGES.bucketBlue.src    = '1790167375036~3.jpg';
-     IMAGES.bucketRed.src     = '1790167375036~2.jpg';
-     IMAGES.bucketBroken.src  = '1790167375036~5.jpg';
-    IMAGES.greenTarget.src   = 'Screenshot_20260918-220827 (1)~2 (1).png';
-    IMAGES.yellowTarget.src  = '1790167875374.png';
-    IMAGES.redTarget.src     = '1790167868287.png';
-    IMAGES.purpleTarget.src  = '1790168069637.png';
+    // --- ASSIGN YOUR CUSTOM FILE PATHS HERE ---
+    // IMAGES.player.src        = 'images/player_hole.png';
+    // IMAGES.mouthOpen.src     = 'images/mouth_open.png';
+    // IMAGES.mouthClosed.src   = 'images/mouth_closed.png';
+    // IMAGES.spinnerCenter.src = 'images/center_hub.png';
+    // IMAGES.bucketYellow.src  = 'images/yellow_scooper.png';
+    // IMAGES.bucketBlue.src    = 'images/blue_scooper.png';
+    // IMAGES.bucketRed.src     = 'images/red_scooper.png';
+    // IMAGES.bucketBroken.src  = 'images/broken_scooper.png';
+    // IMAGES.greenTarget.src   = 'images/green_monster.png';
+    // IMAGES.yellowTarget.src  = 'images/yellow_monster.png';
+    // IMAGES.redTarget.src     = 'images/red_monster.png';
+    // IMAGES.purpleTarget.src  = 'images/purple_monster.png';
 
-    // Game State
-    let score = 0;
-    let scoopTier = 1; // 1 = Yellow, 2 = Blue, 3+ = Red
-    let health = 100;
-    let gameOver = false;
-    let keys = {};
+    // Default Fallback Visuals (SVG Data URIs)
+    IMAGES.player.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"><circle cx="30" cy="30" r="28" fill="%23111" stroke="%23ffcc00" stroke-width="4"/></svg>';
+    IMAGES.mouthOpen.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><circle cx="40" cy="40" r="36" fill="%23cc0000"/><polygon points="40,10 25,70 55,70" fill="%23000"/><polygon points="30,15 40,35 50,15" fill="%23fff"/></svg>';
+    IMAGES.mouthClosed.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><circle cx="40" cy="40" r="36" fill="%23990000"/><line x1="15" y1="40" x2="65" y2="40" stroke="%23000" stroke-width="6"/></svg>';
+    IMAGES.spinnerCenter.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30"><circle cx="15" cy="15" r="12" fill="%23ff0055" stroke="%23fff" stroke-width="2"/></svg>';
+    IMAGES.bucketYellow.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><rect x="2" y="2" width="20" height="20" rx="4" fill="%23ffeb3b" stroke="%23fff" stroke-width="2"/></svg>';
+    IMAGES.bucketBlue.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><rect x="2" y="2" width="20" height="20" rx="4" fill="%232196f3" stroke="%23fff" stroke-width="2"/></svg>';
+    IMAGES.bucketRed.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><rect x="2" y="2" width="20" height="20" rx="4" fill="%23f44336" stroke="%23fff" stroke-width="2"/></svg>';
+    IMAGES.bucketBroken.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><rect x="2" y="2" width="20" height="20" rx="4" fill="%23555555" stroke="%23888" stroke-width="2"/><line x1="4" y1="4" x2="20" y2="20" stroke="%23ff0000" stroke-width="3"/></svg>';
+    IMAGES.greenTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><circle cx="10" cy="10" r="8" fill="%234caf50"/></svg>';
+    IMAGES.yellowTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><circle cx="13" cy="13" r="11" fill="%23ffeb3b"/></svg>';
+    IMAGES.redTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="38" height="38"><circle cx="19" cy="19" r="16" fill="%23f44336"/></svg>';
+    IMAGES.purpleTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="52" height="52"><circle cx="26" cy="26" r="22" fill="%23a044ff" stroke="%23fff" stroke-width="3"/></svg>';
 
-    // Player Object
-    const player = {
-      x: canvas.width / 2,
-      y: canvas.height / 2,
-      speed: 4,
-      angle: 0,
-      spinSpeed: 0.05,
-      blades: [true, true, true, true] // 4 Scoopers active
-    };
+    let gameStarted = false;
+    let isGameOver = false;
 
-    // Floating Monster Array
-    const monsters = [];
+    // Game Level & Timer State
+    let currentLevel = 1;
+    let gameTimeSeconds = 0;
+    let timerInterval = null;
+    let spawnGraceTime = 0;
 
-    // Keyboard Listeners
-    window.addEventListener('keydown', e => keys[e.key] = true);
-    window.addEventListener('keyup', e => keys[e.key] = false);
+    // Mouth Animation Flash State
+    let isEating = false;
+    let eatingFrameToggle = false;
+    let eatingTimer = 0;
 
-    // Spawn Chompy Monsters
-    function spawnMonster() {
-      if (gameOver) return;
-      const types = [
-        { color: '#2ed573', speed: 1.5, hp: 1, points: 10, img: IMAGES.greenTarget },
-        { color: '#eccc68', speed: 2.2, hp: 1, points: 20, img: IMAGES.yellowTarget },
-        { color: '#ff4757', speed: 1.0, hp: 3, points: 50, img: IMAGES.redTarget },
-        { color: '#a29bfe', speed: 3.0, hp: 1, points: 30, img: IMAGES.purpleTarget }
-      ];
-
-      const type = types[Math.floor(Math.random() * types.length)];
+    function startGame() {
+      document.getElementById('start-screen').style.display = 'none';
+      gameStarted = true;
+      resizeCanvas();
       
-      // Spawn around outer edges
-      let x, y;
-      if (Math.random() < 0.5) {
-        x = Math.random() < 0.5 ? -20 : canvas.width + 20;
-        y = Math.random() * canvas.height;
-      } else {
-        x = Math.random() * canvas.width;
-        y = Math.random() < 0.5 ? -20 : canvas.height + 20;
-      }
+      player.x = canvas.width / 2;
+      player.y = canvas.height / 2;
+      player.targetX = player.x;
+      player.targetY = player.y;
 
-      monsters.push({
-        x, y,
-        radius: 16,
-        type: type,
-        hp: type.hp
-      });
+      initTargets();
+      spawnGraceTime = Date.now() + 3500;
+      startTimer();
     }
 
-    setInterval(spawnMonster, 1200);
+    function startTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        if (gameStarted && !isGameOver) {
+          gameTimeSeconds++;
+          const mins = String(Math.floor(gameTimeSeconds / 60)).padStart(2, '0');
+          const secs = String(gameTimeSeconds % 60).padStart(2, '0');
+          document.getElementById('ui-time').innerText = `${mins}:${secs}`;
+        }
+      }, 1000);
+    }
 
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      const container = document.getElementById('game-container');
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 200));
+    resizeCanvas();
+
+    // Economy & Upgrades
+    let coins = 0;
+    let scoopTier = 1; // Tier 1: Small (Green), Tier 2: Medium (Yellow), Tier 3: Heavy (Red)
+    let scoopCount = 2;
+    let chainTier = 1;
+    let capTier = 1;
+
+    let costScoop = 50;
+    let costCount = 75;
+    let costChain = 60;
+    let costCap = 40;
+
+    // Player State
+    const player = {
+      x: 300,
+      y: 300,
+      targetX: 300,
+      targetY: 300,
+      baseRadius: 24,
+      growMultiplier: 1.0,
+      speed: 6.0,
+      carried: [],
+      maxCapacity: 5,
+      angle: 0,
+      rotorSpeed: 0.05,
+      blades: []
+    };
+
+    function initBlades() {
+      player.blades = new Array(scoopCount).fill(true);
+    }
+    initBlades();
+
+    // Base Pen Setup
+    const pen = {
+      x: 20,
+      y: 20,
+      width: 140,
+      height: 140,
+      gateOpen: true,
+      chainHp: 100,
+      maxChainHp: 100,
+      trapped: []
+    };
+
+    // Target Types Definitions
+    const TARGET_TYPES = {
+      SMALL: { name: 'Small', radius: 8, tier: 1, color: '#4caf50', val: 10, power: 1, speed: 1.8, detectDist: 100, imgKey: 'greenTarget' },
+      MEDIUM: { name: 'Medium', radius: 13, tier: 2, color: '#ffeb3b', val: 25, power: 3, speed: 1.4, detectDist: 120, imgKey: 'yellowTarget' },
+      HEAVY: { name: 'Heavy', radius: 19, tier: 3, color: '#f44336', val: 60, power: 8, speed: 1.1, detectDist: 140, imgKey: 'redTarget' },
+      BOSS: { name: 'Master Boss', radius: 26, tier: 99, color: '#a044ff', val: 500, power: 25, speed: 1.4, detectDist: 220, imgKey: 'purpleTarget' }
+    };
+
+    let targets = [];
+    const MAX_TARGETS = 16;
+
+    function spawnTarget() {
+      const rand = Math.random();
+      let type = TARGET_TYPES.SMALL;
+      if (rand > 0.65 && rand <= 0.90) type = TARGET_TYPES.MEDIUM;
+      else if (rand > 0.90) type = TARGET_TYPES.HEAVY;
+
+      let tx, ty, distToPlayer;
+      do {
+        tx = Math.random() * (canvas.width - 60) + 30;
+        ty = Math.random() * (canvas.height - 60) + 30;
+        distToPlayer = Math.hypot(tx - player.x, ty - player.y);
+      } while (
+        (tx < pen.x + pen.width + 40 && ty < pen.y + pen.height + 40) ||
+        distToPlayer < 200
+      );
+
+      targets.push({ x: tx, y: ty, type: type });
+    }
+
+    function initTargets() {
+      targets = [];
+      for (let i = 0; i < MAX_TARGETS; i++) spawnTarget();
+      
+      let bx, by, distToPlayer;
+      do {
+        bx = Math.random() * (canvas.width - 80) + 40;
+        by = Math.random() * (canvas.height - 80) + 40;
+        distToPlayer = Math.hypot(bx - player.x, by - player.y);
+      } while (
+        (bx < pen.x + pen.width + 60 && by < pen.y + pen.height + 60) ||
+        distToPlayer < 250
+      );
+
+      targets.push({
+        x: bx,
+        y: by,
+        type: TARGET_TYPES.BOSS
+      });
+    }
+// Controls
+    const keys = {};
+    window.addEventListener('keydown', e => {
+      keys[e.key.toLowerCase()] = true;
+      if (e.code === 'Space' && gameStarted && !isGameOver) toggleGate();
+    });
+    window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+
+    let isPointerDragging = false;
+    function handlePointerMove(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      player.targetX = clientX - rect.left;
+      player.targetY = clientY - rect.top;
+    }
+
+    canvas.addEventListener('mousedown', e => {
+      if (!gameStarted || isGameOver) return;
+      isPointerDragging = true;
+      handlePointerMove(e.clientX, e.clientY);
+    });
+    window.addEventListener('mousemove', e => {
+      if (isPointerDragging && gameStarted && !isGameOver) handlePointerMove(e.clientX, e.clientY);
+    });
+    window.addEventListener('mouseup', () => { isPointerDragging = false; });
+
+    canvas.addEventListener('touchstart', e => {
+      if (!gameStarted || isGameOver) return;
+      isPointerDragging = true;
+      if (e.touches.length > 0) handlePointerMove(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: false });
+
+    canvas.addEventListener('touchmove', e => {
+      if (isPointerDragging && gameStarted && !isGameOver && e.touches.length > 0) {
+        handlePointerMove(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    }, { passive: false });
+
+    window.addEventListener('touchend', () => { isPointerDragging = false; });
+
+    function toggleGate() {
+      pen.gateOpen = !pen.gateOpen;
+      const mobileBtn = document.getElementById('btn-mobile-gate');
+      if (pen.gateOpen) {
+        mobileBtn.innerText = 'GATE\nOPEN';
+        mobileBtn.className = 'open';
+      } else {
+        mobileBtn.innerText = 'GATE\nLOCKED';
+        mobileBtn.className = '';
+      }
+    }
+
+    function triggerGameOver() {
+      isGameOver = true;
+      document.getElementById('go-level').innerText = currentLevel;
+      document.getElementById('go-coins').innerText = Math.floor(coins);
+      document.getElementById('gameover-screen').style.display = 'flex';
+    }
+
+    function resetGame() {
+      currentLevel = 1;
+      gameTimeSeconds = 0;
+      coins = 0;
+      scoopTier = 1;
+      scoopCount = 2;
+      chainTier = 1;
+      capTier = 1;
+
+      costScoop = 50;
+      costCount = 75;
+      costChain = 60;
+      costCap = 40;
+
+      player.x = canvas.width / 2;
+      player.y = canvas.height / 2;
+      player.targetX = player.x;
+      player.targetY = player.y;
+      player.growMultiplier = 1.0;
+      player.carried = [];
+      player.maxCapacity = 5;
+
+      initBlades();
+
+      pen.gateOpen = true;
+      pen.chainHp = 100;
+      pen.maxChainHp = 100;
+      pen.trapped = [];
+
+      document.getElementById('ui-level').innerText = currentLevel;
+      document.getElementById('lvl-scoop').innerText = scoopTier;
+      document.getElementById('btn-up-scoop').innerText = `Upgrade ($${costScoop})`;
+      document.getElementById('lvl-count').innerText = scoopCount;
+      document.getElementById('btn-up-count').innerText = `Add ($${costCount})`;
+      document.getElementById('lvl-chain').innerText = chainTier;
+      document.getElementById('btn-up-chain').innerText = `Upgrade ($${costChain})`;
+      document.getElementById('lvl-cap').innerText = capTier;
+      document.getElementById('btn-up-cap').innerText = `Upgrade ($${costCap})`;
+
+      initTargets();
+      spawnGraceTime = Date.now() + 3500;
+
+      isGameOver = false;
+      document.getElementById('gameover-screen').style.display = 'none';
+    }
+
+    function triggerLevelUp() {
+      isGameOver = true;
+      document.getElementById('lu-next-level').innerText = currentLevel + 1;
+      document.getElementById('lu-coins').innerText = Math.floor(coins);
+      document.getElementById('levelup-screen').style.display = 'flex';
+    }
+
+    function nextLevel() {
+      currentLevel++;
+      document.getElementById('ui-level').innerText = currentLevel;
+
+      player.x = canvas.width / 2;
+      player.y = canvas.height / 2;
+      player.targetX = player.x;
+      player.targetY = player.y;
+      player.carried = [];
+
+      pen.gateOpen = true;
+      pen.chainHp = pen.maxChainHp;
+      pen.trapped = [];
+
+      initTargets();
+      spawnGraceTime = Date.now() + 3500;
+
+      isGameOver = false;
+      document.getElementById('levelup-screen').style.display = 'none';
+    }
+
+    // Main Game Loop
     function update() {
-      if (gameOver) return;
+      if (!gameStarted || isGameOver) return;
 
-      // Player Movement Controls
-      if (keys['ArrowUp'] || keys['w']) player.y -= player.speed;
-      if (keys['ArrowDown'] || keys['s']) player.y += player.speed;
-      if (keys['ArrowLeft'] || keys['a']) player.x -= player.speed;
-      if (keys['ArrowRight'] || keys['d']) player.x += player.speed;
+      const inGracePeriod = Date.now() < spawnGraceTime;
 
-      // Clamp Player inside screen
-      player.x = Math.max(30, Math.min(canvas.width - 30, player.x));
-      player.y = Math.max(30, Math.min(canvas.height - 30, player.y));
+      // 1. Player Movement
+      let dx = 0, dy = 0;
+      if (keys['w'] || keys['arrowup']) dy -= 1;
+      if (keys['s'] || keys['arrowdown']) dy += 1;
+      if (keys['a'] || keys['arrowleft']) dx -= 1;
+      if (keys['d'] || keys['arrowright']) dx += 1;
 
-      // Rotate Scrambler Arms
-      player.angle += player.spinSpeed;
+      if (dx !== 0 || dy !== 0) {
+        if (dx !== 0 && dy !== 0) { dx *= 0.7071; dy *= 0.7071; }
+        player.x += dx * player.speed;
+        player.y += dy * player.speed;
+        player.targetX = player.x;
+        player.targetY = player.y;
+      } else if (isPointerDragging) {
+        const pdx = player.targetX - player.x;
+        const pdy = player.targetY - player.y;
+        const dist = Math.hypot(pdx, pdy);
 
-      // Upgrade tier unlocks as score increases
-      if (score >= 200 && scoopTier < 2) scoopTier = 2;
-      if (score >= 500 && scoopTier < 3) scoopTier = 3;
+        if (dist > 5) {
+          player.x += (pdx / dist) * Math.min(dist, player.speed);
+          player.y += (pdy / dist) * Math.min(dist, player.speed);
+        }
+      }
 
-      // Update Monsters & Collision Checking
-      const bladeDistance = 35;
-      const step = (Math.PI * 2) / player.blades.length;
+      player.x = Math.max(player.baseRadius, Math.min(canvas.width - player.baseRadius, player.x));
+      player.y = Math.max(player.baseRadius, Math.min(canvas.height - player.baseRadius, player.y));
 
-      for (let i = monsters.length - 1; i >= 0; i--) {
-        const m = monsters[i];
+      player.angle += player.rotorSpeed;
+      const currentRadius = player.baseRadius * player.growMultiplier;
+      const bladeDistance = currentRadius + 14;
 
-        // Move towards center player
-        const dx = player.x - m.x;
-        const dy = player.y - m.y;
-        const dist = Math.hypot(dx, dy);
+      // Check if Player is Standing Guard inside the Base Pen
+      const inPenZone = (player.x > pen.x && player.x < pen.x + pen.width &&
+                         player.y > pen.y && player.y < pen.y + pen.height);
 
-        m.x += (dx / dist) * m.type.speed;
-        m.y += (dy / dist) * m.type.speed;
+      // 2. Unload Carried Captives into Base Pen
+      const gateX = pen.x + pen.width;
+      const gateY = pen.y + pen.height / 2;
 
-        // Check collision with each rotating scooper
-        for (let b = 0; b < player.blades.length; b++) {
-          const bladeAngle = player.angle + b * step;
-          const bx = player.x + Math.cos(bladeAngle) * bladeDistance;
-          const by = player.y + Math.sin(bladeAngle) * bladeDistance;
+      if (inPenZone && player.carried.length > 0) {
+        player.carried.forEach(c => {
+          pen.trapped.push({
+            type: c,
+            x: pen.x + 25 + Math.random() * (pen.width - 50),
+            y: pen.y + 25 + Math.random() * (pen.height - 50)
+          });
+        });
+        player.carried = [];
+      }
 
-          const hitDist = Math.hypot(bx - m.x, by - m.y);
+      // 3. Trapped Escape Logic (ONLY active if Gate is OPEN and Player WALKED AWAY)
+      if (pen.gateOpen && pen.trapped.length > 0 && !inPenZone) {
+        for (let i = pen.trapped.length - 1; i >= 0; i--) {
+          const trapped = pen.trapped[i];
+          const angleToGate = Math.atan2(gateY - trapped.y, gateX - trapped.x);
+          const moveSpeed = trapped.type.speed * 1.2;
 
-          if (hitDist < m.radius + 14) {
-            if (player.blades[b]) {
-              // Intact Scooper hits monster
-              m.hp--;
-              if (m.hp <= 0) {
-                score += m.type.points;
-                monsters.splice(i, 1);
-                break;
-              }
-            } else {
-              // Broken Scooper takes extra damage penalty
-              health -= 2;
+          trapped.x += Math.cos(angleToGate) * moveSpeed;
+          trapped.y += Math.sin(angleToGate) * moveSpeed;
+
+          if (trapped.x >= gateX - 5) {
+            targets.push({
+              x: gateX + 25 + Math.random() * 20,
+              y: gateY + (Math.random() - 0.5) * 40,
+              type: trapped.type
+            });
+            pen.trapped.splice(i, 1);
+          }
+        }
+      }
+
+      // 4. Field Target AI & Bucket Collision Rules
+      for (let i = targets.length - 1; i >= 0; i--) {
+        const t = targets[i];
+        const distToPlayer = Math.hypot(player.x - t.x, player.y - t.y);
+
+        if (!inGracePeriod) {
+          if (t.type === TARGET_TYPES.BOSS || t.type === TARGET_TYPES.HEAVY) {
+            if (distToPlayer < t.type.detectDist) {
+              const angle = Math.atan2(player.y - t.y, player.x - t.x);
+              const speedBoost = t.type === TARGET_TYPES.BOSS ? (1 + (currentLevel - 1) * 0.05) : 1;
+              t.x += Math.cos(angle) * t.type.speed * speedBoost;
+              t.y += Math.sin(angle) * t.type.speed * speedBoost;
+            }
+          } else {
+            if (distToPlayer < t.type.detectDist) {
+              const fleeAngle = Math.atan2(t.y - player.y, t.x - player.x);
+              t.x += Math.cos(fleeAngle) * t.type.speed;
+              t.y += Math.sin(fleeAngle) * t.type.speed;
             }
           }
         }
 
-        // Center Collision (Monster reaches the player core)
-        if (dist < 20) {
-          health -= 10;
-          monsters.splice(i, 1);
+        // Base Pen Wall Collisions
+        const margin = t.type.radius + 8;
+        if (t.x > pen.x - margin && t.x < pen.x + pen.width + margin &&
+            t.y > pen.y - margin && t.y < pen.y + pen.height + margin) {
+          
+          const dLeft = Math.abs(t.x - (pen.x - margin));
+          const dRight = Math.abs(t.x - (pen.x + pen.width + margin));
+          const dTop = Math.abs(t.y - (pen.y - margin));
+          const dBottom = Math.abs(t.y - (pen.y + pen.height + margin));
 
-          // Break one random active scooper on direct impact
-          const activeIndices = player.blades.map((v, idx) => v ? idx : -1).filter(v => v !== -1);
-          if (activeIndices.length > 0) {
-            const breakIdx = activeIndices[Math.floor(Math.random() * activeIndices.length)];
-            player.blades[breakIdx] = false;
-          }
+          const minDist = Math.min(dLeft, dRight, dTop, dBottom);
+          if (minDist === dLeft) t.x = pen.x - margin;
+          else if (minDist === dRight) t.x = pen.x + pen.width + margin;
+          else if (minDist === dTop) t.y = pen.y - margin;
+          else if (minDist === dBottom) t.y = pen.y + pen.height + margin;
+        }
 
-          if (health <= 0) {
-            health = 0;
-            triggerGameOver();
+        t.x = Math.max(20, Math.min(canvas.width - 20, t.x));
+        t.y = Math.max(20, Math.min(canvas.height - 20, t.y));
+
+        // Bucket Scrambler Collision Logic
+        const bladeAngleStep = (Math.PI * 2) / player.blades.length;
+
+        for (let b = 0; b < player.blades.length; b++) {
+          if (!player.blades[b]) continue;
+
+          const bladeAngle = player.angle + b * bladeAngleStep;
+          const bladeX = player.x + Math.cos(bladeAngle) * bladeDistance;
+          const bladeY = player.y + Math.sin(bladeAngle) * bladeDistance;
+
+          const distToBlade = Math.hypot(t.x - bladeX, t.y - bladeY);
+
+          if (distToBlade < t.type.radius + 10) {
+            // Master Boss ALWAYS breaks buckets regardless of upgrades
+            if (t.type === TARGET_TYPES.BOSS) {
+              player.blades[b] = false;
+              const bounceAngle = Math.atan2(t.y - player.y, t.x - player.x);
+              t.x += Math.cos(bounceAngle) * 15;
+              t.y += Math.sin(bounceAngle) * 15;
+            } 
+            // Target tier is lower than or equal to current Scoop Tier: Harvest or Bounce safely!
+            else if (scoopTier >= t.type.tier) {
+              if (player.carried.length < player.maxCapacity) {
+                player.carried.push(t.type);
+                targets.splice(i, 1);
+                spawnTarget();
+                break;
+              } else {
+                // Capacity full: bounce off safely without breaking!
+                const bounceAngle = Math.atan2(t.y - player.y, t.x - player.x);
+                t.x += Math.cos(bounceAngle) * 15;
+                t.y += Math.sin(bounceAngle) * 15;
+              }
+            } 
+            // Target tier is HIGHER than player scoop tier: Destroy bucket!
+            else {
+              player.blades[b] = false; // Destroy bucket
+              const bounceAngle = Math.atan2(t.y - player.y, t.x - player.x);
+              t.x += Math.cos(bounceAngle) * 20;
+              t.y += Math.sin(bounceAngle) * 20;
+            }
           }
         }
       }
 
-      // Update HUD Text
-      document.getElementById('score').innerText = score;
-      document.getElementById('health').innerText = `${health}%`;
-      
-      const tierName = scoopTier === 1 ? 'Yellow (1)' : scoopTier === 2 ? 'Blue (2)' : 'Red (3)';
-      document.getElementById('tier').innerText = tierName;
+      // Soft-Lock Check
+      const hasActiveBlade = player.blades.includes(true);
+      if (!hasActiveBlade && coins < 25) {
+        triggerGameOver();
+        return;
+      }
+
+      // 5. Boss Luring into Open Pen
+      if (pen.gateOpen) {
+        for (let i = targets.length - 1; i >= 0; i--) {
+          if (targets[i].type === TARGET_TYPES.BOSS) {
+            const bt = targets[i];
+            if (bt.x > pen.x && bt.x < pen.x + pen.width && bt.y > pen.y && bt.y < pen.y + pen.height) {
+              pen.trapped.push({
+                type: bt.type,
+                x: bt.x,
+                y: bt.y
+              });
+              targets.splice(i, 1);
+            }
+          }
+        }
+      }
+
+      // 6. Locked Digestion (Swallowing captives & Mouth Animation Trigger)
+      if (!pen.gateOpen && inPenZone && pen.trapped.length > 0) {
+        isEating = true;
+        eatingTimer++;
+        if (eatingTimer % 6 === 0) {
+          eatingFrameToggle = !eatingFrameToggle;
+        }
+
+        for (let i = pen.trapped.length - 1; i >= 0; i--) {
+          const victim = pen.trapped[i];
+          const distToHole = Math.hypot(victim.x - player.x, victim.y - player.y);
+
+          if (distToHole < currentRadius) {
+            coins += victim.type.val * currentLevel;
+            player.growMultiplier += 0.03;
+
+            const digestedType = victim.type;
+            pen.trapped.splice(i, 1);
+
+            if (digestedType === TARGET_TYPES.BOSS) {
+              triggerLevelUp();
+              return;
+            }
+          } else {
+            victim.x += (player.x - victim.x) * 0.08;
+            victim.y += (player.y - victim.y) * 0.08;
+          }
+        }
+      } else {
+        isEating = false;
+        eatingTimer = 0;
+      }
+
+      // 7. Chain Damage & Breakout
+      if (!pen.gateOpen && pen.trapped.length > 0 && !inPenZone) {
+        let totalPower = 0;
+        pen.trapped.forEach(t => {
+          totalPower += t.type.power;
+          const gateTargetX = pen.x + pen.width - 15;
+          const gateTargetY = pen.y + pen.height / 2;
+          t.x += (gateTargetX - t.x) * 0.02;
+          t.y += (gateTargetY - t.y) * 0.02;
+        });
+
+        const damage = (totalPower * 0.05) / chainTier;
+        pen.chainHp -= damage;
+
+        if (pen.chainHp <= 0) {
+          pen.chainHp = 0;
+          if (!pen.gateOpen) toggleGate();
+
+          pen.trapped.forEach(t => {
+            targets.push({
+              x: pen.x + pen.width + 30 + Math.random() * 30,
+              y: pen.y + pen.height / 2 + (Math.random() - 0.5) * 60,
+              type: t.type
+            });
+          });
+          pen.trapped = [];
+        }
+      } else if (pen.gateOpen && pen.chainHp < pen.maxChainHp) {
+        pen.chainHp = Math.min(pen.maxChainHp, pen.chainHp + 0.2);
+      }
+
+      updateUI();
     }
 
+    // Render Loop
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // --- 1. DRAW SCRAMBLER CENTER & ARMS ---
-      const bladeDistance = 35;
+      // Home Base Pen
+      ctx.fillStyle = '#1c2419';
+      ctx.fillRect(pen.x, pen.y, pen.width, pen.height);
+
+      ctx.strokeStyle = '#8b9bb4';
+      ctx.lineWidth = 6;
+      ctx.strokeRect(pen.x, pen.y, pen.width, pen.height);
+
+      const gateY1 = pen.y + 30;
+      const gateY2 = pen.y + pen.height - 30;
+      ctx.clearRect(pen.x + pen.width - 4, gateY1, 8, gateY2 - gateY1);
+
+      if (pen.gateOpen) {
+        ctx.strokeStyle = '#44ff44';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(pen.x + pen.width, gateY1);
+        ctx.lineTo(pen.x + pen.width + 18, gateY1 - 8);
+        ctx.stroke();
+      } else {
+        ctx.strokeStyle = pen.chainHp < 30 ? '#ff3333' : '#e6ac00';
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(pen.x + pen.width, gateY1);
+        ctx.lineTo(pen.x + pen.width, gateY2);
+        ctx.stroke();
+      }
+
+      // Trapped Captives inside Base Pen
+      pen.trapped.forEach(t => {
+        const img = IMAGES[t.type.imgKey];
+        const size = t.type.radius * 2;
+        ctx.drawImage(img, t.x - t.type.radius, t.y - t.type.radius, size, size);
+      });
+
+      // Wild Field Targets
+      targets.forEach(t => {
+        const img = IMAGES[t.type.imgKey];
+        const size = t.type.radius * 2;
+        ctx.drawImage(img, t.x - t.type.radius, t.y - t.type.radius, size, size);
+      });
+
+      // Player Hole & Scrambler Mechanics
+      const r = player.baseRadius * player.growMultiplier;
+
+      // Base Circle / Player Sprite
+      ctx.drawImage(IMAGES.player, player.x - r, player.y - r, r * 2, r * 2);
+
+      // Flash Chomping Mouth Animation when digesting inside Base Pen
+      if (isEating) {
+        const mouthImg = eatingFrameToggle ? IMAGES.mouthOpen : IMAGES.mouthClosed;
+        const mouthSize = r * 2.4;
+        ctx.drawImage(mouthImg, player.x - mouthSize / 2, player.y - mouthSize / 2, mouthSize, mouthSize);
+      }
+
+      // Center Scrambler Hub/Spinner Image
+      const spinnerSize = 30;
+      ctx.save();
+      ctx.translate(player.x, player.y);
+      ctx.rotate(player.angle);
+      ctx.drawImage(IMAGES.spinnerCenter, -spinnerSize / 2, -spinnerSize / 2, spinnerSize, spinnerSize);
+      ctx.restore();
+
+      // Bucket Chairs Positioning & Connections
+      const bladeDistance = r + 14;
       const step = (Math.PI * 2) / player.blades.length;
 
       for (let i = 0; i < player.blades.length; i++) {
@@ -313,102 +1025,116 @@
         const bx = player.x + Math.cos(bladeAngle) * bladeDistance;
         const by = player.y + Math.sin(bladeAngle) * bladeDistance;
 
-        // Draw Arm Line
-        ctx.strokeStyle = '#888';
-        ctx.lineWidth = 3;
+        // Draw Scrambler Connecting Arms
+        ctx.strokeStyle = '#666';
+        ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(player.x, player.y);
         ctx.lineTo(bx, by);
         ctx.stroke();
 
-        // Draw Custom Scooper Image or State
+        // Draw Bucket Chair or Broken Stubs
         ctx.save();
         ctx.translate(bx, by);
-        ctx.rotate(player.angle * 2);
+        ctx.rotate(player.angle * 2); // Fast spinning buckets!
 
         if (player.blades[i]) {
-          // Choose active tier sprite
+          // Select Image matching active Upgrade Tier
           let currentScooper = IMAGES.bucketYellow;
           if (scoopTier === 2) currentScooper = IMAGES.bucketBlue;
-          if (scoopTier >= 3) currentScooper = IMAGES.bucketRed;
+          else if (scoopTier >= 3) currentScooper = IMAGES.bucketRed;
 
-          if (currentScooper.complete && currentScooper.src) {
-            ctx.drawImage(currentScooper, -14, -14, 28, 28);
-          } else {
-            // Fallback shape if no image is loaded
-            ctx.fillStyle = scoopTier === 1 ? '#f1c40f' : scoopTier === 2 ? '#3498db' : '#e74c3c';
-            ctx.beginPath();
-            ctx.arc(0, 0, 10, 0, Math.PI * 2);
-            ctx.fill();
-          }
+          ctx.drawImage(currentScooper, -12, -12, 24, 24);
         } else {
-          // Broken Scooper state
-          if (IMAGES.bucketBroken.complete && IMAGES.bucketBroken.src) {
-            ctx.drawImage(IMAGES.bucketBroken, -14, -14, 28, 28);
-          } else {
-            // Fallback broken marker
-            ctx.fillStyle = '#555';
-            ctx.beginPath();
-            ctx.arc(0, 0, 8, 0, Math.PI * 2);
-            ctx.fill();
-          }
+          // Draw Broken Scooper Image
+          ctx.drawImage(IMAGES.bucketBroken, -12, -12, 24, 24);
         }
+        
         ctx.restore();
       }
-
-      // --- 2. DRAW CENTER HUB IMAGE ---
-      ctx.save();
-      ctx.translate(player.x, player.y);
-      if (IMAGES.spinnerCenter.complete && IMAGES.spinnerCenter.src) {
-        ctx.drawImage(IMAGES.spinnerCenter, -20, -20, 40, 40);
-      } else {
-        // Fallback center core
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(0, 0, 16, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.restore();
-
-      // --- 3. DRAW CHOMPY MONSTERS ---
-      monsters.forEach(m => {
-        if (m.type.img.complete && m.type.img.src) {
-          ctx.drawImage(m.type.img, m.x - 18, m.y - 18, 36, 36);
-        } else {
-          // Fallback colored circle if image path not assigned yet
-          ctx.fillStyle = m.type.color;
-          ctx.beginPath();
-          ctx.arc(m.x, m.y, m.radius, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      });
     }
 
-    function gameLoop() {
+    function updateUI() {
+      document.getElementById('ui-coins').innerText = Math.floor(coins);
+      document.getElementById('ui-powertier').innerText = scoopTier;
+      document.getElementById('ui-carried').innerText = `${player.carried.length} / ${player.maxCapacity}`;
+      
+      const gateElem = document.getElementById('ui-gate-status');
+      if (pen.gateOpen) {
+        gateElem.innerText = 'OPEN';
+        gateElem.style.color = '#44ff44';
+      } else {
+        gateElem.innerText = 'LOCKED';
+        gateElem.style.color = '#ff4444';
+      }
+
+      document.getElementById('ui-trapped').innerText = pen.trapped.length;
+      document.getElementById('ui-chain-hp').innerText = `${Math.ceil(pen.chainHp)} / ${pen.maxChainHp}`;
+
+      document.getElementById('btn-repair').disabled = !player.blades.includes(false) || coins < 25;
+      document.getElementById('btn-up-scoop').disabled = coins < costScoop;
+      document.getElementById('btn-up-count').disabled = coins < costCount;
+      document.getElementById('btn-up-chain').disabled = coins < costChain;
+      document.getElementById('btn-up-cap').disabled = coins < costCap;
+    }
+
+    function buyRepair() {
+      if (coins >= 25) {
+        coins -= 25;
+        player.blades.fill(true);
+      }
+    }
+
+    function buyScoopUpgrade() {
+      if (coins >= costScoop) {
+        coins -= costScoop;
+        scoopTier++;
+        costScoop = Math.floor(costScoop * 1.8);
+        document.getElementById('lvl-scoop').innerText = scoopTier;
+        document.getElementById('btn-up-scoop').innerText = `Upgrade ($${costScoop})`;
+      }
+    }
+
+    function buyScoopCountUpgrade() {
+      if (coins >= costCount) {
+        coins -= costCount;
+        scoopCount++;
+        costCount = Math.floor(costCount * 2.0);
+        initBlades();
+        document.getElementById('lvl-count').innerText = scoopCount;
+        document.getElementById('btn-up-count').innerText = `Add ($${costCount})`;
+      }
+    }
+
+    function buyChainUpgrade() {
+      if (coins >= costChain) {
+        coins -= costChain;
+        chainTier++;
+        pen.maxChainHp += 50;
+        pen.chainHp = pen.maxChainHp;
+        costChain = Math.floor(costChain * 1.7);
+        document.getElementById('lvl-chain').innerText = chainTier;
+        document.getElementById('btn-up-chain').innerText = `Upgrade ($${costChain})`;
+      }
+    }
+function buyCapUpgrade() {
+      if (coins >= costCap) {
+        coins -= costCap;
+        capTier++;
+        player.maxCapacity += 5;
+        costCap = Math.floor(costCap * 1.6);
+        document.getElementById('lvl-cap').innerText = capTier;
+        document.getElementById('btn-up-cap').innerText = `Upgrade ($${costCap})`;
+      }
+    }
+
+    function loop() {
       update();
       draw();
-      if (!gameOver) requestAnimationFrame(gameLoop);
+      requestAnimationFrame(loop);
     }
-
-    function triggerGameOver() {
-      gameOver = true;
-      document.getElementById('final-score').innerText = score;
-      document.getElementById('game-over-screen').classList.add('active');
-    }
-
-    function resetGame() {
-      score = 0;
-      scoopTier = 1;
-      health = 100;
-      gameOver = false;
-      player.blades = [true, true, true, true];
-      monsters.length = 0;
-      document.getElementById('game-over-screen').classList.remove('active');
-      requestAnimationFrame(gameLoop);
-    }
-
-    // Start Game Loop
-    requestAnimationFrame(gameLoop);
+    loop();
   </script>
 </body>
 </html>
+    
