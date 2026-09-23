@@ -257,8 +257,8 @@
           <div class="legend-item"><span class="dot" style="background:#a044ff;"></span> Master Boss</div>
         </div>
 
-        <p><b>2. Open Gate Danger:</b> Trapped targets WILL run out if you leave the gate OPEN!</p>
-        <p><b>3. Master Boss Challenge:</b> Lure the Purple Master Boss into your base, close the gate with you inside, and eat him to WIN the level!</p>
+        <p><b>2. Guarding Base:</b> As long as you stay inside the base, captives won't run away! Lock the gate before leaving.</p>
+        <p><b>3. Master Boss Challenge:</b> Lure the Purple Master Boss into base, close gate, and digest him to WIN!</p>
         <p><b>4. Controls:</b> Drag with Finger/Mouse. Tap GATE to lock/unlock.</p>
       </div>
       <button class="btn-action" onclick="startGame()">Start Game</button>
@@ -362,11 +362,20 @@
     let currentLevel = 1;
     let gameTimeSeconds = 0;
     let timerInterval = null;
+    let spawnGraceTime = 0;
 
     function startGame() {
       document.getElementById('start-screen').style.display = 'none';
       gameStarted = true;
       resizeCanvas();
+      
+      player.x = canvas.width / 2;
+      player.y = canvas.height / 2;
+      player.targetX = player.x;
+      player.targetY = player.y;
+
+      initTargets();
+      spawnGraceTime = Date.now() + 3500;
       startTimer();
     }
 
@@ -408,10 +417,10 @@
 
     // Player State
     const player = {
-      x: 200,
-      y: 200,
-      targetX: 200,
-      targetY: 200,
+      x: 300,
+      y: 300,
+      targetX: 300,
+      targetY: 300,
       baseRadius: 24,
       growMultiplier: 1.0,
       speed: 6.0,
@@ -441,26 +450,30 @@
 
     // Target Types & Master Boss Definitions
     const TARGET_TYPES = {
-      SMALL: { name: 'Small', radius: 8, tier: 1, color: '#4caf50', val: 10, power: 1, speed: 2.2, detectDist: 140 },
-      MEDIUM: { name: 'Medium', radius: 13, tier: 2, color: '#ffeb3b', val: 25, power: 3, speed: 1.8, detectDist: 130 },
-      HEAVY: { name: 'Heavy', radius: 19, tier: 3, color: '#f44336', val: 60, power: 8, speed: 1.5, detectDist: 200 },
-      BOSS: { name: 'Master Boss', radius: 26, tier: 99, color: '#a044ff', val: 500, power: 25, speed: 2.0, detectDist: 9999 }
+      SMALL: { name: 'Small', radius: 8, tier: 1, color: '#4caf50', val: 10, power: 1, speed: 1.8, detectDist: 100 },
+      MEDIUM: { name: 'Medium', radius: 13, tier: 2, color: '#ffeb3b', val: 25, power: 3, speed: 1.4, detectDist: 120 },
+      HEAVY: { name: 'Heavy', radius: 19, tier: 3, color: '#f44336', val: 60, power: 8, speed: 1.1, detectDist: 140 },
+      BOSS: { name: 'Master Boss', radius: 26, tier: 99, color: '#a044ff', val: 500, power: 25, speed: 1.4, detectDist: 220 }
     };
 
     let targets = [];
-    const MAX_TARGETS = 18;
+    const MAX_TARGETS = 16;
 
     function spawnTarget() {
       const rand = Math.random();
       let type = TARGET_TYPES.SMALL;
-      if (rand > 0.6 && rand <= 0.88) type = TARGET_TYPES.MEDIUM;
-      else if (rand > 0.88) type = TARGET_TYPES.HEAVY;
+      if (rand > 0.65 && rand <= 0.90) type = TARGET_TYPES.MEDIUM;
+      else if (rand > 0.90) type = TARGET_TYPES.HEAVY;
 
-      let tx, ty;
+      let tx, ty, distToPlayer;
       do {
         tx = Math.random() * (canvas.width - 60) + 30;
         ty = Math.random() * (canvas.height - 60) + 30;
-      } while (tx < pen.x + pen.width + 40 && ty < pen.y + pen.height + 40);
+        distToPlayer = Math.hypot(tx - player.x, ty - player.y);
+      } while (
+        (tx < pen.x + pen.width + 40 && ty < pen.y + pen.height + 40) ||
+        distToPlayer < 200
+      );
 
       targets.push({ x: tx, y: ty, type: type });
     }
@@ -469,12 +482,15 @@
       targets = [];
       for (let i = 0; i < MAX_TARGETS; i++) spawnTarget();
       
-      // Spawn Master Boss for current level
-      let bx, by;
+      let bx, by, distToPlayer;
       do {
         bx = Math.random() * (canvas.width - 80) + 40;
         by = Math.random() * (canvas.height - 80) + 40;
-      } while (bx < pen.x + pen.width + 60 && by < pen.y + pen.height + 60);
+        distToPlayer = Math.hypot(bx - player.x, by - player.y);
+      } while (
+        (bx < pen.x + pen.width + 60 && by < pen.y + pen.height + 60) ||
+        distToPlayer < 250
+      );
 
       targets.push({
         x: bx,
@@ -482,7 +498,6 @@
         type: TARGET_TYPES.BOSS
       });
     }
-    initTargets();
 
     // Controls
     const keys = {};
@@ -582,6 +597,7 @@
       document.getElementById('btn-up-cap').innerText = `Upgrade ($${costCap})`;
 
       initTargets();
+      spawnGraceTime = Date.now() + 3500;
 
       isGameOver = false;
       document.getElementById('gameover-screen').style.display = 'none';
@@ -609,6 +625,7 @@
       pen.trapped = [];
 
       initTargets();
+      spawnGraceTime = Date.now() + 3500;
 
       isGameOver = false;
       document.getElementById('levelup-screen').style.display = 'none';
@@ -618,7 +635,8 @@
     function update() {
       if (!gameStarted || isGameOver) return;
 
-      // 1. Hole Movement
+      const inGracePeriod = Date.now() < spawnGraceTime;
+  // 1. Hole Movement
       let dx = 0, dy = 0;
       if (keys['w'] || keys['arrowup']) dy -= 1;
       if (keys['s'] || keys['arrowdown']) dy += 1;
@@ -647,14 +665,29 @@
 
       player.angle += player.rotorSpeed;
       const currentRadius = player.baseRadius * player.growMultiplier;
-// Dynamic Scoop Scaled Distance
       const bladeDistance = currentRadius + 14;
 
-      // 2. Trapped Escape AI when Gate is OPEN
+      // Check if Player is Standing Guard inside the Base Pen
+      const inPenZone = (player.x > pen.x && player.x < pen.x + pen.width &&
+                         player.y > pen.y && player.y < pen.y + pen.height);
+
+      // 2. Base Unloading
       const gateX = pen.x + pen.width;
       const gateY = pen.y + pen.height / 2;
 
-      if (pen.gateOpen && pen.trapped.length > 0) {
+      if (inPenZone && player.carried.length > 0) {
+        player.carried.forEach(c => {
+          pen.trapped.push({
+            type: c,
+            x: pen.x + 25 + Math.random() * (pen.width - 50),
+            y: pen.y + 25 + Math.random() * (pen.height - 50)
+          });
+        });
+        player.carried = [];
+      }
+
+      // 3. Trapped Escape Logic (ONLY active if Gate is OPEN and Player WALKED AWAY)
+      if (pen.gateOpen && pen.trapped.length > 0 && !inPenZone) {
         for (let i = pen.trapped.length - 1; i >= 0; i--) {
           const trapped = pen.trapped[i];
           const angleToGate = Math.atan2(gateY - trapped.y, gateX - trapped.x);
@@ -663,10 +696,9 @@
           trapped.x += Math.cos(angleToGate) * moveSpeed;
           trapped.y += Math.sin(angleToGate) * moveSpeed;
 
-          // Check if escaped through gate opening
           if (trapped.x >= gateX - 5) {
             targets.push({
-              x: gateX + 20 + Math.random() * 20,
+              x: gateX + 25 + Math.random() * 20,
               y: gateY + (Math.random() - 0.5) * 40,
               type: trapped.type
             });
@@ -675,28 +707,29 @@
         }
       }
 
-      // 3. Field Target AI & Scooping
+      // 4. Field Target AI & Scooping
       for (let i = targets.length - 1; i >= 0; i--) {
         const t = targets[i];
         const distToPlayer = Math.hypot(player.x - t.x, player.y - t.y);
 
-        // Master Boss & Heavy Chase AI
-        if (t.type === TARGET_TYPES.BOSS || t.type === TARGET_TYPES.HEAVY) {
-          if (distToPlayer < t.type.detectDist) {
-            const angle = Math.atan2(player.y - t.y, player.x - t.x);
-            const speedBoost = t.type === TARGET_TYPES.BOSS ? (1 + (currentLevel - 1) * 0.1) : 1;
-            t.x += Math.cos(angle) * t.type.speed * speedBoost;
-            t.y += Math.sin(angle) * t.type.speed * speedBoost;
-          }
-        } else {
-          if (distToPlayer < t.type.detectDist) {
-            const fleeAngle = Math.atan2(t.y - player.y, t.x - player.x);
-            t.x += Math.cos(fleeAngle) * t.type.speed;
-            t.y += Math.sin(fleeAngle) * t.type.speed;
+        if (!inGracePeriod) {
+          if (t.type === TARGET_TYPES.BOSS || t.type === TARGET_TYPES.HEAVY) {
+            if (distToPlayer < t.type.detectDist) {
+              const angle = Math.atan2(player.y - t.y, player.x - t.x);
+              const speedBoost = t.type === TARGET_TYPES.BOSS ? (1 + (currentLevel - 1) * 0.05) : 1;
+              t.x += Math.cos(angle) * t.type.speed * speedBoost;
+              t.y += Math.sin(angle) * t.type.speed * speedBoost;
+            }
+          } else {
+            if (distToPlayer < t.type.detectDist) {
+              const fleeAngle = Math.atan2(t.y - player.y, t.x - player.x);
+              t.x += Math.cos(fleeAngle) * t.type.speed;
+              t.y += Math.sin(fleeAngle) * t.type.speed;
+            }
           }
         }
 
-        // Base Pen Wall Collisions (outside)
+        // Base Pen Wall Collisions
         const margin = t.type.radius + 8;
         if (t.x > pen.x - margin && t.x < pen.x + pen.width + margin &&
             t.y > pen.y - margin && t.y < pen.y + pen.height + margin) {
@@ -730,12 +763,11 @@
 
           if (distToBlade < t.type.radius + 10) {
             if (t.type === TARGET_TYPES.BOSS) {
-              // Boss snaps blade immediately!
               player.blades[b] = false;
               const bounceAngle = Math.atan2(t.y - player.y, t.x - player.x);
               t.x += Math.cos(bounceAngle) * 15;
               t.y += Math.sin(bounceAngle) * 15;
-            } else if (scoopTier >= t.type.tier + (currentLevel - 1)) {
+            } else if (scoopTier >= t.type.tier) {
               if (player.carried.length < player.maxCapacity) {
                 player.carried.push(t.type);
                 targets.splice(i, 1);
@@ -763,27 +795,8 @@
         return;
       }
 
-      // 4. Base Gate Unloading & Boss Luring
-      const inPenZone = (player.x > pen.x && player.x < pen.x + pen.width &&
-                         player.y > pen.y && player.y < pen.y + pen.height);
-
+      // 5. Boss Luring into Open Pen
       if (pen.gateOpen) {
-        // Deposit carried targets
-        if (player.carried.length > 0) {
-          const nearGate = Math.hypot(player.x - gateX, player.y - gateY) < 50;
-          if (inPenZone || nearGate) {
-            player.carried.forEach(c => {
-              pen.trapped.push({
-                type: c,
-                x: pen.x + 20 + Math.random() * (pen.width - 40),
-                y: pen.y + 20 + Math.random() * (pen.height - 40)
-              });
-            });
-            player.carried = [];
-          }
-        }
-
-        // Check if Master Boss followed player into open gate
         for (let i = targets.length - 1; i >= 0; i--) {
           if (targets[i].type === TARGET_TYPES.BOSS) {
             const bt = targets[i];
@@ -799,7 +812,7 @@
         }
       }
 
-      // 5. Locked Digestion (Swallowing captives & Level Win Condition)
+      // 6. Locked Digestion (Swallowing captives & Level Win Condition)
       if (!pen.gateOpen && inPenZone && pen.trapped.length > 0) {
         for (let i = pen.trapped.length - 1; i >= 0; i--) {
           const victim = pen.trapped[i];
@@ -812,7 +825,6 @@
             const digestedType = victim.type;
             pen.trapped.splice(i, 1);
 
-            // Win Condition: Digested Master Boss!
             if (digestedType === TARGET_TYPES.BOSS) {
               triggerLevelUp();
               return;
@@ -824,8 +836,8 @@
         }
       }
 
-      // 6. Chain Damage & Breakout
-      if (!pen.gateOpen && pen.trapped.length > 0) {
+      // 7. Chain Damage & Breakout (When Gate Locked and Player Walked Away)
+      if (!pen.gateOpen && pen.trapped.length > 0 && !inPenZone) {
         let totalPower = 0;
         pen.trapped.forEach(t => {
           totalPower += t.type.power;
@@ -1038,4 +1050,3 @@
   </script>
 </body>
 </html>
-      
