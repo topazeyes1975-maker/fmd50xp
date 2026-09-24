@@ -367,9 +367,6 @@
   </div>
 
   <script>
-    // ==========================================
-    // IMAGE LOADING & SAFE DRAWING UTILITIES
-    // ==========================================
     function loadImage(src) {
       const img = new Image();
       img.src = src;
@@ -385,7 +382,7 @@
       bucketYellow: loadImage('Yellow spinner 1790167375036~4.jpg'),
       bucketBlue: loadImage('Blue spinner 1790167375036~3.jpg'),
       bucketRed: loadImage('Red spinner 1790167375036~2.jpg'),
-      bucketBroken: loadImage('Broken spinner 17901675036~5.jpg'),
+      bucketBroken: loadImage('Broken spinner 1790167375036~5.jpg'),
 
       greenTarget: loadImage('Screenshot_20260918-220827 (1)~2 (1).png'),
       yellowTarget: loadImage('1790167875374.png'),
@@ -475,22 +472,21 @@
 
     function resizeCanvas() {
       const container = document.getElementById('game-container');
-      if (container) {
+      if (container && container.clientWidth > 0 && container.clientHeight > 0) {
         canvas.width = container.clientWidth;
         canvas.height = container.clientHeight;
       }
     }
     window.addEventListener('resize', resizeCanvas);
     window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 200));
-    resizeCanvas();
 
     function startGame() {
       document.getElementById('start-screen').style.display = 'none';
-      gameStarted = true;
       resizeCanvas();
+      gameStarted = true;
       
-      player.x = canvas.width / 2;
-      player.y = canvas.height / 2;
+      player.x = canvas.width > 0 ? canvas.width / 2 : 300;
+      player.y = canvas.height > 0 ? canvas.height / 2 : 300;
       player.targetX = player.x;
       player.targetY = player.y;
 
@@ -512,6 +508,8 @@
     }
 
     function spawnTarget() {
+      if (canvas.width <= 0 || canvas.height <= 0) return;
+      
       const rand = Math.random();
       let type = TARGET_TYPES.SMALL;
       if (rand > 0.65 && rand <= 0.90) type = TARGET_TYPES.MEDIUM;
@@ -519,13 +517,16 @@
 
       let tx, ty, distToPlayer;
       let safeMargin = type.radius + 40;
+      let attempts = 0;
+      
       do {
-        tx = safeMargin + Math.random() * (canvas.width - safeMargin * 2);
-        ty = safeMargin + Math.random() * (canvas.height - safeMargin * 2);
+        tx = safeMargin + Math.random() * Math.max(100, canvas.width - safeMargin * 2);
+        ty = safeMargin + Math.random() * Math.max(100, canvas.height - safeMargin * 2);
         distToPlayer = Math.hypot(tx - player.x, ty - player.y);
+        attempts++;
       } while (
-        (tx < pen.x + pen.width + 60 && ty < pen.y + pen.height + 60) ||
-        distToPlayer < 180
+        ((tx < pen.x + pen.width + 60 && ty < pen.y + pen.height + 60) || distToPlayer < 180) &&
+        attempts < 50
       );
 
       targets.push({ x: tx, y: ty, type: type });
@@ -533,17 +534,22 @@
 
     function initTargets() {
       targets = [];
+      if (canvas.width <= 0 || canvas.height <= 0) resizeCanvas();
+
       for (let i = 0; i < MAX_TARGETS; i++) spawnTarget();
       
       let bx, by, distToPlayer;
       let bossMargin = TARGET_TYPES.BOSS.radius + 50;
+      let attempts = 0;
+
       do {
-        bx = bossMargin + Math.random() * (canvas.width - bossMargin * 2);
-        by = bossMargin + Math.random() * (canvas.height - bossMargin * 2);
+        bx = bossMargin + Math.random() * Math.max(100, canvas.width - bossMargin * 2);
+        by = bossMargin + Math.random() * Math.max(100, canvas.height - bossMargin * 2);
         distToPlayer = Math.hypot(bx - player.x, by - player.y);
+        attempts++;
       } while (
-        (bx < pen.x + pen.width + 80 && by < pen.y + pen.height + 80) ||
-        distToPlayer < 220
+        ((bx < pen.x + pen.width + 80 && by < pen.y + pen.height + 80) || distToPlayer < 220) &&
+        attempts < 50
       );
 
       targets.push({
@@ -623,6 +629,7 @@
       costChain = 60;
       costCap = 40;
 
+      resizeCanvas();
       player.x = canvas.width / 2;
       player.y = canvas.height / 2;
       player.targetX = player.x;
@@ -666,6 +673,7 @@
       currentLevel++;
       document.getElementById('ui-level').innerText = currentLevel;
 
+      resizeCanvas();
       player.x = canvas.width / 2;
       player.y = canvas.height / 2;
       player.targetX = player.x;
@@ -685,6 +693,7 @@
 
     function update() {
       if (!gameStarted || isGameOver) return;
+      if (canvas.width <= 0 || canvas.height <= 0) return;
 
       const inGracePeriod = Date.now() < spawnGraceTime;
 
@@ -724,7 +733,6 @@
       const gateX = pen.x + pen.width;
       const gateY = pen.y + pen.height / 2;
 
-      // FIXED REQUIREMENT: UNLOAD ONLY WHEN PEN IS OPEN!
       if (inPenZone && pen.gateOpen && player.carried.length > 0) {
         player.carried.forEach(c => {
           pen.trapped.push({
@@ -947,6 +955,7 @@
     }
 
     function draw() {
+      if (canvas.width <= 0 || canvas.height <= 0) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       ctx.fillStyle = 'rgba(20, 28, 20, 0.85)';
@@ -1137,12 +1146,10 @@
       const bindBtn = (id, fn) => {
         const el = document.getElementById(id);
         if (el) {
-          const handler = (e) => {
-            if (e) e.preventDefault();
+          el.onclick = (e) => {
+            e.preventDefault();
             fn();
           };
-          el.onclick = handler;
-          el.addEventListener('touchstart', handler, { passive: false });
         }
       };
 
@@ -1151,11 +1158,10 @@
       bindBtn('btn-next', nextLevel);
     }
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', attachButtonListeners);
-    } else {
+    window.addEventListener('DOMContentLoaded', () => {
+      resizeCanvas();
       attachButtonListeners();
-    }
+    });
 
     function loop() {
       update();
