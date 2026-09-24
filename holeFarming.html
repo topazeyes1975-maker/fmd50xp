@@ -37,6 +37,8 @@
       justify-content: center;
       padding: 15px;
       text-align: center;
+      touch-action: auto !important;
+      pointer-events: auto !important;
     }
     .modal-card {
       background: #1e2630;
@@ -51,6 +53,7 @@
       gap: 12px;
       max-height: 85dvh;
       overflow-y: auto;
+      touch-action: pan-y !important;
     }
     .modal-card h1 {
       color: #ffcc00;
@@ -107,6 +110,8 @@
       cursor: pointer;
       text-transform: uppercase;
       letter-spacing: 1px;
+      touch-action: manipulation !important;
+      pointer-events: auto !important;
     }
     .btn-restart { background: #ff4444; color: white; }
     .btn-next { background: #a044ff; color: white; }
@@ -182,6 +187,7 @@
       align-items: center;
       justify-content: center;
       text-align: center;
+      touch-action: manipulation;
     }
     #btn-mobile-gate.open { background: #28a745; }
 
@@ -265,7 +271,7 @@
         <p><b>2. Upgrade Buckets:</b> Higher target tiers destroy your buckets until you upgrade your power level!</p>
         <p><b>3. Master Boss Rule:</b> The Purple Boss ALWAYS breaks buckets. Lure him into the base pen, lock gate, and eat him to WIN!</p>
       </div>
-      <button class="btn-action" onclick="startGame()">Start Game</button>
+      <button id="btn-start" class="btn-action">Start Game</button>
     </div>
   </div>
 
@@ -278,7 +284,7 @@
         <p style="font-size: 13px;">Level Reached: <b id="go-level" style="color:#a044ff;">1</b></p>
         <p style="font-size: 13px;">Final Coins: <b id="go-coins" style="color:#ffcc00;">0</b></p>
       </div>
-      <button class="btn-action btn-restart" onclick="resetGame()">Try Again</button>
+      <button id="btn-restart" class="btn-action btn-restart">Try Again</button>
     </div>
   </div>
 
@@ -291,7 +297,7 @@
         <p style="font-size: 13px;">Next Level: <b id="lu-next-level" style="color:#a044ff;">2</b></p>
         <p style="font-size: 13px;">Coins Kept: <b id="lu-coins" style="color:#ffcc00;">0</b></p>
       </div>
-      <button class="btn-action btn-next" onclick="nextLevel()">Next Level</button>
+      <button id="btn-next" class="btn-action btn-next">Next Level</button>
     </div>
   </div>
 
@@ -377,7 +383,6 @@
       purpleTarget: new Image()
     };
 
-    // Corrected valid SVG fallback data URIs so graphics display immediately
     IMAGES.player.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"><circle cx="30" cy="30" r="28" fill="%23111" stroke="%23ffcc00" stroke-width="4"/></svg>';
     IMAGES.mouthOpen.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><circle cx="40" cy="40" r="36" fill="%23cc0000"/><polygon points="40,10 25,70 55,70" fill="%23000"/><polygon points="30,15 40,35 50,15" fill="%23fff"/></svg>';
     IMAGES.mouthClosed.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><circle cx="40" cy="40" r="36" fill="%23990000"/><line x1="15" y1="40" x2="65" y2="40" stroke="%23000" stroke-width="6"/></svg>';
@@ -1075,6 +1080,25 @@
         updateUI();
       }
     }
+
+    // Bind touch/click handlers to overlay buttons
+    document.addEventListener('DOMContentLoaded', () => {
+      const bindBtn = (id, fn) => {
+        const el = document.getElementById(id);
+        if (el) {
+          const handler = (e) => {
+            e.preventDefault();
+            fn();
+          };
+          el.addEventListener('click', handler);
+          el.addEventListener('touchstart', handler, { passive: false });
+        }
+      };
+
+      bindBtn('btn-start', startGame);
+      bindBtn('btn-restart', resetGame);
+      bindBtn('btn-next', nextLevel);
+    });
 
     function loop() {
       update();
