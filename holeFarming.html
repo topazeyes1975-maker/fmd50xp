@@ -22,7 +22,7 @@
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     }
 
-    /* Start, Game Over & Level Up Screen Overlays */
+    /* Overlays */
     .overlay-screen {
       position: fixed;
       top: 0;
@@ -104,19 +104,20 @@
       color: #111;
       border: none;
       border-radius: 8px;
-      padding: 12px 20px;
-      font-size: 16px;
+      padding: 14px 24px;
+      font-size: 18px;
       font-weight: bold;
       cursor: pointer;
       text-transform: uppercase;
       letter-spacing: 1px;
       touch-action: manipulation !important;
       pointer-events: auto !important;
+      margin-top: 10px;
     }
     .btn-restart { background: #ff4444; color: white; }
     .btn-next { background: #a044ff; color: white; }
 
-    /* Main Layout */
+    /* Layout */
     #main-layout {
       display: flex;
       flex-direction: column;
@@ -129,7 +130,8 @@
       position: relative;
       flex: 1;
       width: 100%;
-      background-color: #2b3a26;
+      background-color: #1a1a24;
+      background-image: url('1790174233379.jpg');
       background-size: cover;
       background-position: center;
       overflow: hidden;
@@ -139,10 +141,10 @@
       display: block;
       width: 100%;
       height: 100%;
-      background-color: rgba(43, 58, 38, 0.85);
+      background: transparent;
     }
 
-    /* HUD UI Overlay */
+    /* HUD UI */
     #ui-layer {
       position: absolute;
       top: 8px;
@@ -167,7 +169,7 @@
       font-size: 12px;
     }
 
-    /* Mobile Gate Control Button */
+    /* Gate Control Button */
     #btn-mobile-gate {
       position: absolute;
       bottom: 12px;
@@ -191,7 +193,7 @@
     }
     #btn-mobile-gate.open { background: #28a745; }
 
-    /* Horizontal Scrollable Shop Container */
+    /* Shop Panel */
     #shop-panel {
       width: 100%;
       height: 150px;
@@ -330,7 +332,7 @@
       <button id="btn-mobile-gate" class="open" onclick="toggleGate()">GATE<br>OPEN</button>
     </div>
 
-    <!-- HORIZONTAL SCROLLABLE SHOP PANEL -->
+    <!-- SHOP PANEL -->
     <div id="shop-panel">
       <div class="shop-item">
         <h4>Repair Buckets</h4>
@@ -366,35 +368,45 @@
 
   <script>
     // ==========================================
-    // IMAGE ASSET MANAGER
+    // IMAGE LOADING & SAFE DRAWING UTILITIES
     // ==========================================
+    function loadImage(src) {
+      const img = new Image();
+      img.src = src;
+      return img;
+    }
+
     const IMAGES = {
-      player: new Image(),
-      mouthOpen: new Image(),
-      mouthClosed: new Image(),
-      spinnerCenter: new Image(),
-      bucketYellow: new Image(),
-      bucketBlue: new Image(),
-      bucketRed: new Image(),
-      bucketBroken: new Image(),
-      greenTarget: new Image(),
-      yellowTarget: new Image(),
-      redTarget: new Image(),
-      purpleTarget: new Image()
+      // Center Player & Mouth Animations
+      player: loadImage('spinner 1790167375036 (1).png'),
+      mouthOpen: loadImage('1790168649784.png'),
+      mouthClosed: loadImage('1790168610235.png'),
+
+      // Rotor Blades & Buckets
+      spinnerCenter: loadImage('spinner 1790167375036 (1).png'),
+      bucketYellow: loadImage('Yellow spinner 1790167375036~4.jpg'),
+      bucketBlue: loadImage('Blue spinner 1790167375036~3.jpg'),
+      bucketRed: loadImage('Red spinner 1790167375036~2.jpg'),
+      bucketBroken: loadImage('Broken spinner 17901675036~5.jpg'),
+
+      // Monster Targets
+      greenTarget: loadImage('Screenshot_20260918-220827 (1)~2 (1).png'),
+      yellowTarget: loadImage('1790167875374.png'),
+      redTarget: loadImage('1790167868287.png'),
+      purpleTarget: loadImage('1790167868287.png')
     };
 
-    IMAGES.player.src = 'data:image/svg+xml;utf8,<svg xmlns="1790167888922.png" width="60" height="60"><circle cx="30" cy="30" r="28" fill="%23111" stroke="%23ffcc00" stroke-width="4"/></svg>';
-    IMAGES.mouthOpen.src = 'data:image/svg+xml;utf8,<svg xmlns="1790168649784.png" width="80" height="80"><circle cx="40" cy="40" r="36" fill="%23cc0000"/><polygon points="40,10 25,70 55,70" fill="%23000"/><polygon points="30,15 40,35 50,15" fill="%23fff"/></svg>';
-    IMAGES.mouthClosed.src = 'data:image/svg+xml;utf8,<svg xmlns="1790168610235.png" width="80" height="80"><circle cx="40" cy="40" r="36" fill="%23990000"/><line x1="15" y1="40" x2="65" y2="40" stroke="%23000" stroke-width="6"/></svg>';
-    IMAGES.spinnerCenter.src = 'data:image/svg+xml;utf8,<svg xmlns="1790167375036 (1).png" width="30" height="30"><circle cx="15" cy="15" r="12" fill="%23ff0055" stroke="%23fff" stroke-width="2"/></svg>';
-    IMAGES.bucketYellow.src = 'data:image/svg+xml;utf8,<svg xmlns="1790167375036~4.jpg" width="24" height="24"><rect x="2" y="2" width="20" height="20" rx="4" fill="%23ffeb3b" stroke="%23fff" stroke-width="2"/></svg>';
-    IMAGES.bucketBlue.src = 'data:image/svg+xml;utf8,<svg xmlns="1790167375036~3.jpg" width="24" height="24"><rect x="2" y="2" width="20" height="20" rx="4" fill="%232196f3" stroke="%23fff" stroke-width="2"/></svg>';
-    IMAGES.bucketRed.src = 'data:image/svg+xml;utf8,<svg xmlns="1790167375036~2.jpg" width="24" height="24"><rect x="2" y="2" width="20" height="20" rx="4" fill="%23f44336" stroke="%23fff" stroke-width="2"/></svg>';
-    IMAGES.bucketBroken.src = 'data:image/svg+xml;utf8,<svg xmlns="1790167375036~5.jpg" width="24" height="24"><rect x="2" y="2" width="20" height="20" rx="4" fill="%23555555" stroke="%23888" stroke-width="2"/><line x1="4" y1="4" x2="20" y2="20" stroke="%23ff0000" stroke-width="3"/></svg>';
-    IMAGES.greenTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="Screenshot_20260918-220827.png" width="20" height="20"><circle cx="10" cy="10" r="8" fill="%234caf50"/></svg>';
-    IMAGES.yellowTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="1790167875374.png" width="26" height="26"><circle cx="13" cy="13" r="11" fill="%23ffeb3b"/></svg>';
-    IMAGES.redTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="1790167868287.png" width="38" height="38"><circle cx="19" cy="19" r="16" fill="%23f44336"/></svg>';
-    IMAGES.purpleTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="1790168069637.png" width="52" height="52"><circle cx="26" cy="26" r="22" fill="%23a044ff" stroke="%23fff" stroke-width="3"/></svg>';
+    function safeDrawImage(ctx, img, x, y, width, height) {
+      if (img && img.complete && img.naturalWidth !== 0) {
+        try {
+          ctx.drawImage(img, x, y, width, height);
+          return true;
+        } catch (e) {
+          return false;
+        }
+      }
+      return false;
+    }
 
     let gameStarted = false;
     let isGameOver = false;
@@ -425,7 +437,7 @@
       y: 300,
       targetX: 300,
       targetY: 300,
-      baseRadius: 24,
+      baseRadius: 28,
       growMultiplier: 1.0,
       speed: 6.0,
       carried: [],
@@ -452,10 +464,10 @@
     };
 
     const TARGET_TYPES = {
-      SMALL: { name: 'Small', radius: 8, tier: 1, color: '#4caf50', val: 10, power: 1, speed: 1.8, detectDist: 100, imgKey: 'greenTarget' },
-      MEDIUM: { name: 'Medium', radius: 13, tier: 2, color: '#ffeb3b', val: 25, power: 3, speed: 1.4, detectDist: 120, imgKey: 'yellowTarget' },
-      HEAVY: { name: 'Heavy', radius: 19, tier: 3, color: '#f44336', val: 60, power: 8, speed: 1.1, detectDist: 140, imgKey: 'redTarget' },
-      BOSS: { name: 'Master Boss', radius: 26, tier: 99, color: '#a044ff', val: 500, power: 25, speed: 1.4, detectDist: 220, imgKey: 'purpleTarget' }
+      SMALL: { name: 'Small', radius: 14, tier: 1, color: '#4caf50', val: 10, power: 1, speed: 1.8, detectDist: 100, imgKey: 'greenTarget' },
+      MEDIUM: { name: 'Medium', radius: 18, tier: 2, color: '#ffeb3b', val: 25, power: 3, speed: 1.4, detectDist: 120, imgKey: 'yellowTarget' },
+      HEAVY: { name: 'Heavy', radius: 24, tier: 3, color: '#f44336', val: 60, power: 8, speed: 1.1, detectDist: 140, imgKey: 'redTarget' },
+      BOSS: { name: 'Master Boss', radius: 30, tier: 99, color: '#a044ff', val: 500, power: 25, speed: 1.4, detectDist: 220, imgKey: 'purpleTarget' }
     };
 
     let targets = [];
@@ -466,8 +478,10 @@
 
     function resizeCanvas() {
       const container = document.getElementById('game-container');
-      canvas.width = container.clientWidth;
-      canvas.height = container.clientHeight;
+      if (container) {
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+      }
     }
     window.addEventListener('resize', resizeCanvas);
     window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 200));
@@ -703,7 +717,7 @@
 
       player.angle += player.rotorSpeed;
       const currentRadius = player.baseRadius * player.growMultiplier;
-      const bladeDistance = currentRadius + 14;
+      const bladeDistance = currentRadius + 16;
 
       const inPenZone = (player.x > pen.x && player.x < pen.x + pen.width &&
                          player.y > pen.y && player.y < pen.y + pen.height);
@@ -793,7 +807,7 @@
 
           const distToBlade = Math.hypot(t.x - bladeX, t.y - bladeY);
 
-          if (distToBlade < t.type.radius + 10) {
+          if (distToBlade < t.type.radius + 12) {
             if (t.type === TARGET_TYPES.BOSS) {
               player.blades[b] = false;
               const bounceAngle = Math.atan2(t.y - player.y, t.x - player.x);
@@ -909,10 +923,23 @@
       updateUI();
     }
 
+    function drawTarget(t) {
+      const drawn = safeDrawImage(ctx, IMAGES[t.type.imgKey], t.x - t.type.radius, t.y - t.type.radius, t.type.radius * 2, t.type.radius * 2);
+      if (!drawn) {
+        ctx.fillStyle = t.type.color;
+        ctx.beginPath();
+        ctx.arc(t.x, t.y, t.type.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      ctx.fillStyle = '#1c2419';
+      ctx.fillStyle = 'rgba(20, 28, 20, 0.75)';
       ctx.fillRect(pen.x, pen.y, pen.width, pen.height);
 
       ctx.strokeStyle = '#8b9bb4';
@@ -939,36 +966,42 @@
         ctx.stroke();
       }
 
-      pen.trapped.forEach(t => {
-        const img = IMAGES[t.type.imgKey];
-        const size = t.type.radius * 2;
-        ctx.drawImage(img, t.x - t.type.radius, t.y - t.type.radius, size, size);
-      });
-
-      targets.forEach(t => {
-        const img = IMAGES[t.type.imgKey];
-        const size = t.type.radius * 2;
-        ctx.drawImage(img, t.x - t.type.radius, t.y - t.type.radius, size, size);
-      });
+      pen.trapped.forEach(t => drawTarget(t));
+      targets.forEach(t => drawTarget(t));
 
       const r = player.baseRadius * player.growMultiplier;
 
-      ctx.drawImage(IMAGES.player, player.x - r, player.y - r, r * 2, r * 2);
+      const playerDrawn = safeDrawImage(ctx, IMAGES.player, player.x - r, player.y - r, r * 2, r * 2);
+      if (!playerDrawn) {
+        ctx.fillStyle = '#111111';
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#ffcc00';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+      }
 
       if (isEating) {
         const mouthImg = eatingFrameToggle ? IMAGES.mouthOpen : IMAGES.mouthClosed;
         const mouthSize = r * 2.4;
-        ctx.drawImage(mouthImg, player.x - mouthSize / 2, player.y - mouthSize / 2, mouthSize, mouthSize);
+        safeDrawImage(ctx, mouthImg, player.x - mouthSize / 2, player.y - mouthSize / 2, mouthSize, mouthSize);
       }
 
-      const spinnerSize = 30;
+      const spinnerSize = 32;
       ctx.save();
       ctx.translate(player.x, player.y);
       ctx.rotate(player.angle);
-      ctx.drawImage(IMAGES.spinnerCenter, -spinnerSize / 2, -spinnerSize / 2, spinnerSize, spinnerSize);
+      const spinnerDrawn = safeDrawImage(ctx, IMAGES.spinnerCenter, -spinnerSize / 2, -spinnerSize / 2, spinnerSize, spinnerSize);
+      if (!spinnerDrawn) {
+        ctx.fillStyle = '#ff0055';
+        ctx.beginPath();
+        ctx.arc(0, 0, 12, 0, Math.PI * 2);
+        ctx.fill();
+      }
       ctx.restore();
 
-      const bladeDistance = r + 14;
+      const bladeDistance = r + 16;
       const step = (Math.PI * 2) / player.blades.length;
 
       for (let i = 0; i < player.blades.length; i++) {
@@ -992,9 +1025,17 @@
           if (scoopTier === 2) currentScooper = IMAGES.bucketBlue;
           else if (scoopTier >= 3) currentScooper = IMAGES.bucketRed;
 
-          ctx.drawImage(currentScooper, -12, -12, 24, 24);
+          const bDrawn = safeDrawImage(ctx, currentScooper, -14, -14, 28, 28);
+          if (!bDrawn) {
+            ctx.fillStyle = scoopTier === 1 ? '#ffeb3b' : (scoopTier === 2 ? '#2196f3' : '#f44336');
+            ctx.fillRect(-14, -14, 28, 28);
+          }
         } else {
-          ctx.drawImage(IMAGES.bucketBroken, -12, -12, 24, 24);
+          const bDrawn = safeDrawImage(ctx, IMAGES.bucketBroken, -14, -14, 28, 28);
+          if (!bDrawn) {
+            ctx.fillStyle = '#555555';
+            ctx.fillRect(-14, -14, 28, 28);
+          }
         }
         
         ctx.restore();
@@ -1081,16 +1122,15 @@
       }
     }
 
-    // Bind touch/click handlers to overlay buttons
-    document.addEventListener('DOMContentLoaded', () => {
+    function attachButtonListeners() {
       const bindBtn = (id, fn) => {
         const el = document.getElementById(id);
         if (el) {
           const handler = (e) => {
-            e.preventDefault();
+            if (e) e.preventDefault();
             fn();
           };
-          el.addEventListener('click', handler);
+          el.onclick = handler;
           el.addEventListener('touchstart', handler, { passive: false });
         }
       };
@@ -1098,7 +1138,13 @@
       bindBtn('btn-start', startGame);
       bindBtn('btn-restart', resetGame);
       bindBtn('btn-next', nextLevel);
-    });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', attachButtonListeners);
+    } else {
+      attachButtonListeners();
+    }
 
     function loop() {
       update();
