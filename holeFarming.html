@@ -196,8 +196,8 @@
     /* Shop Panel */
     #shop-panel {
       width: 100%;
-      height: 150px;
-      min-height: 150px;
+      height: 130px;
+      min-height: 130px;
       background: #14181c;
       border-top: 2px solid #2a3540;
       display: flex;
@@ -211,26 +211,26 @@
       touch-action: pan-x !important;
     }
     .shop-item {
-      flex: 0 0 140px;
-      width: 140px;
+      flex: 0 0 130px;
+      width: 130px;
       height: 100%;
       background: #202730;
       border: 1px solid #3b4856;
       border-radius: 6px;
-      padding: 8px;
+      padding: 6px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
-    .shop-item h4 { color: #76c7c0; font-size: 12px; }
-    .shop-item p { font-size: 10px; color: #aaa; line-height: 1.2; }
+    .shop-item h4 { color: #76c7c0; font-size: 11px; }
+    .shop-item p { font-size: 9px; color: #aaa; line-height: 1.2; }
     .btn {
       background: #28a745;
       color: white;
       border: none;
       border-radius: 4px;
-      padding: 8px 8px;
-      font-size: 11px;
+      padding: 6px 6px;
+      font-size: 10px;
       font-weight: bold;
       cursor: pointer;
       touch-action: manipulation;
@@ -261,7 +261,7 @@
     <div class="modal-card">
       <h1>HOLE & HOLD: SCRAMBLER</h1>
       <div class="rules-list">
-        <p><b>1. Scoop Targets:</b> Drag your scrambler around to scoop targets into inventory.</p>
+        <p><b>1. Scoop Targets:</b> Touch and drag anywhere to move your scrambler into targets.</p>
         
         <div class="target-legend">
           <div class="legend-item"><span class="dot" style="background:#4caf50;"></span> Tier 1 (Green)</div>
@@ -373,31 +373,16 @@
       return img;
     }
 
-    /* Exact assets mapping in precise order requested */
     const IMAGES = {
-      // 1. Purple Monster / Master Boss
       purpleTarget: loadImage('1790168069637.png'),
-
-      // 2. Spinner (Player Center Hub)
       spinnerCenter: loadImage('1790167375036 (1).png'),
-
-      // 3. Broken Bucket
       bucketBroken: loadImage('1790167375036~5.jpg'),
-
-      // 4. Yellow Bucket
       bucketYellow: loadImage('1790167375036~4.jpg'),
-
-      // 5. Blue Bucket
       bucketBlue: loadImage('1790167375036~3.jpg'),
-
-      // 6. Red Bucket
       bucketRed: loadImage('1790167375036~2.jpg'),
-
-      // Other entities
       player: loadImage('1790167375036 (1).png'),
       mouthOpen: loadImage('1790168649784.png'),
       mouthClosed: loadImage('1790168610235.png'),
-
       greenTarget: loadImage('Screenshot_20260918-220827 (1)~2 (1).png'),
       yellowTarget: loadImage('1790167875374.png'),
       redTarget: loadImage('1790167868287.png')
@@ -422,7 +407,6 @@
     let currentLevel = 1;
     let gameTimeSeconds = 0;
     let timerInterval = null;
-    let spawnGraceTime = 0;
 
     let isEating = false;
     let eatingFrameToggle = false;
@@ -439,14 +423,15 @@
     let costChain = 60;
     let costCap = 40;
 
+    // Reduced base radius & boosted speed for smaller cell phone screens
     const player = {
       x: 300,
       y: 300,
       targetX: 300,
       targetY: 300,
-      baseRadius: 45,
+      baseRadius: 28,
       growMultiplier: 1.0,
-      speed: 6.0,
+      speed: 7.0,
       carried: [],
       maxCapacity: 5,
       angle: 0,
@@ -460,25 +445,26 @@
     initBlades();
 
     const pen = {
-      x: 20,
-      y: 20,
-      width: 150,
-      height: 150,
+      x: 15,
+      y: 15,
+      width: 120,
+      height: 120,
       gateOpen: true,
       chainHp: 100,
       maxChainHp: 100,
       trapped: []
     };
 
+    // Scaled radii down for mobile displays
     const TARGET_TYPES = {
-      SMALL: { name: 'Small', radius: 28, tier: 1, color: '#4caf50', val: 10, power: 1, speed: 1.8, detectDist: 120, imgKey: 'greenTarget' },
-      MEDIUM: { name: 'Medium', radius: 36, tier: 2, color: '#ffeb3b', val: 25, power: 3, speed: 1.4, detectDist: 140, imgKey: 'yellowTarget' },
-      HEAVY: { name: 'Heavy', radius: 44, tier: 3, color: '#f44336', val: 60, power: 8, speed: 1.1, detectDist: 160, imgKey: 'redTarget' },
-      BOSS: { name: 'Master Boss', radius: 56, tier: 99, color: '#a044ff', val: 500, power: 25, speed: 1.4, detectDist: 250, imgKey: 'purpleTarget' }
+      SMALL: { name: 'Small', radius: 18, tier: 1, color: '#4caf50', val: 10, power: 1, speed: 1.8, imgKey: 'greenTarget' },
+      MEDIUM: { name: 'Medium', radius: 24, tier: 2, color: '#ffeb3b', val: 25, power: 3, speed: 1.4, imgKey: 'yellowTarget' },
+      HEAVY: { name: 'Heavy', radius: 30, tier: 3, color: '#f44336', val: 60, power: 8, speed: 1.1, imgKey: 'redTarget' },
+      BOSS: { name: 'Master Boss', radius: 38, tier: 99, color: '#a044ff', val: 500, power: 25, speed: 1.4, imgKey: 'purpleTarget' }
     };
 
     let targets = [];
-    const MAX_TARGETS = 16;
+    const MAX_TARGETS = 14;
 
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -504,7 +490,6 @@
       player.targetY = player.y;
 
       initTargets();
-      spawnGraceTime = Date.now() + 3500;
       startTimer();
     }
 
@@ -529,7 +514,7 @@
       else if (rand > 0.90) type = TARGET_TYPES.HEAVY;
 
       let tx, ty, distToPlayer;
-      let safeMargin = type.radius + 40;
+      let safeMargin = type.radius + 20;
       let attempts = 0;
       
       do {
@@ -538,11 +523,18 @@
         distToPlayer = Math.hypot(tx - player.x, ty - player.y);
         attempts++;
       } while (
-        ((tx < pen.x + pen.width + 60 && ty < pen.y + pen.height + 60) || distToPlayer < 180) &&
-        attempts < 50
+        // Keep targets completely out of the pen region
+        (tx < pen.x + pen.width + 100 && ty < pen.y + pen.height + 100) ||
+        (distToPlayer < 140 && attempts < 80)
       );
 
-      targets.push({ x: tx, y: ty, type: type });
+      targets.push({
+        x: tx,
+        y: ty,
+        type: type,
+        vx: (Math.random() - 0.5) * type.speed,
+        vy: (Math.random() - 0.5) * type.speed
+      });
     }
 
     function initTargets() {
@@ -552,7 +544,7 @@
       for (let i = 0; i < MAX_TARGETS; i++) spawnTarget();
       
       let bx, by, distToPlayer;
-      let bossMargin = TARGET_TYPES.BOSS.radius + 50;
+      let bossMargin = TARGET_TYPES.BOSS.radius + 30;
       let attempts = 0;
 
       do {
@@ -561,14 +553,17 @@
         distToPlayer = Math.hypot(bx - player.x, by - player.y);
         attempts++;
       } while (
-        ((bx < pen.x + pen.width + 80 && by < pen.y + pen.height + 80) || distToPlayer < 220) &&
-        attempts < 50
+        // Ensure Master Boss never spawns inside or right next to the box
+        (bx < pen.x + pen.width + 140 && by < pen.y + pen.height + 140) ||
+        (distToPlayer < 180 && attempts < 100)
       );
 
       targets.push({
         x: bx,
         y: by,
-        type: TARGET_TYPES.BOSS
+        type: TARGET_TYPES.BOSS,
+        vx: (Math.random() - 0.5) * TARGET_TYPES.BOSS.speed,
+        vy: (Math.random() - 0.5) * TARGET_TYPES.BOSS.speed
       });
     }
 
@@ -585,7 +580,8 @@
       player.targetY = clientY - rect.top;
     }
 
-    canvas.addEventListener('mousedown', e => {
+    // Touch controls bound to window so touch dragging works smoothly anywhere on screen
+    window.addEventListener('mousedown', e => {
       if (!gameStarted || isGameOver) return;
       isPointerDragging = true;
       handlePointerMove(e.clientX, e.clientY);
@@ -595,13 +591,13 @@
     });
     window.addEventListener('mouseup', () => { isPointerDragging = false; });
 
-    canvas.addEventListener('touchstart', e => {
+    window.addEventListener('touchstart', e => {
       if (!gameStarted || isGameOver) return;
       isPointerDragging = true;
       if (e.touches.length > 0) handlePointerMove(e.touches[0].clientX, e.touches[0].clientY);
     }, { passive: true });
 
-    canvas.addEventListener('touchmove', e => {
+    window.addEventListener('touchmove', e => {
       if (isPointerDragging && gameStarted && !isGameOver && e.touches.length > 0) {
         handlePointerMove(e.touches[0].clientX, e.touches[0].clientY);
       }
@@ -644,7 +640,6 @@
       pen.chainHp = pen.maxChainHp;
 
       initTargets();
-      spawnGraceTime = Date.now() + 3500;
       updateUI();
     }
 
@@ -691,7 +686,6 @@
       document.getElementById('btn-up-cap').innerText = `Upgrade ($${costCap})`;
 
       initTargets();
-      spawnGraceTime = Date.now() + 3500;
       updateUI();
     }
 
@@ -811,6 +805,31 @@
 
       player.angle += player.rotorSpeed;
 
+      // Creature Ambient Movement Logic (makes targets wander smoothly around the screen)
+      for (let tgt of targets) {
+        if (!tgt.vx) {
+          tgt.vx = (Math.random() - 0.5) * tgt.type.speed;
+          tgt.vy = (Math.random() - 0.5) * tgt.type.speed;
+        }
+        
+        if (Math.random() < 0.02) {
+          tgt.vx = (Math.random() - 0.5) * tgt.type.speed;
+          tgt.vy = (Math.random() - 0.5) * tgt.type.speed;
+        }
+
+        tgt.x += tgt.vx;
+        tgt.y += tgt.vy;
+
+        // Keep creatures outside of the base pen boundary while wandering
+        if (tgt.x < pen.x + pen.width + tgt.type.radius && tgt.y < pen.y + pen.height + tgt.type.radius) {
+          tgt.vx = Math.abs(tgt.vx);
+          tgt.vy = Math.abs(tgt.vy);
+        }
+
+        if (tgt.x < tgt.type.radius || tgt.x > canvas.width - tgt.type.radius) tgt.vx *= -1;
+        if (tgt.y < tgt.type.radius || tgt.y > canvas.height - tgt.type.radius) tgt.vy *= -1;
+      }
+
       // Check Player inside Base Pen
       const insidePen = (
         player.x >= pen.x && player.x <= pen.x + pen.width &&
@@ -822,8 +841,8 @@
         for (let item of player.carried) {
           pen.trapped.push({
             type: item,
-            x: pen.x + 30 + Math.random() * (pen.width - 60),
-            y: pen.y + 30 + Math.random() * (pen.height - 60),
+            x: pen.x + 20 + Math.random() * (pen.width - 40),
+            y: pen.y + 20 + Math.random() * (pen.height - 40),
             vx: (Math.random() - 0.5) * 2,
             vy: (Math.random() - 0.5) * 2
           });
@@ -880,7 +899,7 @@
         if (dist < curRadius + tgt.type.radius && player.carried.length < player.maxCapacity) {
           if (scoopTier >= tgt.type.tier) {
             player.carried.push(tgt.type);
-            player.growMultiplier += 0.06;
+            player.growMultiplier += 0.05;
             targets.splice(i, 1);
             if (tgt.type.tier !== 99) spawnTarget();
           } else {
@@ -888,12 +907,10 @@
               const breakIndex = activeBlades[Math.floor(Math.random() * activeBlades.length)];
               player.blades[breakIndex] = false;
               
-              // Push off collision
               const angle = Math.atan2(tgt.y - player.y, tgt.x - player.x);
-              tgt.x += Math.cos(angle) * 40;
-              tgt.y += Math.sin(angle) * 40;
+              tgt.x += Math.cos(angle) * 35;
+              tgt.y += Math.sin(angle) * 35;
 
-              // Game Over Condition Check
               if (player.blades.every(b => b === false) && coins < 25) {
                 triggerGameOver();
               }
@@ -911,12 +928,11 @@
       ctx.fillRect(pen.x, pen.y, pen.width, pen.height);
 
       ctx.strokeStyle = pen.gateOpen ? '#28a745' : '#dc3545';
-      ctx.lineWidth = 4;
+      ctx.lineWidth = 3;
       ctx.strokeRect(pen.x, pen.y, pen.width, pen.height);
 
-      // Gate Indicator
       ctx.fillStyle = pen.gateOpen ? '#28a745' : '#dc3545';
-      ctx.fillRect(pen.x + pen.width - 10, pen.y + pen.height / 2 - 25, 10, 50);
+      ctx.fillRect(pen.x + pen.width - 8, pen.y + pen.height / 2 - 20, 8, 40);
 
       ctx.restore();
     }
@@ -940,7 +956,6 @@
         ctx.restore();
       }
 
-      // Draw Trapped Prey inside Base Pen
       for (let t of pen.trapped) {
         ctx.save();
         ctx.translate(t.x, t.y);
@@ -963,12 +978,11 @@
 
       const curRadius = player.baseRadius * player.growMultiplier;
 
-      // Draw Rotating Buckets
       const angleStep = (Math.PI * 2) / scoopCount;
       for (let i = 0; i < scoopCount; i++) {
         const bAngle = player.angle + i * angleStep;
-        const bx = Math.cos(bAngle) * (curRadius + 22);
-        const by = Math.sin(bAngle) * (curRadius + 22);
+        const bx = Math.cos(bAngle) * (curRadius + 14);
+        const by = Math.sin(bAngle) * (curRadius + 14);
 
         ctx.save();
         ctx.translate(bx, by);
@@ -980,9 +994,9 @@
           else bucketImg = IMAGES.bucketRed;
         }
 
-        if (!safeDrawImage(ctx, bucketImg, -18, -18, 36, 36)) {
+        if (!safeDrawImage(ctx, bucketImg, -12, -12, 24, 24)) {
           ctx.beginPath();
-          ctx.arc(0, 0, 15, 0, Math.PI * 2);
+          ctx.arc(0, 0, 10, 0, Math.PI * 2);
           ctx.fillStyle = player.blades[i] ? '#ffcc00' : '#555555';
           ctx.fill();
         }
@@ -990,7 +1004,6 @@
         ctx.restore();
       }
 
-      // Draw Center Hub / Mouth
       let centerImg = IMAGES.spinnerCenter;
       if (isEating) {
         centerImg = eatingFrameToggle ? IMAGES.mouthOpen : IMAGES.mouthClosed;
