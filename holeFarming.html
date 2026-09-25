@@ -261,7 +261,7 @@
     <div class="modal-card">
       <h1>HOLE & HOLD: SCRAMBLER</h1>
       <div class="rules-list">
-        <p><b>1. Scoop Targets:</b> Drag your scrambler around to scoop green targets into inventory.</p>
+        <p><b>1. Scoop Targets:</b> Drag your scrambler around to scoop targets into inventory.</p>
         
         <div class="target-legend">
           <div class="legend-item"><span class="dot" style="background:#4caf50;"></span> Tier 1 (Green)</div>
@@ -373,21 +373,34 @@
       return img;
     }
 
+    /* Exact assets mapping in precise order requested */
     const IMAGES = {
+      // 1. Purple Monster / Master Boss
+      purpleTarget: loadImage('1790168069637.png'),
+
+      // 2. Spinner (Player Center Hub)
+      spinnerCenter: loadImage('1790167375036 (1).png'),
+
+      // 3. Broken Bucket
+      bucketBroken: loadImage('1790167375036~5.jpg'),
+
+      // 4. Yellow Bucket
+      bucketYellow: loadImage('1790167375036~4.jpg'),
+
+      // 5. Blue Bucket
+      bucketBlue: loadImage('1790167375036~3.jpg'),
+
+      // 6. Red Bucket
+      bucketRed: loadImage('1790167375036~2.jpg'),
+
+      // Other entities
       player: loadImage('1790167375036 (1).png'),
       mouthOpen: loadImage('1790168649784.png'),
       mouthClosed: loadImage('1790168610235.png'),
 
-      spinnerCenter: loadImage('1790167375036 (1).png'),
-      bucketYellow: loadImage('1790167375036~4.jpg'),
-      bucketBlue: loadImage('1790167375036~3.jpg'),
-      bucketRed: loadImage('1790167375036~2.jpg'),
-      bucketBroken: loadImage('1790167375036~5.jpg'),
-
       greenTarget: loadImage('Screenshot_20260918-220827 (1)~2 (1).png'),
       yellowTarget: loadImage('1790167875374.png'),
-      redTarget: loadImage('1790167868287.png'),
-      purpleTarget: loadImage('1790168069637.png')
+      redTarget: loadImage('1790167868287.png')
     };
 
     function safeDrawImage(ctx, img, x, y, width, height) {
@@ -606,6 +619,7 @@
         mobileBtn.innerText = 'GATE\nLOCKED';
         mobileBtn.className = '';
       }
+      updateUI();
     }
 
     function triggerGameOver() {
@@ -615,7 +629,28 @@
       document.getElementById('gameover-screen').style.display = 'flex';
     }
 
+    function triggerLevelUp() {
+      document.getElementById('lu-next-level').innerText = currentLevel + 1;
+      document.getElementById('lu-coins').innerText = Math.floor(coins);
+      document.getElementById('levelup-screen').style.display = 'flex';
+    }
+
+    function nextLevel() {
+      document.getElementById('levelup-screen').style.display = 'none';
+      currentLevel++;
+      player.carried = [];
+      pen.trapped = [];
+      pen.gateOpen = true;
+      pen.chainHp = pen.maxChainHp;
+
+      initTargets();
+      spawnGraceTime = Date.now() + 3500;
+      updateUI();
+    }
+
     function resetGame() {
+      document.getElementById('gameover-screen').style.display = 'none';
+      isGameOver = false;
       currentLevel = 1;
       gameTimeSeconds = 0;
       coins = 0;
@@ -649,7 +684,46 @@
       document.getElementById('lvl-scoop').innerText = scoopTier;
       document.getElementById('btn-up-scoop').innerText = `Upgrade ($${costScoop})`;
       document.getElementById('lvl-count').innerText = scoopCount;
-document.getElementById('btn-up-count').innerText = `Add ($${costCount})`;
+      document.getElementById('btn-up-count').innerText = `Add ($${costCount})`;
+      document.getElementById('lvl-chain').innerText = chainTier;
+      document.getElementById('btn-up-chain').innerText = `Upgrade ($${costChain})`;
+      document.getElementById('lvl-cap').innerText = capTier;
+      document.getElementById('btn-up-cap').innerText = `Upgrade ($${costCap})`;
+
+      initTargets();
+      spawnGraceTime = Date.now() + 3500;
+      updateUI();
+    }
+
+    function buyRepair() {
+      if (coins >= 25) {
+        coins -= 25;
+        for (let i = 0; i < player.blades.length; i++) {
+          player.blades[i] = true;
+        }
+        updateUI();
+      }
+    }
+
+    function buyScoopUpgrade() {
+      if (coins >= costScoop) {
+        coins -= costScoop;
+        scoopTier++;
+        costScoop = Math.floor(costScoop * 1.8);
+        document.getElementById('lvl-scoop').innerText = scoopTier;
+        document.getElementById('btn-up-scoop').innerText = `Upgrade ($${costScoop})`;
+        updateUI();
+      }
+    }
+
+    function buyScoopCountUpgrade() {
+      if (coins >= costCount && scoopCount < 8) {
+        coins -= costCount;
+        scoopCount++;
+        player.blades.push(true);
+        costCount = Math.floor(costCount * 1.9);
+        document.getElementById('lvl-count').innerText = scoopCount;
+        document.getElementById('btn-up-count').innerText = `Add ($${costCount})`;
         updateUI();
       }
     }
@@ -676,6 +750,269 @@ document.getElementById('btn-up-count').innerText = `Add ($${costCount})`;
         document.getElementById('lvl-cap').innerText = capTier;
         document.getElementById('btn-up-cap').innerText = `Upgrade ($${costCap})`;
         updateUI();
+      }
+    }
+
+    function updateUI() {
+      document.getElementById('ui-level').innerText = currentLevel;
+      document.getElementById('ui-coins').innerText = Math.floor(coins);
+      document.getElementById('ui-powertier').innerText = scoopTier;
+      document.getElementById('ui-carried').innerText = `${player.carried.length} / ${player.maxCapacity}`;
+      
+      const statusEl = document.getElementById('ui-gate-status');
+      if (pen.gateOpen) {
+        statusEl.innerText = "OPEN";
+        statusEl.style.color = "#28a745";
+      } else {
+        statusEl.innerText = "LOCKED";
+        statusEl.style.color = "#dc3545";
+      }
+
+      document.getElementById('ui-trapped').innerText = pen.trapped.length;
+      document.getElementById('ui-chain-hp').innerText = `${Math.ceil(pen.chainHp)} / ${pen.maxChainHp}`;
+
+      document.getElementById('btn-repair').disabled = coins < 25 || player.blades.every(b => b === true);
+      document.getElementById('btn-up-scoop').disabled = coins < costScoop;
+      document.getElementById('btn-up-count').disabled = coins < costCount || scoopCount >= 8;
+      document.getElementById('btn-up-chain').disabled = coins < costChain;
+      document.getElementById('btn-up-cap').disabled = coins < costCap;
+    }
+
+    function update() {
+      if (!gameStarted || isGameOver) return;
+
+      // Keyboard Controls
+      let moveX = 0, moveY = 0;
+      if (keys['w'] || keys['arrowup']) moveY -= 1;
+      if (keys['s'] || keys['arrowdown']) moveY += 1;
+      if (keys['a'] || keys['arrowleft']) moveX -= 1;
+      if (keys['d'] || keys['arrowright']) moveX += 1;
+
+      if (moveX !== 0 || moveY !== 0) {
+        const len = Math.hypot(moveX, moveY);
+        player.x += (moveX / len) * player.speed;
+        player.y += (moveY / len) * player.speed;
+        player.targetX = player.x;
+        player.targetY = player.y;
+      } else {
+        const dx = player.targetX - player.x;
+        const dy = player.targetY - player.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist > 3) {
+          player.x += (dx / dist) * Math.min(dist, player.speed);
+          player.y += (dy / dist) * Math.min(dist, player.speed);
+        }
+      }
+
+      // Constrain inside Screen
+      const curRadius = player.baseRadius * player.growMultiplier;
+      player.x = Math.max(curRadius, Math.min(canvas.width - curRadius, player.x));
+      player.y = Math.max(curRadius, Math.min(canvas.height - curRadius, player.y));
+
+      player.angle += player.rotorSpeed;
+
+      // Check Player inside Base Pen
+      const insidePen = (
+        player.x >= pen.x && player.x <= pen.x + pen.width &&
+        player.y >= pen.y && player.y <= pen.y + pen.height
+      );
+
+      // Gate Unloading Mechanics
+      if (insidePen && pen.gateOpen && player.carried.length > 0) {
+        for (let item of player.carried) {
+          pen.trapped.push({
+            type: item,
+            x: pen.x + 30 + Math.random() * (pen.width - 60),
+            y: pen.y + 30 + Math.random() * (pen.height - 60),
+            vx: (Math.random() - 0.5) * 2,
+            vy: (Math.random() - 0.5) * 2
+          });
+        }
+        player.carried = [];
+        player.growMultiplier = 1.0;
+      }
+
+      // Munch / Digestion Mechanics
+      if (insidePen && !pen.gateOpen && pen.trapped.length > 0) {
+        isEating = true;
+        eatingTimer++;
+        if (eatingTimer % 12 === 0) {
+          eatingFrameToggle = !eatingFrameToggle;
+        }
+
+        const consumed = pen.trapped.shift();
+        coins += consumed.type.val;
+
+        if (consumed.type.tier === 99) {
+          triggerLevelUp();
+        }
+      } else {
+        isEating = false;
+      }
+
+      // Trapped Prey Movement & Gate Attack Mechanics
+      for (let i = pen.trapped.length - 1; i >= 0; i--) {
+        const t = pen.trapped[i];
+        t.x += t.vx;
+        t.y += t.vy;
+
+        if (t.x - t.type.radius < pen.x || t.x + t.type.radius > pen.x + pen.width) t.vx *= -1;
+        if (t.y - t.type.radius < pen.y || t.y + t.type.radius > pen.y + pen.height) t.vy *= -1;
+
+        if (!pen.gateOpen) {
+          pen.chainHp -= (t.type.power * 0.008);
+          if (pen.chainHp <= 0) {
+            pen.chainHp = 0;
+            pen.gateOpen = true;
+            toggleGate();
+            break;
+          }
+        }
+      }
+
+      // Target Harvesting Collisions
+      const activeBlades = player.blades.map((active, index) => active ? index : -1).filter(idx => idx !== -1);
+      
+      for (let i = targets.length - 1; i >= 0; i--) {
+        const tgt = targets[i];
+        const dist = Math.hypot(tgt.x - player.x, tgt.y - player.y);
+
+        if (dist < curRadius + tgt.type.radius && player.carried.length < player.maxCapacity) {
+          if (scoopTier >= tgt.type.tier) {
+            player.carried.push(tgt.type);
+            player.growMultiplier += 0.06;
+            targets.splice(i, 1);
+            if (tgt.type.tier !== 99) spawnTarget();
+          } else {
+            if (activeBlades.length > 0) {
+              const breakIndex = activeBlades[Math.floor(Math.random() * activeBlades.length)];
+              player.blades[breakIndex] = false;
+              
+              // Push off collision
+              const angle = Math.atan2(tgt.y - player.y, tgt.x - player.x);
+              tgt.x += Math.cos(angle) * 40;
+              tgt.y += Math.sin(angle) * 40;
+
+              // Game Over Condition Check
+              if (player.blades.every(b => b === false) && coins < 25) {
+                triggerGameOver();
+              }
+            }
+          }
+        }
+      }
+
+      updateUI();
+    }
+
+    function drawPen() {
+      ctx.save();
+      ctx.fillStyle = 'rgba(30, 40, 50, 0.6)';
+      ctx.fillRect(pen.x, pen.y, pen.width, pen.height);
+
+      ctx.strokeStyle = pen.gateOpen ? '#28a745' : '#dc3545';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(pen.x, pen.y, pen.width, pen.height);
+
+      // Gate Indicator
+      ctx.fillStyle = pen.gateOpen ? '#28a745' : '#dc3545';
+      ctx.fillRect(pen.x + pen.width - 10, pen.y + pen.height / 2 - 25, 10, 50);
+
+      ctx.restore();
+    }
+
+    function drawTargets() {
+      for (let tgt of targets) {
+        ctx.save();
+        ctx.translate(tgt.x, tgt.y);
+
+        const img = IMAGES[tgt.type.imgKey];
+        if (!safeDrawImage(ctx, img, -tgt.type.radius, -tgt.type.radius, tgt.type.radius * 2, tgt.type.radius * 2)) {
+          ctx.beginPath();
+          ctx.arc(0, 0, tgt.type.radius, 0, Math.PI * 2);
+          ctx.fillStyle = tgt.type.color;
+          ctx.fill();
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = '#ffffff';
+          ctx.stroke();
+        }
+
+        ctx.restore();
+      }
+
+      // Draw Trapped Prey inside Base Pen
+      for (let t of pen.trapped) {
+        ctx.save();
+        ctx.translate(t.x, t.y);
+
+        const img = IMAGES[t.type.imgKey];
+        if (!safeDrawImage(ctx, img, -t.type.radius * 0.7, -t.type.radius * 0.7, t.type.radius * 1.4, t.type.radius * 1.4)) {
+          ctx.beginPath();
+          ctx.arc(0, 0, t.type.radius * 0.7, 0, Math.PI * 2);
+          ctx.fillStyle = t.type.color;
+          ctx.fill();
+        }
+
+        ctx.restore();
+      }
+    }
+
+    function drawPlayer() {
+      ctx.save();
+      ctx.translate(player.x, player.y);
+
+      const curRadius = player.baseRadius * player.growMultiplier;
+
+      // Draw Rotating Buckets
+      const angleStep = (Math.PI * 2) / scoopCount;
+      for (let i = 0; i < scoopCount; i++) {
+        const bAngle = player.angle + i * angleStep;
+        const bx = Math.cos(bAngle) * (curRadius + 22);
+        const by = Math.sin(bAngle) * (curRadius + 22);
+
+        ctx.save();
+        ctx.translate(bx, by);
+
+        let bucketImg = IMAGES.bucketBroken;
+        if (player.blades[i]) {
+          if (i % 3 === 0) bucketImg = IMAGES.bucketYellow;
+          else if (i % 3 === 1) bucketImg = IMAGES.bucketBlue;
+          else bucketImg = IMAGES.bucketRed;
+        }
+
+        if (!safeDrawImage(ctx, bucketImg, -18, -18, 36, 36)) {
+          ctx.beginPath();
+          ctx.arc(0, 0, 15, 0, Math.PI * 2);
+          ctx.fillStyle = player.blades[i] ? '#ffcc00' : '#555555';
+          ctx.fill();
+        }
+
+        ctx.restore();
+      }
+
+      // Draw Center Hub / Mouth
+      let centerImg = IMAGES.spinnerCenter;
+      if (isEating) {
+        centerImg = eatingFrameToggle ? IMAGES.mouthOpen : IMAGES.mouthClosed;
+      }
+
+      if (!safeDrawImage(ctx, centerImg, -curRadius, -curRadius, curRadius * 2, curRadius * 2)) {
+        ctx.beginPath();
+        ctx.arc(0, 0, curRadius, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffcc00';
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (gameStarted) {
+        drawPen();
+        drawTargets();
+        drawPlayer();
       }
     }
 
