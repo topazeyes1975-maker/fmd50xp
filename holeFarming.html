@@ -174,7 +174,7 @@
       position: absolute;
       bottom: 12px;
       right: 12px;
-      z-index: 10;
+      z-index: 30;
       width: 65px;
       height: 65px;
       border-radius: 50%;
@@ -329,7 +329,7 @@
         </div>
       </div>
 
-      <button id="btn-mobile-gate" class="open" onclick="toggleGate()">GATE<br>OPEN</button>
+      <button id="btn-mobile-gate" class="open">GATE<br>OPEN</button>
     </div>
 
     <!-- SHOP PANEL -->
@@ -423,7 +423,6 @@
     let costChain = 60;
     let costCap = 40;
 
-    // Reduced base radius & boosted speed for smaller cell phone screens
     const player = {
       x: 300,
       y: 300,
@@ -455,12 +454,11 @@
       trapped: []
     };
 
-    // Scaled radii down for mobile displays
     const TARGET_TYPES = {
-      SMALL: { name: 'Small', radius: 18, tier: 1, color: '#4caf50', val: 10, power: 1, speed: 1.8, imgKey: 'greenTarget' },
-      MEDIUM: { name: 'Medium', radius: 24, tier: 2, color: '#ffeb3b', val: 25, power: 3, speed: 1.4, imgKey: 'yellowTarget' },
-      HEAVY: { name: 'Heavy', radius: 30, tier: 3, color: '#f44336', val: 60, power: 8, speed: 1.1, imgKey: 'redTarget' },
-      BOSS: { name: 'Master Boss', radius: 38, tier: 99, color: '#a044ff', val: 500, power: 25, speed: 1.4, imgKey: 'purpleTarget' }
+      SMALL: { name: 'Small', radius: 18, tier: 1, color: '#4caf50', val: 10, power: 1, speed: 2.2, detectDist: 140, imgKey: 'greenTarget' },
+      MEDIUM: { name: 'Medium', radius: 24, tier: 2, color: '#ffeb3b', val: 25, power: 3, speed: 1.8, detectDist: 160, imgKey: 'yellowTarget' },
+      HEAVY: { name: 'Heavy', radius: 30, tier: 3, color: '#f44336', val: 60, power: 8, speed: 1.5, detectDist: 180, imgKey: 'redTarget' },
+      BOSS: { name: 'Master Boss', radius: 38, tier: 99, color: '#a044ff', val: 500, power: 25, speed: 1.6, detectDist: 220, imgKey: 'purpleTarget' }
     };
 
     let targets = [];
@@ -523,7 +521,6 @@
         distToPlayer = Math.hypot(tx - player.x, ty - player.y);
         attempts++;
       } while (
-        // Keep targets completely out of the pen region
         (tx < pen.x + pen.width + 100 && ty < pen.y + pen.height + 100) ||
         (distToPlayer < 140 && attempts < 80)
       );
@@ -531,9 +528,7 @@
       targets.push({
         x: tx,
         y: ty,
-        type: type,
-        vx: (Math.random() - 0.5) * type.speed,
-        vy: (Math.random() - 0.5) * type.speed
+        type: type
       });
     }
 
@@ -553,7 +548,6 @@
         distToPlayer = Math.hypot(bx - player.x, by - player.y);
         attempts++;
       } while (
-        // Ensure Master Boss never spawns inside or right next to the box
         (bx < pen.x + pen.width + 140 && by < pen.y + pen.height + 140) ||
         (distToPlayer < 180 && attempts < 100)
       );
@@ -561,9 +555,7 @@
       targets.push({
         x: bx,
         y: by,
-        type: TARGET_TYPES.BOSS,
-        vx: (Math.random() - 0.5) * TARGET_TYPES.BOSS.speed,
-        vy: (Math.random() - 0.5) * TARGET_TYPES.BOSS.speed
+        type: TARGET_TYPES.BOSS
       });
     }
 
@@ -580,9 +572,8 @@
       player.targetY = clientY - rect.top;
     }
 
-    // Touch controls bound to window so touch dragging works smoothly anywhere on screen
     window.addEventListener('mousedown', e => {
-      if (!gameStarted || isGameOver) return;
+      if (!gameStarted || isGameOver || e.target.closest('#btn-mobile-gate, #shop-panel, .overlay-screen')) return;
       isPointerDragging = true;
       handlePointerMove(e.clientX, e.clientY);
     });
@@ -592,7 +583,7 @@
     window.addEventListener('mouseup', () => { isPointerDragging = false; });
 
     window.addEventListener('touchstart', e => {
-      if (!gameStarted || isGameOver) return;
+      if (!gameStarted || isGameOver || (e.target && e.target.closest && e.target.closest('#btn-mobile-gate, #shop-panel, .overlay-screen'))) return;
       isPointerDragging = true;
       if (e.touches.length > 0) handlePointerMove(e.touches[0].clientX, e.touches[0].clientY);
     }, { passive: true });
@@ -616,6 +607,25 @@
         mobileBtn.className = '';
       }
       updateUI();
+    }
+
+    function setupGateButtonEvents() {
+      const gateBtn = document.getElementById('btn-mobile-gate');
+      if (!gateBtn) return;
+
+      const handleGatePress = (e) => {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        isPointerDragging = false;
+        player.targetX = player.x;
+        player.targetY = player.y;
+        toggleGate();
+      };
+
+      gateBtn.addEventListener('click', handleGatePress);
+      gateBtn.addEventListener('touchstart', handleGatePress, { passive: false });
     }
 
     function triggerGameOver() {
@@ -805,29 +815,32 @@
 
       player.angle += player.rotorSpeed;
 
-      // Creature Ambient Movement Logic (makes targets wander smoothly around the screen)
+      // REACTION MOVEMENT (Stay still until player approaches, then flee or attack based on Tier)
       for (let tgt of targets) {
-        if (!tgt.vx) {
-          tgt.vx = (Math.random() - 0.5) * tgt.type.speed;
-          tgt.vy = (Math.random() - 0.5) * tgt.type.speed;
-        }
-        
-        if (Math.random() < 0.02) {
-          tgt.vx = (Math.random() - 0.5) * tgt.type.speed;
-          tgt.vy = (Math.random() - 0.5) * tgt.type.speed;
-        }
+        const dx = tgt.x - player.x;
+        const dy = tgt.y - player.y;
+        const distToPlayer = Math.hypot(dx, dy);
 
-        tgt.x += tgt.vx;
-        tgt.y += tgt.vy;
+        if (distToPlayer < tgt.type.detectDist) {
+          let moveAngle;
 
-        // Keep creatures outside of the base pen boundary while wandering
-        if (tgt.x < pen.x + pen.width + tgt.type.radius && tgt.y < pen.y + pen.height + tgt.type.radius) {
-          tgt.vx = Math.abs(tgt.vx);
-          tgt.vy = Math.abs(tgt.vy);
+          if (scoopTier >= tgt.type.tier) {
+            moveAngle = Math.atan2(dy, dx);
+          } else {
+            moveAngle = Math.atan2(-dy, -dx);
+          }
+
+          tgt.x += Math.cos(moveAngle) * tgt.type.speed;
+          tgt.y += Math.sin(moveAngle) * tgt.type.speed;
+
+          if (tgt.x < pen.x + pen.width + tgt.type.radius && tgt.y < pen.y + pen.height + tgt.type.radius) {
+            tgt.x += 2;
+            tgt.y += 2;
+          }
+
+          tgt.x = Math.max(tgt.type.radius, Math.min(canvas.width - tgt.type.radius, tgt.x));
+          tgt.y = Math.max(tgt.type.radius, Math.min(canvas.height - tgt.type.radius, tgt.y));
         }
-
-        if (tgt.x < tgt.type.radius || tgt.x > canvas.width - tgt.type.radius) tgt.vx *= -1;
-        if (tgt.y < tgt.type.radius || tgt.y > canvas.height - tgt.type.radius) tgt.vy *= -1;
       }
 
       // Check Player inside Base Pen
@@ -1043,6 +1056,7 @@
       bindBtn('btn-start', startGame);
       bindBtn('btn-restart', resetGame);
       bindBtn('btn-next', nextLevel);
+      setupGateButtonEvents();
     }
 
     window.addEventListener('DOMContentLoaded', () => {
