@@ -261,7 +261,7 @@
     <div class="modal-card">
       <h1>HOLE & HOLD: SCRAMBLER</h1>
       <div class="rules-list">
-        <p><b>1. Scoop Targets:</b> Touch and drag anywhere to move your scrambler into targets.</p>
+        <p><b>1. Scoop Order:</b> You MUST capture and lock away targets in sequence: <b>Green &rarr; Yellow &rarr; Red &rarr; Purple Boss</b>!</p>
         
         <div class="target-legend">
           <div class="legend-item"><span class="dot" style="background:#4caf50;"></span> Tier 1 (Green)</div>
@@ -312,6 +312,11 @@
           <h3>STAGE INFO</h3>
           <div>Level: <b id="ui-level" style="color:#a044ff;">1</b></div>
           <div>Time: <b id="ui-time">00:00</b></div>
+        </div>
+
+        <div class="hud-card">
+          <h3>SEQUENCE OBJECTIVE</h3>
+          <div>Next Target: <b id="ui-next-target" style="color:#4caf50;">GREEN</b></div>
         </div>
 
         <div class="hud-card">
@@ -423,6 +428,9 @@
     let costChain = 60;
     let costCap = 40;
 
+    // Sequence Stages: 1: GREEN, 2: YELLOW, 3: RED, 4: PURPLE
+    let currentSeqStage = 1;
+
     const player = {
       x: 300,
       y: 300,
@@ -487,6 +495,7 @@
       player.targetX = player.x;
       player.targetY = player.y;
 
+      currentSeqStage = 1;
       initTargets();
       startTimer();
     }
@@ -641,9 +650,10 @@
       document.getElementById('levelup-screen').style.display = 'flex';
     }
 
-function nextLevel() {
+    function nextLevel() {
       document.getElementById('levelup-screen').style.display = 'none';
       currentLevel++;
+      currentSeqStage = 1;
       player.carried = [];
       pen.trapped = [];
       pen.gateOpen = true;
@@ -657,6 +667,7 @@ function nextLevel() {
       document.getElementById('gameover-screen').style.display = 'none';
       isGameOver = false;
       currentLevel = 1;
+      currentSeqStage = 1;
       gameTimeSeconds = 0;
       coins = 0;
       scoopTier = 1;
@@ -763,6 +774,21 @@ function nextLevel() {
       document.getElementById('ui-powertier').innerText = scoopTier;
       document.getElementById('ui-carried').innerText = `${player.carried.length} / ${player.maxCapacity}`;
       
+      const seqEl = document.getElementById('ui-next-target');
+      if (currentSeqStage === 1) {
+        seqEl.innerText = "GREEN";
+        seqEl.style.color = "#4caf50";
+      } else if (currentSeqStage === 2) {
+        seqEl.innerText = "YELLOW";
+        seqEl.style.color = "#ffeb3b";
+      } else if (currentSeqStage === 3) {
+        seqEl.innerText = "RED";
+        seqEl.style.color = "#f44336";
+      } else if (currentSeqStage === 4) {
+        seqEl.innerText = "PURPLE (BOSS)";
+        seqEl.style.color = "#a044ff";
+      }
+
       const statusEl = document.getElementById('ui-gate-status');
       if (pen.gateOpen) {
         statusEl.innerText = "OPEN";
@@ -815,7 +841,7 @@ function nextLevel() {
 
       player.angle += player.rotorSpeed;
 
-      // REACTION MOVEMENT (Stay still until player approaches, then flee or attack based on Tier)
+      // REACTION MOVEMENT
       for (let i = targets.length - 1; i >= 0; i--) {
         const tgt = targets[i];
         const dx = tgt.x - player.x;
@@ -841,7 +867,14 @@ function nextLevel() {
           );
 
           if (insidePen) {
-            if (pen.gateOpen) {
+            // Check sequence condition to enter pen
+            let canEnterPen = false;
+            if (tgt.type.tier === 1 && currentSeqStage === 1) canEnterPen = true;
+            else if (tgt.type.tier === 2 && currentSeqStage === 2) canEnterPen = true;
+            else if (tgt.type.tier === 3 && currentSeqStage === 3) canEnterPen = true;
+            else if (tgt.type.tier === 99 && currentSeqStage === 4) canEnterPen = true;
+
+            if (pen.gateOpen && canEnterPen) {
               // Trap inside pen once entered while gate is open
               pen.trapped.push({
                 type: tgt.type,
@@ -853,7 +886,7 @@ function nextLevel() {
               targets.splice(i, 1);
               continue;
             } else {
-              // Block target from entering cage if gate is locked
+              // Bounce back if locked or out of sequence order
               tgt.x -= Math.cos(moveAngle) * (tgt.type.speed + 2);
               tgt.y -= Math.sin(moveAngle) * (tgt.type.speed + 2);
             }
@@ -870,22 +903,35 @@ function nextLevel() {
         player.y >= pen.y && player.y <= pen.y + pen.height
       );
 
-      // Gate Unloading Mechanics
+      // Gate Unloading Mechanics (Respecting Sequence Order)
       if (insidePen && pen.gateOpen && player.carried.length > 0) {
+        const remainingCarried = [];
         for (let item of player.carried) {
-          pen.trapped.push({
-            type: item,
-            x: pen.x + 20 + Math.random() * (pen.width - 40),
-            y: pen.y + 20 + Math.random() * (pen.height - 40),
-            vx: (Math.random() - 0.5) * 2,
-            vy: (Math.random() - 0.5) * 2
-          });
+          let isValidUnload = false;
+          if (item.tier === 1 && currentSeqStage === 1) isValidUnload = true;
+          else if (item.tier === 2 && currentSeqStage === 2) isValidUnload = true;
+          else if (item.tier === 3 && currentSeqStage === 3) isValidUnload = true;
+          else if (item.tier === 99 && currentSeqStage === 4) isValidUnload = true;
+
+          if (isValidUnload) {
+            pen.trapped.push({
+              type: item,
+              x: pen.x + 20 + Math.random() * (pen.width - 40),
+              y: pen.y + 20 + Math.random() * (pen.height - 40),
+              vx: (Math.random() - 0.5) * 2,
+              vy: (Math.random() - 0.5) * 2
+            });
+          } else {
+            remainingCarried.push(item);
+          }
         }
-        player.carried = [];
-        player.growMultiplier = 1.0;
+        player.carried = remainingCarried;
+        if (player.carried.length === 0) {
+          player.growMultiplier = 1.0;
+        }
       }
 
-      // Munch / Digestion Mechanics
+      // Munch / Digestion Mechanics & Sequence Progression
       if (insidePen && !pen.gateOpen && pen.trapped.length > 0) {
         isEating = true;
         eatingTimer++;
@@ -896,7 +942,11 @@ function nextLevel() {
         const consumed = pen.trapped.shift();
         coins += consumed.type.val;
 
-        if (consumed.type.tier === 99) {
+        // Advance Sequence Stage after digesting valid target
+        if (consumed.type.tier === 1 && currentSeqStage === 1) currentSeqStage = 2;
+        else if (consumed.type.tier === 2 && currentSeqStage === 2) currentSeqStage = 3;
+        else if (consumed.type.tier === 3 && currentSeqStage === 3) currentSeqStage = 4;
+        else if (consumed.type.tier === 99 && currentSeqStage === 4) {
           triggerLevelUp();
         }
       } else {
@@ -923,7 +973,7 @@ function nextLevel() {
         }
       }
 
-      // Target Harvesting Collisions
+      // Target Harvesting Collisions (Enforcing Sequence Pickup)
       const activeBlades = player.blades.map((active, index) => active ? index : -1).filter(idx => idx !== -1);
       
       for (let i = targets.length - 1; i >= 0; i--) {
@@ -931,22 +981,31 @@ function nextLevel() {
         const dist = Math.hypot(tgt.x - player.x, tgt.y - player.y);
 
         if (dist < curRadius + tgt.type.radius && player.carried.length < player.maxCapacity) {
-          if (scoopTier >= tgt.type.tier) {
-            player.carried.push(tgt.type);
-            player.growMultiplier += 0.05;
-            targets.splice(i, 1);
-            if (tgt.type.tier !== 99) spawnTarget();
-          } else {
-            if (activeBlades.length > 0) {
-              const breakIndex = activeBlades[Math.floor(Math.random() * activeBlades.length)];
-              player.blades[breakIndex] = false;
-              
-              const angle = Math.atan2(tgt.y - player.y, tgt.x - player.x);
-              tgt.x += Math.cos(angle) * 35;
-              tgt.y += Math.sin(angle) * 35;
+          // Check Sequence Match before Pickup
+          let isTargetValidForSeq = false;
+          if (tgt.type.tier === 1 && currentSeqStage === 1) isTargetValidForSeq = true;
+          else if (tgt.type.tier === 2 && currentSeqStage === 2) isTargetValidForSeq = true;
+          else if (tgt.type.tier === 3 && currentSeqStage === 3) isTargetValidForSeq = true;
+          else if (tgt.type.tier === 99 && currentSeqStage === 4) isTargetValidForSeq = true;
 
-              if (player.blades.every(b => b === false) && coins < 25) {
-                triggerGameOver();
+          if (isTargetValidForSeq) {
+            if (scoopTier >= tgt.type.tier) {
+              player.carried.push(tgt.type);
+              player.growMultiplier += 0.05;
+              targets.splice(i, 1);
+              if (tgt.type.tier !== 99) spawnTarget();
+            } else {
+              if (activeBlades.length > 0) {
+                const breakIndex = activeBlades[Math.floor(Math.random() * activeBlades.length)];
+                player.blades[breakIndex] = false;
+                
+                const angle = Math.atan2(tgt.y - player.y, tgt.x - player.x);
+                tgt.x += Math.cos(angle) * 35;
+                tgt.y += Math.sin(angle) * 35;
+
+                if (player.blades.every(b => b === false) && coins < 25) {
+                  triggerGameOver();
+                }
               }
             }
           }
