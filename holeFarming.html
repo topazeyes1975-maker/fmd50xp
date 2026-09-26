@@ -816,7 +816,8 @@ function nextLevel() {
       player.angle += player.rotorSpeed;
 
       // REACTION MOVEMENT (Stay still until player approaches, then flee or attack based on Tier)
-      for (let tgt of targets) {
+      for (let i = targets.length - 1; i >= 0; i--) {
+        const tgt = targets[i];
         const dx = tgt.x - player.x;
         const dy = tgt.y - player.y;
         const distToPlayer = Math.hypot(dx, dy);
@@ -833,9 +834,29 @@ function nextLevel() {
           tgt.x += Math.cos(moveAngle) * tgt.type.speed;
           tgt.y += Math.sin(moveAngle) * tgt.type.speed;
 
-          if (tgt.x < pen.x + pen.width + tgt.type.radius && tgt.y < pen.y + pen.height + tgt.type.radius) {
-            tgt.x += 2;
-            tgt.y += 2;
+          // Cage boundaries check for free-roaming targets
+          const insidePen = (
+            tgt.x >= pen.x && tgt.x <= pen.x + pen.width &&
+            tgt.y >= pen.y && tgt.y <= pen.y + pen.height
+          );
+
+          if (insidePen) {
+            if (pen.gateOpen) {
+              // Trap inside pen once entered while gate is open
+              pen.trapped.push({
+                type: tgt.type,
+                x: tgt.x,
+                y: tgt.y,
+                vx: (Math.random() - 0.5) * 2,
+                vy: (Math.random() - 0.5) * 2
+              });
+              targets.splice(i, 1);
+              continue;
+            } else {
+              // Block target from entering cage if gate is locked
+              tgt.x -= Math.cos(moveAngle) * (tgt.type.speed + 2);
+              tgt.y -= Math.sin(moveAngle) * (tgt.type.speed + 2);
+            }
           }
 
           tgt.x = Math.max(tgt.type.radius, Math.min(canvas.width - tgt.type.radius, tgt.x));
