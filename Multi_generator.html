@@ -1,0 +1,2067 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>CodeForge Studio — HTML, Python & C++ Generator + Sandbox + Auto-Fixer</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <!-- JSCPP for In-Browser C++ Execution -->
+  <script src="https://cdn.jsdelivr.net/npm/JSCPP@2.0.10/dist/JSCPP.es5.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            slate: {
+              850: '#162032',
+              950: '#090d16',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: #090d16;
+      color: #e2e8f0;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    /* Synchronized Code Editor Overlay Architecture */
+    .editor-wrapper {
+      position: relative;
+      display: flex;
+      flex: 1;
+      min-height: 280px;
+      background-color: #0b1120;
+      overflow: hidden;
+    }
+
+    .line-numbers {
+      width: 46px;
+      padding: 14px 0;
+      background-color: #090e1a;
+      border-right: 1px solid #1e293b;
+      color: #475569;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 21px;
+      text-align: right;
+      user-select: none;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .line-num-item {
+      padding-right: 10px;
+      height: 21px;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .line-num-item.has-error {
+      background-color: rgba(239, 68, 68, 0.25);
+      color: #fca5a5;
+      font-weight: 700;
+      border-right: 2px solid #ef4444;
+    }
+
+    .line-num-item.has-warning {
+      background-color: rgba(245, 158, 11, 0.2);
+      color: #fcd34d;
+      border-right: 2px solid #f59e0b;
+    }
+
+    .code-area-container {
+      position: relative;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .code-highlight-backdrop,
+    .code-textarea {
+      position: absolute;
+      inset: 0;
+      margin: 0;
+      padding: 14px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 21px;
+      tab-size: 4;
+      -moz-tab-size: 4;
+      white-space: pre;
+      word-wrap: normal;
+      overflow: auto;
+      border: 0;
+      outline: none;
+      letter-spacing: 0px;
+    }
+
+    .code-highlight-backdrop {
+      pointer-events: none;
+      color: #e2e8f0;
+      z-index: 1;
+    }
+
+    .code-textarea {
+      background: transparent;
+      color: transparent;
+      caret-color: #38bdf8;
+      resize: none;
+      z-index: 2;
+    }
+
+    .code-textarea::selection {
+      background: rgba(56, 189, 248, 0.28);
+    }
+
+    /* Line highlight rows inside backdrop */
+    .code-line {
+      display: block;
+      min-height: 21px;
+      width: max-content;
+      min-width: 100%;
+    }
+    .code-line.error-line {
+      background: rgba(239, 68, 68, 0.16);
+      text-decoration: wavy underline rgba(248, 113, 113, 0.85);
+      text-underline-offset: 3px;
+    }
+    .code-line.warning-line {
+      background: rgba(245, 158, 11, 0.12);
+    }
+
+    /* Syntax Token Colors */
+    .tok-keyword { color: #c084fc; font-weight: 500; }
+    .tok-string  { color: #34d399; }
+    .tok-number  { color: #fb923c; }
+    .tok-comment { color: #64748b; font-style: italic; }
+    .tok-tag     { color: #38bdf8; }
+    .tok-attr    { color: #fbbf24; }
+    .tok-func    { color: #60a5fa; }
+    .tok-macro   { color: #f472b6; }
+
+    /* Pulse indicator */
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(0.85); }
+    }
+    .pulse-dot {
+      animation: pulseDot 1.8s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col select-none sm:select-auto">
+
+  <!-- TOP NAVIGATION BAR -->
+  <header class="bg-slate-900/95 border-b border-slate-800 px-3 sm:px-5 py-2.5 flex flex-wrap items-center justify-between gap-2 sticky top-0 z-30 backdrop-blur">
+    <!-- Brand -->
+    <div class="flex items-center gap-2.5">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+        </svg>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="font-bold text-sm sm:text-base tracking-tight text-white">CodeForge Studio</h1>
+          <span class="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+            GENERATOR + SANDBOX + AUTO-FIX
+          </span>
+        </div>
+        <p class="text-[11px] text-slate-400 hidden sm:block">Write, generate, test & auto-repair HTML, Python & C++</p>
+      </div>
+    </div>
+
+    <!-- LANGUAGE SWITCHER TABS -->
+    <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 shadow-inner" role="tablist" aria-label="Programming Language Switcher">
+      <button id="tab-html" onclick="switchLanguage('html')" class="lang-tab flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-gradient-to-r from-orange-500/20 to-amber-500/20 text-orange-300 border border-orange-500/40 shadow-sm">
+        <span class="w-2 h-2 rounded-full bg-orange-400"></span>
+        <span>HTML/JS</span>
+      </button>
+      <button id="tab-python" onclick="switchLanguage('python')" class="lang-tab flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all text-slate-400 hover:text-slate-200 border border-transparent">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span>Python</span>
+      </button>
+      <button id="tab-cpp" onclick="switchLanguage('cpp')" class="lang-tab flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all text-slate-400 hover:text-slate-200 border border-transparent">
+        <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+        <span>C++</span>
+      </button>
+    </div>
+
+    <!-- PRIMARY ACTION BUTTONS -->
+    <div class="flex items-center gap-1.5 sm:gap-2">
+      <button id="btn-run" onclick="runCode()" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-semibold text-xs sm:text-sm shadow-lg shadow-emerald-600/25 transition-all cursor-pointer">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+        </svg>
+        <span id="run-btn-label">Run / Preview</span>
+      </button>
+
+      <button id="btn-header-fix" onclick="autoFixCode()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 font-semibold text-xs sm:text-sm transition-all active:scale-95 cursor-pointer" title="Automatically repair detected syntax & structural errors">
+        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085" />
+        </svg>
+        <span class="hidden sm:inline">Auto-Fix</span>
+        <span id="header-error-badge" class="px-1.5 py-0.2 rounded-full text-[11px] bg-emerald-500/20 text-emerald-300 font-mono">0</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- CODE GENERATOR BAR -->
+  <section class="bg-slate-900/70 border-b border-slate-800 px-3 sm:px-5 py-2.5">
+    <div class="max-w-[1600px] mx-auto flex flex-col lg:flex-row items-stretch lg:items-center gap-2.5">
+      <!-- Generator Input -->
+      <div class="flex-1 flex items-center gap-2 bg-slate-950 border border-slate-800 focus-within:border-cyan-500/60 rounded-xl px-3 py-1.5 transition-colors">
+        <svg class="w-4 h-4 text-cyan-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" />
+        </svg>
+        <input
+          id="generator-prompt"
+          type="text"
+          placeholder="Describe what to generate (e.g., 'Interactive Quiz', 'Fibonacci & Prime Checker', 'Arduino LED Blink')..."
+          class="w-full bg-transparent text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none"
+          onkeydown="if(event.key==='Enter') generateFromPrompt()"
+        />
+        <button onclick="generateFromPrompt()" class="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-white text-xs font-semibold shrink-0 transition-all cursor-pointer">
+          Generate
+        </button>
+      </div>
+
+      <!-- Quick Template Pills & Broken Code Demo -->
+      <div class="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 no-scrollbar" id="template-pills">
+        <!-- Populated dynamically per language -->
+      </div>
+    </div>
+  </section>
+
+  <!-- MOBILE VIEW SWITCHER (Shown on screens < lg) -->
+  <div class="lg:hidden flex border-b border-slate-800 bg-slate-900 px-3 py-1.5 gap-2">
+    <button id="mobile-view-editor" onclick="setMobileView('editor')" class="flex-1 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-white border border-slate-700">
+      Code Editor
+    </button>
+    <button id="mobile-view-output" onclick="setMobileView('output')" class="flex-1 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white">
+      Preview & Output
+    </button>
+    <button id="mobile-view-doctor" onclick="setMobileView('doctor')" class="flex-1 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white flex items-center justify-center gap-1.5">
+      <span>Code Doctor</span>
+      <span id="mobile-error-pill" class="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-500/20 text-emerald-300 font-mono">0</span>
+    </button>
+  </div>
+
+  <!-- MAIN WORKSPACE SPLIT PANE -->
+  <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 min-h-0">
+
+    <!-- LEFT PANE: CODE EDITOR + MOBILE TOOLBAR (7 cols on lg) -->
+    <section id="pane-editor" class="lg:col-span-7 flex flex-col border-b lg:border-b-0 lg:border-r border-slate-800 min-h-[420px] lg:min-h-[calc(100vh-118px)]">
+      <!-- Editor Sub-header -->
+      <div class="bg-slate-900/90 border-b border-slate-800 px-3 py-2 flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <span id="file-badge" class="px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 font-mono text-xs text-cyan-300 font-medium">
+            index.html
+          </span>
+          <span id="save-status" class="text-[11px] text-slate-500 hidden sm:inline">Saved locally</span>
+        </div>
+
+        <div class="flex items-center gap-1.5">
+          <!-- Test Broken Code Button to showcase Auto-Fixer -->
+          <button onclick="loadBrokenSample()" class="px-2.5 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs font-medium transition-colors cursor-pointer" title="Load buggy sample code to test automatic error detection & Auto-Fix">
+            Inject Bug Sample
+          </button>
+
+          <button onclick="copyCode()" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition-colors cursor-pointer" title="Copy code to clipboard">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+            <span>Copy</span>
+          </button>
+
+          <button onclick="downloadCode()" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition-colors cursor-pointer" title="Download source file">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            <span class="hidden sm:inline">Download</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Synchronized Line-Numbered Editor -->
+      <div class="editor-wrapper flex-1">
+        <div id="line-numbers" class="line-numbers" aria-hidden="true"></div>
+        <div class="code-area-container">
+          <pre id="code-backdrop" class="code-highlight-backdrop" aria-hidden="true"></pre>
+          <textarea
+            id="code-editor"
+            class="code-textarea"
+            spellcheck="false"
+            autocapitalize="off"
+            autocomplete="off"
+            autocorrect="off"
+            placeholder="Write or generate code here..."
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Mobile-First Ergonomic Symbol Toolbar -->
+      <div class="bg-slate-900 border-t border-slate-800 px-2 py-1.5 flex items-center gap-1.5 overflow-x-auto">
+        <span class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold px-1 shrink-0">Keys:</span>
+        <button onclick="insertSymbol('    ')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-cyan-600 text-slate-200 font-mono text-xs border border-slate-700 shrink-0">Tab</button>
+        <button onclick="insertPair('{', '}')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-cyan-600 text-slate-200 font-mono text-xs border border-slate-700 shrink-0">{ }</button>
+        <button onclick="insertPair('(', ')')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-cyan-600 text-slate-200 font-mono text-xs border border-slate-700 shrink-0">( )</button>
+        <button onclick="insertPair('[', ']')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-cyan-600 text-slate-200 font-mono text-xs border border-slate-700 shrink-0">[ ]</button>
+        <button onclick="insertPair('<', '>')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-cyan-600 text-slate-200 font-mono text-xs border border-slate-700 shrink-0">&lt; &gt;</button>
+        <button onclick="insertSymbol(';')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-cyan-600 text-slate-200 font-mono text-xs border border-slate-700 shrink-0">;</button>
+        <button onclick="insertSymbol(':')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-cyan-600 text-slate-200 font-mono text-xs border border-slate-700 shrink-0">:</button>
+        <button onclick="insertSymbol('#')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-cyan-600 text-slate-200 font-mono text-xs border border-slate-700 shrink-0">#</button>
+        <button onclick="insertPair('&quot;', '&quot;')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-cyan-600 text-slate-200 font-mono text-xs border border-slate-700 shrink-0">" "</button>
+        <button onclick="insertSymbol('std::')" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-cyan-600 text-slate-200 font-mono text-xs border border-slate-700 shrink-0">std::</button>
+      </div>
+    </section>
+
+    <!-- RIGHT PANE: LIVE PREVIEW / EXECUTION + CODE DOCTOR (5 cols on lg) -->
+    <section id="pane-right" class="lg:col-span-5 flex flex-col bg-slate-950 min-h-[420px] lg:min-h-[calc(100vh-118px)]">
+
+      <!-- TOP HALF: LIVE SANDBOX / OUTPUT CONSOLE -->
+      <div id="sandbox-container" class="flex-1 flex flex-col border-b border-slate-800 min-h-[260px]">
+        <!-- Sandbox Header -->
+        <div class="bg-slate-900/90 border-b border-slate-800 px-3 py-2 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span id="runtime-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+            <h2 id="output-panel-title" class="text-xs font-bold uppercase tracking-wider text-slate-200">Live HTML Preview</h2>
+            <span id="runtime-status-badge" class="text-[11px] px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 font-mono">Ready</span>
+          </div>
+
+          <div class="flex items-center gap-1.5">
+            <label id="auto-run-toggle-wrap" class="flex items-center gap-1.5 text-[11px] text-slate-400 cursor-pointer select-none mr-1">
+              <input id="auto-run-checkbox" type="checkbox" checked class="rounded border-slate-700 bg-slate-800 text-cyan-500 focus:ring-0" />
+              <span>Auto-Preview</span>
+            </label>
+            <button onclick="clearOutput()" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-medium border border-slate-700 cursor-pointer">
+              Clear
+            </button>
+          </div>
+        </div>
+
+        <!-- HTML Live Iframe View -->
+        <div id="html-preview-wrapper" class="flex-1 flex flex-col bg-white relative">
+          <iframe id="html-preview-frame" sandbox="allow-scripts allow-modals allow-forms" class="w-full flex-1 border-0 bg-white"></iframe>
+          <!-- Integrated Mini Console for HTML Runtime Errors/Logs -->
+          <div id="html-console-drawer" class="bg-slate-950 border-t border-slate-800 max-h-28 overflow-y-auto px-3 py-1.5 font-mono text-xs">
+            <div class="flex items-center justify-between text-[10px] uppercase tracking-wider text-slate-500 mb-1">
+              <span>HTML/JS Runtime Console</span>
+              <span id="html-console-count">0 logs</span>
+            </div>
+            <div id="html-console-logs" class="space-y-1 text-slate-300">
+                <div class="text-slate-500 italic">No runtime errors detected.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Python & C++ Execution Console View -->
+        <div id="terminal-output-wrapper" class="hidden flex-1 flex flex-col bg-[#070b14] font-mono text-xs">
+          <!-- Optional Stdin Bar for C++/Python -->
+          <div class="bg-slate-900/60 border-b border-slate-800/80 px-3 py-1.5 flex items-center gap-2">
+            <span class="text-[11px] text-slate-400 shrink-0">stdin:</span>
+            <input id="program-stdin" type="text" placeholder="Optional program input values (space-separated, e.g. 5 10)..." class="w-full bg-slate-950 border border-slate-800 rounded-md px-2 py-1 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-500/50" />
+          </div>
+          <!-- Output Stream -->
+          <div id="terminal-stream" class="flex-1 p-3 overflow-y-auto space-y-1.5 leading-relaxed">
+            <div class="text-slate-500">Click <span class="text-emerald-400 font-semibold">Run / Preview</span> to execute your code...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM HALF: CODE DOCTOR (AUTO ERROR DETECTOR & ONE-CLICK FIXER) -->
+      <div id="doctor-container" class="h-[250px] lg:h-[275px] flex flex-col bg-slate-900/50">
+        <!-- Code Doctor Header -->
+        <div class="bg-slate-900 border-b border-slate-800 px-3 py-2 flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <div class="w-6 h-6 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center">
+              <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-xs font-bold text-slate-100">Code Doctor — Live Error Detector & Auto-Fixer</h3>
+            </div>
+          </div>
+
+          <button id="btn-doctor-autofix" onclick="autoFixCode()" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 active:scale-95 text-slate-950 font-bold text-xs shadow-md shadow-amber-500/20 transition-all cursor-pointer">
+            Auto-Fix All Issues
+          </button>
+        </div>
+
+        <!-- Fix Summary Banner (Shown after Auto-Fix runs) -->
+        <div id="autofix-banner" class="hidden bg-emerald-500/15 border-b border-emerald-500/30 px-3 py-2 text-xs text-emerald-200 flex items-start justify-between gap-2">
+          <div id="autofix-summary-text" class="leading-snug"></div>
+          <button onclick="document.getElementById('autofix-banner').classList.add('hidden')" class="text-emerald-400 hover:text-white font-bold px-1">✕</button>
+        </div>
+
+        <!-- Diagnostics List -->
+        <div id="diagnostics-list" class="flex-1 overflow-y-auto p-3 space-y-2">
+          <!-- Populated dynamically by static + runtime analyzers -->
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-16 opacity-0 transition-all duration-200 pointer-events-none">
+    <div class="bg-slate-800 border border-slate-700 text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs font-medium flex items-center gap-2">
+      <span id="toast-icon" class="text-emerald-400">✓</span>
+      <span id="toast-message">Action completed</span>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. STATE & TEMPLATES CONFIGURATION
+    // =========================================================================
+    const FILE_NAMES = {
+      html: 'index.html',
+      python: 'main.py',
+      cpp: 'main.cpp'
+    };
+
+    const TEMPLATES = {
+      html: [
+        {
+          label: 'Interactive Dashboard Card',
+          keywords: ['card', 'dashboard', 'ui', 'html', 'default'],
+          code: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Interactive Counter Widget</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #f8fafc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 28px;
+      text-align: center;
+      width: 300px;
+      box-shadow: 0 20px 35px rgba(0,0,0,0.4);
+    }
+    .count {
+      font-size: 48px;
+      font-weight: 800;
+      color: #38bdf8;
+      margin: 14px 0;
+    }
+    button {
+      background: #0284c7;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 4px;
+    }
+    button:hover { background: #0369a1; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Live Sandbox Counter</h2>
+    <p>Click below to test real-time JS execution</p>
+    <div id="count" class="count">0</div>
+    <button onclick="updateCount(-1)">- Decrease</button>
+    <button onclick="updateCount(1)">+ Increase</button>
+  </div>
+
+  <script>
+    let value = 0;
+    function updateCount(delta) {
+      value += delta;
+      document.getElementById('count').textContent = value;
+      console.log('Counter updated to:', value);
+    }
+  <\/script>
+</body>
+</html>`
+        },
+        {
+          label: 'Canvas Particle Wave',
+          keywords: ['canvas', 'animation', 'particle', 'game', 'wave'],
+          code: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Neon Particle Wave</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #050811; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <script>
+    const canvas = document.getElementById('scene');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let t = 0;
+    function draw() {
+      ctx.fillStyle = 'rgba(5, 8, 17, 0.2)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < 45; i++) {
+        const x = (canvas.width / 45) * i + 10;
+        const y = canvas.height / 2 + Math.sin(t + i * 0.25) * 70;
+        ctx.fillStyle = \`hsl(\${(i * 8 + t * 40) % 360}, 85%, 60%)\`;
+        ctx.beginPath();
+        ctx.arc(x, y, 6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      t += 0.05;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  <\/script>
+</body>
+</html>`
+        },
+        {
+          label: 'Interactive Quiz App',
+          keywords: ['quiz', 'form', 'todo', 'list'],
+          code: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Quick Dev Quiz</title>
+  <style>
+    body { font-family: sans-serif; background: #111827; color: #f3f4f6; padding: 24px; }
+    .box { max-width: 420px; margin: auto; background: #1f2937; padding: 20px; border-radius: 14px; }
+    .opt { display: block; width: 100%; text-align: left; padding: 10px; margin: 8px 0; border-radius: 8px; border: 1px solid #374151; background: #111827; color: white; cursor: pointer; }
+    .opt:hover { border-color: #38bdf8; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h3>Which language runs natively in browsers?</h3>
+    <button class="opt" onclick="check(this, false)">A) C++</button>
+    <button class="opt" onclick="check(this, true)">B) JavaScript</button>
+    <button class="opt" onclick="check(this, false)">C) Python</button>
+    <p id="res"></p>
+  </div>
+  <script>
+    function check(btn, correct) {
+      document.getElementById('res').textContent = correct ? 'Correct! JavaScript runs natively.' : 'Try again!';
+    }
+  <\/script>
+</body>
+</html>`
+        }
+      ],
+      python: [
+        {
+          label: 'Prime & Fibonacci Analyzer',
+          keywords: ['fibonacci', 'prime', 'math', 'default', 'loop'],
+          code: `# Python 3 Live Execution in Browser
+def generate_fibonacci(n):
+    seq = [0, 1]
+    while len(seq) < n:
+        seq.append(seq[-1] + seq[-2])
+    return seq[:n]
+
+def is_prime(num):
+    if num < 2:
+        return False
+    for i in range(2, int(num ** 0.5) + 1):
+        if num % i == 0:
+            return False
+    return True
+
+fib_numbers = generate_fibonacci(12)
+primes_in_fib = [x for x in fib_numbers if is_prime(x)]
+
+print("First 12 Fibonacci numbers:", fib_numbers)
+print("Prime numbers inside sequence:", primes_in_fib)
+print("Sum of sequence:", sum(fib_numbers))`
+        },
+        {
+          label: 'Data Parser & Statistics',
+          keywords: ['data', 'parser', 'json', 'stats', 'dictionary'],
+          code: `# Sensor Telemetry Data Analyzer
+readings = [
+    {"sensor": "Temp_A", "value": 22.4},
+    {"sensor": "Temp_B", "value": 25.1},
+    {"sensor": "Temp_C", "value": 19.8},
+    {"sensor": "Temp_D", "value": 27.6},
+]
+
+values = [r["value"] for r in readings]
+avg_temp = sum(values) / len(values)
+hottest = max(readings, key=lambda r: r["value"])
+
+print(f"Total Sensors: {len(readings)}")
+print(f"Average Temp : {avg_temp:.2f} C")
+print(f"Peak Reading : {hottest['sensor']} ({hottest['value']} C)")`
+        },
+        {
+          label: 'Password Strength Checker',
+          keywords: ['password', 'security', 'string', 'checker'],
+          code: `def check_password(pwd):
+    score = 0
+    if len(pwd) >= 8:
+        score += 1
+    if any(c.isupper() for c in pwd):
+        score += 1
+    if any(c.isdigit() for c in pwd):
+        score += 1
+    if any(c in "!@#$%^&*" for c in pwd):
+        score += 1
+    levels = ["Weak", "Fair", "Good", "Strong", "Very Strong"]
+    return levels[score]
+
+samples = ["abc", "hello123", "DevCode99", "Forge#2026!"]
+for s in samples:
+    print(f"Password '{s}' -> {check_password(s)}")`
+        }
+      ],
+      cpp: [
+        {
+          label: 'Array & Loop Calculator',
+          keywords: ['array', 'loop', 'calculator', 'default', 'math'],
+          code: `#include <iostream>
+using namespace std;
+
+int main() {
+    int numbers[6] = {12, 45, 7, 23, 89, 34};
+    int sum = 0;
+    int maxVal = numbers[0];
+
+    for (int i = 0; i < 6; i++) {
+        sum += numbers[i];
+        if (numbers[i] > maxVal) {
+            maxVal = numbers[i];
+        }
+    }
+
+    cout << "Array Elements: 12, 45, 7, 23, 89, 34" << endl;
+    cout << "Total Sum: " << sum << endl;
+    cout << "Maximum Value: " << maxVal << endl;
+    return 0;
+}`
+        },
+        {
+          label: 'Arduino LED Blink Simulator',
+          keywords: ['arduino', 'led', 'blink', 'hardware', 'embedded'],
+          code: `#include <iostream>
+using namespace std;
+
+// Simulated Arduino Digital Pin Output
+void digitalWrite(int pin, int state) {
+    cout << "[PIN " << pin << "] -> " << (state ? "HIGH (LED ON)" : "LOW  (LED OFF)") << endl;
+}
+
+int main() {
+    int ledPin = 13;
+    cout << "Starting Arduino Blink Sequence..." << endl;
+
+    for (int cycle = 1; cycle <= 4; cycle++) {
+        cout << "Cycle " << cycle << ": ";
+        digitalWrite(ledPin, 1);
+        cout << "Cycle " << cycle << ": ";
+        digitalWrite(ledPin, 0);
+    }
+
+    cout << "Sequence Complete!" << endl;
+    return 0;
+}`
+        },
+        {
+          label: 'Factorial & Fibonacci C++',
+          keywords: ['fibonacci', 'factorial', 'function', 'recursion'],
+          code: `#include <iostream>
+using namespace std;
+
+int factorial(int n) {
+    int res = 1;
+    for (int i = 2; i <= n; i++) {
+        res *= i;
+    }
+    return res;
+}
+
+int main() {
+    cout << "Factorials from 1 to 7:" << endl;
+    for (int i = 1; i <= 7; i++) {
+        cout << i << "! = " << factorial(i) << endl;
+    }
+    return 0;
+}`
+        }
+      ]
+    };
+
+    const BROKEN_SAMPLES = {
+      html: `<!DOCTYPE html>
+<html>
+<head>
+  <title>Broken HTML Sample</title>
+  <style>
+    body { background: #1e293b; color: white; font-family: sans-serif; padding: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Hello World
+    <p>This paragraph and div are missing closing tags!
+  <script>
+    const msg = "Broken JS syntax
+    console.log(msg);
+  <\/script>
+</body>
+</html>`,
+      python: `# Intentional Python Syntax Bugs
+def calculate_total(items)
+    total = 0
+    for price in items
+        total += price
+    print "Total is:", total
+    return total
+
+nums = [10, 25, 40
+calculate_total(nums)`,
+      cpp: `// Intentional C++ Bugs (missing #include, missing semicolons, unclosed brace)
+using namespace std;
+
+int main() {
+    int x = 10
+    int y = 25
+    int sum = x + y
+    cout << "Sum is: " << sum << endl
+    if (sum > 20) {
+        cout << "Greater than 20!" << endl
+    return 0
+}`
+    };
+
+    let currentLang = 'html';
+    let codeBuffers = {
+      html: localStorage.getItem('codeforge_html') || TEMPLATES.html[0].code,
+      python: localStorage.getItem('codeforge_python') || TEMPLATES.python[0].code,
+      cpp: localStorage.getItem('codeforge_cpp') || TEMPLATES.cpp[0].code
+    };
+
+    let currentDiagnostics = [];
+    let runtimeDiagnostics = [];
+    let pyodideInstance = null;
+    let pyodideLoading = false;
+    let debounceTimer = null;
+
+    // DOM Elements
+    const editorEl = document.getElementById('code-editor');
+    const backdropEl = document.getElementById('code-backdrop');
+    const lineNumbersEl = document.getElementById('line-numbers');
+
+    // =========================================================================
+    // 2. INITIALIZATION & EVENT LISTENERS
+    // =========================================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      switchLanguage('html', true);
+
+      editorEl.addEventListener('input', () => {
+        codeBuffers[currentLang] = editorEl.value;
+        saveBuffers();
+        onCodeChanged();
+      });
+
+      editorEl.addEventListener('scroll', syncScroll);
+
+      editorEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          insertSymbol('    ');
+        }
+      });
+    });
+
+    function saveBuffers() {
+      try {
+        localStorage.setItem('codeforge_' + currentLang, codeBuffers[currentLang]);
+        const status = document.getElementById('save-status');
+        status.textContent = 'Saved';
+        setTimeout(() => { status.textContent = 'Saved locally'; }, 1200);
+      } catch (err) {
+        // Ignore storage quota errors
+      }
+    }
+
+    function syncScroll() {
+      backdropEl.scrollTop = editorEl.scrollTop;
+      backdropEl.scrollLeft = editorEl.scrollLeft;
+      lineNumbersEl.scrollTop = editorEl.scrollTop;
+    }
+
+    // =========================================================================
+    // 3. LANGUAGE SWITCHING & TEMPLATE GENERATOR
+    // =========================================================================
+    function switchLanguage(lang, isInit = false) {
+      if (!isInit) {
+        codeBuffers[currentLang] = editorEl.value;
+        saveBuffers();
+      }
+      currentLang = lang;
+      runtimeDiagnostics = [];
+      document.getElementById('autofix-banner').classList.add('hidden');
+
+      // Update Tab Styling
+      const tabs = {
+        html: { el: document.getElementById('tab-html'), active: 'bg-gradient-to-r from-orange-500/20 to-amber-500/20 text-orange-300 border-orange-500/40 shadow-sm' },
+        python: { el: document.getElementById('tab-python'), active: 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 border-emerald-500/40 shadow-sm' },
+        cpp: { el: document.getElementById('tab-cpp'), active: 'bg-gradient-to-r from-sky-500/20 to-indigo-500/20 text-sky-300 border-sky-500/40 shadow-sm' }
+      };
+
+      Object.keys(tabs).forEach(key => {
+        const t = tabs[key];
+        if (key === lang) {
+          t.el.className = `lang-tab flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all border ${t.active}`;
+        } else {
+          t.el.className = 'lang-tab flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all text-slate-400 hover:text-slate-200 border border-transparent';
+        }
+      });
+
+      // Update File Badge & Output View Mode
+      document.getElementById('file-badge').textContent = FILE_NAMES[lang];
+
+      const htmlWrapper = document.getElementById('html-preview-wrapper');
+      const termWrapper = document.getElementById('terminal-output-wrapper');
+      const autoRunWrap = document.getElementById('auto-run-toggle-wrap');
+      const panelTitle = document.getElementById('output-panel-title');
+      const runLabel = document.getElementById('run-btn-label');
+
+      if (lang === 'html') {
+        htmlWrapper.classList.remove('hidden');
+        termWrapper.classList.add('hidden');
+        autoRunWrap.classList.remove('hidden');
+        panelTitle.textContent = 'Live HTML Sandbox';
+        runLabel.textContent = 'Run Preview';
+      } else {
+        htmlWrapper.classList.add('hidden');
+        termWrapper.classList.remove('hidden');
+        autoRunWrap.classList.add('hidden');
+        panelTitle.textContent = lang === 'python' ? 'Python 3 Console' : 'C++ Output Console';
+        runLabel.textContent = lang === 'python' ? 'Run Python' : 'Compile & Run';
+        document.getElementById('terminal-stream').innerHTML = `<div class="text-slate-400">Ready to execute <span class="text-cyan-300 font-semibold">${FILE_NAMES[lang]}</span>. Click <span class="text-emerald-400 font-semibold">${runLabel.textContent}</span> above.</div>`;
+      }
+
+      // Render Template Pills
+      renderTemplatePills(lang);
+
+      // Load Code Buffer
+      editorEl.value = codeBuffers[lang];
+      onCodeChanged(true);
+    }
+
+    function renderTemplatePills(lang) {
+      const container = document.getElementById('template-pills');
+      container.innerHTML = '';
+      TEMPLATES[lang].forEach((tpl, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'px-2.5 py-1.5 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700/80 whitespace-nowrap transition-colors cursor-pointer';
+        btn.textContent = tpl.label;
+        btn.onclick = () => {
+          editorEl.value = tpl.code;
+          codeBuffers[currentLang] = tpl.code;
+          saveBuffers();
+          runtimeDiagnostics = [];
+          onCodeChanged(true);
+          showToast(`Loaded "${tpl.label}" template`);
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function generateFromPrompt() {
+      const promptInput = document.getElementById('generator-prompt');
+      const query = promptInput.value.trim();
+      if (!query) {
+        showToast('Enter a description or click a template pill');
+        return;
+      }
+
+      const lower = query.toLowerCase();
+      const templates = TEMPLATES[currentLang];
+      let matched = templates.find(t => t.keywords.some(k => lower.includes(k)));
+
+      let generatedCode = '';
+      if (matched) {
+        generatedCode = matched.code;
+      } else {
+        // Smart Custom Boilerplate Synthesizer tailored to the user's prompt
+        if (currentLang === 'html') {
+          generatedCode = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${escapeHtml(query)}</title>
+  <style>
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .app-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 24px;
+      width: 90%;
+      max-width: 420px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+    }
+    h1 { font-size: 1.35rem; color: #38bdf8; margin-top: 0; }
+    button {
+      background: #10b981;
+      color: #052e16;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-card">
+    <h1>${escapeHtml(query)}</h1>
+    <p id="status">Generated interactive module ready.</p>
+    <button onclick="triggerAction()">Run Action</button>
+  </div>
+  <script>
+    function triggerAction() {
+      const el = document.getElementById('status');
+      el.textContent = 'Executed: ${query.replace(/'/g, "\\'")} at ' + new Date().toLocaleTimeString();
+      console.log('Action triggered for: ${query.replace(/'/g, "\\'")}');
+    }
+  <\/script>
+</body>
+</html>`;
+        } else if (currentLang === 'python') {
+          generatedCode = `# Generated Python Program: ${query}
+def main():
+    task_name = "${query.replace(/"/g, '\\"')}"
+    print(f"=== Running: {task_name} ===")
+
+    data = [i * 2 for i in range(1, 8)]
+    print("Generated dataset:", data)
+    print("Total items:", len(data))
+    print("Computed sum:", sum(data))
+
+if __name__ == "__main__":
+    main()`;
+        } else {
+          generatedCode = `// Generated C++ Program: ${query}
+#include <iostream>
+using namespace std;
+
+int main() {
+    cout << "=== ${query.replace(/"/g, '\\"')} ===" << endl;
+
+    int total = 0;
+    for (int i = 1; i <= 5; i++) {
+        total += i * 10;
+        cout << "Step " << i << " -> value = " << total << endl;
+    }
+
+    cout << "Final Result: " << total << endl;
+    return 0;
+}`;
+        }
+      }
+
+      editorEl.value = generatedCode;
+      codeBuffers[currentLang] = generatedCode;
+      saveBuffers();
+      runtimeDiagnostics = [];
+      onCodeChanged(true);
+      showToast(`Generated ${currentLang.toUpperCase()} code for "${query}"`);
+    }
+
+    function loadBrokenSample() {
+      editorEl.value = BROKEN_SAMPLES[currentLang];
+      codeBuffers[currentLang] = editorEl.value;
+      saveBuffers();
+      runtimeDiagnostics = [];
+      onCodeChanged(true);
+      showToast('Loaded buggy sample — check Code Doctor!');
+    }
+
+    // =========================================================================
+    // 4. EDITOR SYNTAX HIGHLIGHTING, LINE NUMBERS & MOBILE KEYS
+    // =========================================================================
+    function onCodeChanged(immediate = false) {
+      clearTimeout(debounceTimer);
+      const runUpdate = () => {
+        const code = editorEl.value;
+        const staticIssues = analyzeCode(currentLang, code);
+        currentDiagnostics = [...staticIssues, ...runtimeDiagnostics];
+        renderEditorVisuals(code, currentDiagnostics);
+        renderDiagnosticsPanel(currentDiagnostics);
+
+        if (currentLang === 'html' && document.getElementById('auto-run-checkbox').checked) {
+          runHtmlSandbox(code);
+        }
+      };
+
+      if (immediate) {
+        runUpdate();
+      } else {
+        // Instant visual sync for typing responsiveness, debounced heavy check
+        renderEditorVisuals(editorEl.value, currentDiagnostics);
+        debounceTimer = setTimeout(runUpdate, 220);
+      }
+    }
+
+    function renderEditorVisuals(code, diagnostics) {
+      const lines = code.split('\n');
+      const errorLines = new Set(diagnostics.filter(d => d.severity === 'error').map(d => d.line));
+      const warnLines = new Set(diagnostics.filter(d => d.severity === 'warning').map(d => d.line));
+
+      // Render Line Numbers
+      let lineNumsHtml = '';
+      for (let i = 1; i <= lines.length; i++) {
+        let cls = 'line-num-item';
+        if (errorLines.has(i)) cls += ' has-error';
+        else if (warnLines.has(i)) cls += ' has-warning';
+        lineNumsHtml += `<div class="${cls}">${i}</div>`;
+      }
+      lineNumbersEl.innerHTML = lineNumsHtml;
+
+      // Render Highlighted Code Lines
+      let highlightedHtml = '';
+      lines.forEach((rawLine, idx) => {
+        const lineNum = idx + 1;
+        let lineCls = 'code-line';
+        if (errorLines.has(lineNum)) lineCls += ' error-line';
+        else if (warnLines.has(lineNum)) lineCls += ' warning-line';
+
+        highlightedHtml += `<span class="${lineCls}">${highlightSyntaxLine(rawLine, currentLang) || ' '}</span>\n`;
+      });
+
+      backdropEl.innerHTML = highlightedHtml;
+      syncScroll();
+    }
+
+    function highlightSyntaxLine(line, lang) {
+      let esc = escapeHtml(line);
+      if (lang === 'html') {
+        esc = esc.replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span class="tok-comment">$1</span>');
+        esc = esc.replace(/(&lt;\/?[a-zA-Z0-9\-]+)([\s\S]*?)(\/?&gt;)/g, (_, tag, attrs, end) => {
+          const coloredAttrs = attrs.replace(/([a-zA-Z\-]+)=(&quot;[^&]*?&quot;|&#39;[^&]*?&#39;)/g, '<span class="tok-attr">$1</span>=<span class="tok-string">$2</span>');
+          return `<span class="tok-tag">${tag}</span>${coloredAttrs}<span class="tok-tag">${end}</span>`;
+        });
+      } else if (lang === 'python') {
+        if (/^\s*#/.test(line)) {
+          return `<span class="tok-comment">${esc}</span>`;
+        }
+        esc = esc.replace(/(&quot;[^&]*?&quot;|&#39;[^&]*?&#39;)/g, '<span class="tok-string">$1</span>');
+        esc = esc.replace(/\b(def|class|return|if|elif|else|for|while|in|import|from|as|try|except|with|True|False|None|and|or|not|print)\b/g, '<span class="tok-keyword">$1</span>');
+        esc = esc.replace(/\b(\d+(\.\d+)?)\b/g, '<span class="tok-number">$1</span>');
+      } else if (lang === 'cpp') {
+        if (/^\s*\/\//.test(line)) {
+          return `<span class="tok-comment">${esc}</span>`;
+        }
+        esc = esc.replace(/^(\s*#\w+.*)/g, '<span class="tok-macro">$1</span>');
+        esc = esc.replace(/(&quot;[^&]*?&quot;)/g, '<span class="tok-string">$1</span>');
+        esc = esc.replace(/\b(int|float|double|char|bool|void|string|auto|const|if|else|for|while|do|switch|case|return|using|namespace|std|cout|cin|endl|true|false)\b/g, '<span class="tok-keyword">$1</span>');
+        esc = esc.replace(/\b(\d+(\.\d+)?)\b/g, '<span class="tok-number">$1</span>');
+      }
+      return esc;
+    }
+
+    function insertSymbol(str) {
+      const start = editorEl.selectionStart;
+      const end = editorEl.selectionEnd;
+      const val = editorEl.value;
+      editorEl.value = val.substring(0, start) + str + val.substring(end);
+      editorEl.selectionStart = editorEl.selectionEnd = start + str.length;
+      editorEl.focus();
+      codeBuffers[currentLang] = editorEl.value;
+      saveBuffers();
+      onCodeChanged();
+    }
+
+    function insertPair(openChar, closeChar) {
+      const start = editorEl.selectionStart;
+      const end = editorEl.selectionEnd;
+      const val = editorEl.value;
+      const selected = val.substring(start, end);
+      editorEl.value = val.substring(0, start) + openChar + selected + closeChar + val.substring(end);
+      editorEl.selectionStart = editorEl.selectionEnd = start + 1 + selected.length;
+      editorEl.focus();
+      codeBuffers[currentLang] = editorEl.value;
+      saveBuffers();
+      onCodeChanged();
+    }
+
+    // =========================================================================
+    // 5. STATIC ERROR ANALYZER ("CODE DOCTOR" ENGINE)
+    // =========================================================================
+    function analyzeCode(lang, code) {
+      const issues = [];
+      const lines = code.split('\n');
+
+      if (!code.trim()) {
+        return [{
+          line: 1,
+          severity: 'warning',
+          code: 'EMPTY_FILE',
+          message: 'Editor is empty. Type code or use the Generator bar above.',
+          fixable: false
+        }];
+      }
+
+      if (lang === 'html') {
+        // 1. Check DOCTYPE
+        if (!/<!DOCTYPE\s+html>/i.test(code)) {
+          issues.push({
+            line: 1,
+            severity: 'warning',
+            code: 'MISSING_DOCTYPE',
+            message: 'Missing <!DOCTYPE html> declaration at top of document.',
+            fixable: true
+          });
+        }
+
+        // 2. Check Unclosed HTML Tags
+        const voidTags = new Set(['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr']);
+        const tagStack = [];
+        const tagRegex = /<\/?([a-zA-Z][a-zA-Z0-9\-]*)\b[^>]*>/g;
+        let match;
+
+        // Strip script/style inner content before HTML tag matching so JS `<` doesn't confuse tag parser
+        const sanitizedForTags = code
+          .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, (m) => '<script>' + '\n'.repeat((m.match(/\n/g) || []).length) + '<\/script>')
+          .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, (m) => '<style>' + '\n'.repeat((m.match(/\n/g) || []).length) + '<\/style>');
+
+        while ((match = tagRegex.exec(sanitizedForTags)) !== null) {
+          const fullTag = match[0];
+          const tagName = match[1].toLowerCase();
+          if (voidTags.has(tagName) || fullTag.endsWith('/>')) continue;
+
+          const lineNum = sanitizedForTags.substring(0, match.index).split('\n').length;
+          if (fullTag.startsWith('</')) {
+            if (tagStack.length > 0 && tagStack[tagStack.length - 1].tag === tagName) {
+              tagStack.pop();
+            } else {
+              issues.push({
+                line: lineNum,
+                severity: 'error',
+                code: 'UNEXPECTED_CLOSING_TAG',
+                message: `Unexpected closing tag </${tagName}> with no matching opening <${tagName}>.`,
+                fixable: true
+              });
+            }
+          } else {
+            tagStack.push({ tag: tagName, line: lineNum });
+          }
+        }
+
+        tagStack.forEach(unclosed => {
+          issues.push({
+            line: unclosed.line,
+            severity: 'error',
+            code: 'UNCLOSED_TAG',
+            tag: unclosed.tag,
+            message: `Unclosed <${unclosed.tag}> tag opened on line ${unclosed.line}.`,
+            fixable: true
+          });
+        });
+
+        // 3. Validate inline <script> JavaScript syntax
+        const scriptRegex = /<script\b[^>]*>([\s\S]*?)<\/script>/gi;
+        let sMatch;
+        while ((sMatch = scriptRegex.exec(code)) !== null) {
+          const jsContent = sMatch[1];
+          const scriptStartLine = code.substring(0, sMatch.index).split('\n').length;
+          try {
+            new Function(jsContent);
+          } catch (jsErr) {
+            issues.push({
+              line: scriptStartLine + 1,
+              severity: 'error',
+              code: 'JS_SYNTAX_ERROR',
+              message: `JavaScript Syntax Error inside <script>: ${jsErr.message}`,
+              fixable: true
+            });
+          }
+        }
+      }
+
+      if (lang === 'python') {
+        const blockKeywords = /^(def|if|elif|else|for|while|class|try|except|finally|with)\b/;
+        let parenBalance = 0;
+        let bracketBalance = 0;
+
+        lines.forEach((line, idx) => {
+          const lineNum = idx + 1;
+          const trimmed = line.trim();
+          if (!trimmed || trimmed.startsWith('#')) return;
+
+          // Mixed tabs and spaces
+          if (/^\t+ +|^ +\t+/.test(line)) {
+            issues.push({
+              line: lineNum,
+              severity: 'error',
+              code: 'PY_MIXED_INDENT',
+              message: 'Mixed tabs and spaces in indentation.',
+              fixable: true
+            });
+          }
+
+          // Missing colon after def/if/for/while/else/elif/class
+          const codePart = trimmed.split('#')[0].trim();
+          if (blockKeywords.test(codePart) && !codePart.endsWith(':') && !codePart.endsWith('\\')) {
+            issues.push({
+              line: lineNum,
+              severity: 'error',
+              code: 'PY_MISSING_COLON',
+              message: `Missing colon ':' at end of '${codePart.split(/\s|\(/)[0]}' statement.`,
+              fixable: true
+            });
+          }
+
+          // Python 2 print statement without parentheses
+          if (/^print\s+["'a-zA-Z0-9_]/.test(codePart) && !/^print\s*\(/.test(codePart)) {
+            issues.push({
+              line: lineNum,
+              severity: 'error',
+              code: 'PY_PRINT_PARENS',
+              message: 'Python 3 requires parentheses for print(...).',
+              fixable: true
+            });
+          }
+
+          // Track bracket balances
+          for (const ch of codePart) {
+            if (ch === '(') parenBalance++;
+            if (ch === ')') parenBalance--;
+            if (ch === '[') bracketBalance++;
+            if (ch === ']') bracketBalance--;
+          }
+        });
+
+        if (parenBalance > 0) {
+          issues.push({
+            line: lines.length,
+            severity: 'error',
+            code: 'PY_UNCLOSED_PAREN',
+            message: `Unclosed parenthesis '(' detected (${parenBalance} missing ')').`,
+            fixable: true
+          });
+        }
+        if (bracketBalance > 0) {
+          issues.push({
+            line: lines.length,
+            severity: 'error',
+            code: 'PY_UNCLOSED_BRACKET',
+            message: `Unclosed square bracket '[' detected (${bracketBalance} missing ']').`,
+            fixable: true
+          });
+        }
+      }
+
+      if (lang === 'cpp') {
+        const usesCoutOrCin = /\b(cout|cin|endl)\b/.test(code);
+        const hasIostream = /#include\s*<iostream>/.test(code);
+        const hasStdNamespace = /using\s+namespace\s+std\s*;/.test(code) || /\bstd::(cout|cin|endl)\b/.test(code);
+
+        if (usesCoutOrCin && !hasIostream) {
+          issues.push({
+            line: 1,
+            severity: 'error',
+            code: 'CPP_MISSING_IOSTREAM',
+            message: 'Missing #include <iostream> required for cout / cin / endl.',
+            fixable: true
+          });
+        }
+
+        if (usesCoutOrCin && !hasStdNamespace) {
+          issues.push({
+            line: 1,
+            severity: 'error',
+            code: 'CPP_MISSING_STD',
+            message: 'Missing "using namespace std;" or "std::" prefix.',
+            fixable: true
+          });
+        }
+
+        let braceBalance = 0;
+        let parenBalance = 0;
+
+        lines.forEach((line, idx) => {
+          const lineNum = idx + 1;
+          const trimmed = line.split('//')[0].trim();
+          if (!trimmed) return;
+
+          for (const ch of trimmed) {
+            if (ch === '{') braceBalance++;
+            if (ch === '}') braceBalance--;
+            if (ch === '(') parenBalance++;
+            if (ch === ')') parenBalance--;
+          }
+
+          // Check unclosed quotes on line
+          const quoteCount = (trimmed.match(/(?<!\\)"/g) || []).length;
+          if (quoteCount % 2 !== 0) {
+            issues.push({
+              line: lineNum,
+              severity: 'error',
+              code: 'CPP_UNCLOSED_STRING',
+              message: 'Unclosed double-quote string literal.',
+              fixable: true
+            });
+          }
+
+          // Check missing semicolon on C++ statements
+          const isPreprocessor = trimmed.startsWith('#');
+          const endsWithValidPunct = /[;{},:]$/.test(trimmed);
+          const isControlHeader = /^(if|else|for|while|switch|do)\b/.test(trimmed);
+          const isFuncSignature = /^[a-zA-Z_][\w:<>\s*&]+\s+[a-zA-Z_]\w*\s*\([^;]*\)\s*$/.test(trimmed);
+
+          if (!isPreprocessor && !endsWithValidPunct && !isControlHeader && !isFuncSignature) {
+            issues.push({
+              line: lineNum,
+              severity: 'error',
+              code: 'CPP_MISSING_SEMICOLON',
+              message: 'Missing semicolon ";" at end of C++ statement.',
+              fixable: true
+            });
+          }
+        });
+
+        if (braceBalance > 0) {
+          issues.push({
+            line: lines.length,
+            severity: 'error',
+            code: 'CPP_UNCLOSED_BRACE',
+            message: `Unclosed curly brace '{' (${braceBalance} closing '}' missing).`,
+            fixable: true
+          });
+        } else if (braceBalance < 0) {
+          issues.push({
+            line: lines.length,
+            severity: 'error',
+            code: 'CPP_EXTRA_BRACE',
+            message: 'Extra closing curly brace "}" found.',
+            fixable: true
+          });
+        }
+
+        if (parenBalance > 0) {
+          issues.push({
+            line: lines.length,
+            severity: 'error',
+            code: 'CPP_UNCLOSED_PAREN',
+            message: `Unclosed parenthesis '(' (${parenBalance} closing ')' missing).`,
+            fixable: true
+          });
+        }
+      }
+
+      return issues;
+    }
+
+    // =========================================================================
+    // 6. ONE-CLICK AUTO-FIXER ("CODE DOCTOR" REPAIR ENGINE)
+    // =========================================================================
+    function autoFixCode() {
+      let code = editorEl.value;
+      const fixesApplied = [];
+
+      if (currentLang === 'html') {
+        // 1. Add DOCTYPE if missing
+        if (!/<!DOCTYPE\s+html>/i.test(code)) {
+          code = '<!DOCTYPE html>\n' + code;
+          fixesApplied.push('Added missing <!DOCTYPE html> declaration');
+        }
+
+        // 2. Fix unclosed quotes inside <script> blocks
+        code = code.replace(/(<script\b[^>]*>)([\s\S]*?)(<\/script>)/gi, (_, openTag, jsBody, closeTag) => {
+          const fixedLines = jsBody.split('\n').map(l => {
+            const dq = (l.match(/(?<!\\)"/g) || []).length;
+            if (dq % 2 !== 0) {
+              fixesApplied.push('Closed unterminated string literal inside <script>');
+              return l + '";';
+            }
+            return l;
+          });
+          return openTag + fixedLines.join('\n') + closeTag;
+        });
+
+        // 3. Close any unclosed HTML tags cleanly
+        const voidTags = new Set(['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr']);
+        const tagStack = [];
+        const sanitized = code
+          .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '<script><\/script>')
+          .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '<style><\/style>');
+
+        const tagRegex = /<\/?([a-zA-Z][a-zA-Z0-9\-]*)\b[^>]*>/g;
+        let m;
+        while ((m = tagRegex.exec(sanitized)) !== null) {
+          const full = m[0];
+          const tName = m[1].toLowerCase();
+          if (voidTags.has(tName) || full.endsWith('/>')) continue;
+          if (full.startsWith('</')) {
+            if (tagStack.length && tagStack[tagStack.length - 1] === tName) {
+              tagStack.pop();
+            }
+          } else {
+            tagStack.push(tName);
+          }
+        }
+
+        if (tagStack.length > 0) {
+          const closingTags = tagStack.reverse().map(t => `</${t}>`).join('\n');
+          if (/<\/body>/i.test(code)) {
+            code = code.replace(/<\/body>/i, `${closingTags}\n</body>`);
+          } else {
+            code += '\n' + closingTags;
+          }
+          fixesApplied.push(`Closed unclosed HTML tag(s): ${tagStack.map(t => '<' + t + '>').join(', ')}`);
+        }
+      }
+
+      if (currentLang === 'python') {
+        const blockKeywords = /^(def|if|elif|else|for|while|class|try|except|finally|with)\b/;
+        let lines = code.split('\n');
+
+        lines = lines.map(line => {
+          let updated = line;
+
+          // Normalize tabs to 4 spaces
+          if (updated.includes('\t')) {
+            updated = updated.replace(/\t/g, '    ');
+            if (!fixesApplied.includes('Converted tabs to 4-space indentation')) {
+              fixesApplied.push('Converted tabs to 4-space indentation');
+            }
+          }
+
+          const indent = updated.match(/^\s*/)[0];
+          const trimmed = updated.trim();
+          if (!trimmed || trimmed.startsWith('#')) return updated;
+
+          // Fix missing colons
+          const codePart = trimmed.split('#')[0].trim();
+          if (blockKeywords.test(codePart) && !codePart.endsWith(':') && !codePart.endsWith('\\')) {
+            updated = indent + codePart + ':';
+            fixesApplied.push(`Added missing ':' to '${codePart.split(/\s|\(/)[0]}' header`);
+          }
+
+          // Fix Python 2 print statements
+          if (/^print\s+["'a-zA-Z0-9_]/.test(codePart) && !/^print\s*\(/.test(codePart)) {
+            const arg = codePart.replace(/^print\s+/, '');
+            updated = `${indent}print(${arg})`;
+            fixesApplied.push('Converted Python 2 print statement to Python 3 print(...)');
+          }
+
+          return updated;
+        });
+
+        code = lines.join('\n');
+
+        // Balance brackets & parens
+        let openP = (code.match(/\(/g) || []).length - (code.match(/\)/g) || []).length;
+        let openB = (code.match(/\[/g) || []).length - (code.match(/\]/g) || []).length;
+
+        if (openB > 0) {
+          // Insert closing bracket before the line where variable is used or at end of offending line
+          code = code.replace(/(\[[^\n\]]*)(\n)/, '$1]$2');
+          fixesApplied.push('Inserted missing closing square bracket "]"');
+        }
+        if (openP > 0) {
+          code += ')'.repeat(openP);
+          fixesApplied.push(`Appended ${openP} missing closing parenthesis ")"`);
+        }
+      }
+
+      if (currentLang === 'cpp') {
+        let lines = code.split('\n');
+        let addedIncludes = false;
+
+        lines = lines.map(line => {
+          const commentIdx = line.indexOf('//');
+          let codePart = commentIdx !== -1 ? line.slice(0, commentIdx) : line;
+          const commentPart = commentIdx !== -1 ? line.slice(commentIdx) : '';
+          const indent = codePart.match(/^\s*/)[0];
+          let trimmed = codePart.trim();
+
+          if (!trimmed) return line;
+
+          // Close unclosed quote on line
+          const dq = (trimmed.match(/(?<!\\)"/g) || []).length;
+          if (dq % 2 !== 0) {
+            trimmed += '"';
+            fixesApplied.push('Closed unterminated string literal');
+          }
+
+          // Add missing semicolon
+          const isPreprocessor = trimmed.startsWith('#');
+          const endsWithValidPunct = /[;{},:]$/.test(trimmed);
+          const isControlHeader = /^(if|else|for|while|switch|do)\b/.test(trimmed);
+          const isFuncSignature = /^[a-zA-Z_][\w:<>\s*&]+\s+[a-zA-Z_]\w*\s*\([^;]*\)\s*$/.test(trimmed);
+
+          if (!isPreprocessor && !endsWithValidPunct && !isControlHeader && !isFuncSignature) {
+            trimmed += ';';
+            if (!fixesApplied.includes('Inserted missing semicolon(s) ";"')) {
+              fixesApplied.push('Inserted missing semicolon(s) ";"');
+            }
+          }
+
+          return indent + trimmed + (commentPart ? ' ' + commentPart : '');
+        });
+
+        code = lines.join('\n');
+
+        // Add missing #include <iostream> or using namespace std;
+        if (/\b(cout|cin|endl)\b/.test(code) && !/using\s+namespace\s+std\s*;/.test(code) && !/\bstd::/.test(code)) {
+          code = 'using namespace std;\n' + code;
+          fixesApplied.push('Added "using namespace std;"');
+        }
+        if (/\b(cout|cin|endl)\b/.test(code) && !/#include\s*<iostream>/.test(code)) {
+          code = '#include <iostream>\n' + code;
+          addedIncludes = true;
+          fixesApplied.push('Added missing "#include <iostream>"');
+        }
+
+        // Balance curly braces
+        const openBraces = (code.match(/\{/g) || []).length;
+        const closeBraces = (code.match(/\}/g) || []).length;
+        if (openBraces > closeBraces) {
+          const diff = openBraces - closeBraces;
+          // If return 0; is at the bottom without closing brace before it, place } before return 0; if inside an inner block
+          if (/return\s+0\s*;\s*\}$/.test(code.trim())) {
+            code = code.replace(/(return\s+0\s*;)/, '    }\n    $1');
+            if (diff > 1) code += '\n' + '}'.repeat(diff - 1);
+          } else {
+            code += '\n' + '}'.repeat(diff);
+          }
+          fixesApplied.push(`Closed ${diff} unclosed curly brace(s) "}"`);
+        }
+      }
+
+      if (fixesApplied.length === 0) {
+        showToast('No auto-fixable issues found — code looks clean!');
+        return;
+      }
+
+      editorEl.value = code;
+      codeBuffers[currentLang] = code;
+      saveBuffers();
+      runtimeDiagnostics = [];
+      onCodeChanged(true);
+
+      // Show Diff/Repair Summary Banner
+      const banner = document.getElementById('autofix-banner');
+      const summaryEl = document.getElementById('autofix-summary-text');
+      summaryEl.innerHTML = `<strong class="text-emerald-300">Auto-Fix Applied (${fixesApplied.length}):</strong> ${fixesApplied.join(' • ')}`;
+      banner.classList.remove('hidden');
+
+      showToast(`Repaired ${fixesApplied.length} issue(s) automatically!`);
+
+      // Auto-run after repair so the user sees it working immediately
+      runCode();
+    }
+
+    // =========================================================================
+    // 7. DIAGNOSTICS PANEL RENDERER
+    // =========================================================================
+    function renderDiagnosticsPanel(diagnostics) {
+      const listEl = document.getElementById('diagnostics-list');
+      const headerBadge = document.getElementById('header-error-badge');
+      const mobilePill = document.getElementById('mobile-error-pill');
+
+      const errorCount = diagnostics.filter(d => d.severity === 'error').length;
+      const warnCount = diagnostics.filter(d => d.severity === 'warning').length;
+      const totalCount = errorCount + warnCount;
+
+      headerBadge.textContent = totalCount;
+      mobilePill.textContent = totalCount;
+
+      if (errorCount > 0) {
+        headerBadge.className = 'px-1.5 py-0.2 rounded-full text-[11px] bg-rose-500/25 text-rose-300 font-mono font-bold';
+        mobilePill.className = 'px-1.5 py-0.2 rounded-full text-[10px] bg-rose-500/25 text-rose-300 font-mono font-bold';
+      } else if (warnCount > 0) {
+        headerBadge.className = 'px-1.5 py-0.2 rounded-full text-[11px] bg-amber-500/25 text-amber-300 font-mono font-bold';
+        mobilePill.className = 'px-1.5 py-0.2 rounded-full text-[10px] bg-amber-500/25 text-amber-300 font-mono font-bold';
+      } else {
+        headerBadge.className = 'px-1.5 py-0.2 rounded-full text-[11px] bg-emerald-500/20 text-emerald-300 font-mono';
+        mobilePill.className = 'px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-500/20 text-emerald-300 font-mono';
+      }
+
+      if (diagnostics.length === 0) {
+        listEl.innerHTML = `
+          <div class="h-full flex flex-col items-center justify-center text-center p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+            <div class="w-9 h-9 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center justify-center mb-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <p class="text-xs font-semibold text-emerald-300">Zero Syntax or Structural Errors Detected</p>
+            <p class="text-[11px] text-slate-400 mt-0.5">Your ${currentLang.toUpperCase()} code passed all real-time checks.</p>
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = diagnostics.map(item => {
+        const isErr = item.severity === 'error';
+        const borderCls = isErr ? 'border-rose-500/35 bg-rose-500/10' : 'border-amber-500/35 bg-amber-500/10';
+        const badgeCls = isErr ? 'bg-rose-500/25 text-rose-200' : 'bg-amber-500/25 text-amber-200';
+        const textCls = isErr ? 'text-rose-200' : 'text-amber-200';
+
+        return `
+          <div onclick="jumpToLine(${item.line})" class="p-2.5 rounded-xl border ${borderCls} flex items-start justify-between gap-2.5 cursor-pointer hover:brightness-110 transition-all">
+            <div class="flex items-start gap-2">
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase shrink-0 ${badgeCls}">
+                Line ${item.line}
+              </span>
+              <div>
+                <p class="text-xs font-medium ${textCls} leading-snug">${escapeHtml(item.message)}</p>
+                <span class="text-[10px] font-mono text-slate-400">${item.code}</span>
+              </div>
+            </div>
+            ${item.fixable ? `<button onclick="event.stopPropagation(); autoFixCode();" class="px-2 py-1 rounded-lg bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-[11px] font-semibold text-amber-300 shrink-0 cursor-pointer">Fix</button>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function jumpToLine(lineNum) {
+      const lines = editorEl.value.split('\n');
+      let pos = 0;
+      for (let i = 0; i < Math.min(lineNum - 1, lines.length); i++) {
+        pos += lines[i].length + 1;
+      }
+      editorEl.focus();
+      editorEl.setSelectionRange(pos, pos + (lines[lineNum - 1]?.length || 0));
+      editorEl.scrollTop = Math.max(0, (lineNum - 4) * 21);
+      syncScroll();
+      if (window.innerWidth < 1024) setMobileView('editor');
+    }
+
+    // =========================================================================
+    // 8. LIVE EXECUTION ENGINES (HTML SANDBOX, PYODIDE PYTHON, JSCPP C++)
+    // =========================================================================
+    function runCode() {
+      const code = editorEl.value;
+      runtimeDiagnostics = [];
+
+      if (window.innerWidth < 1024 && currentLang !== 'html') {
+        setMobileView('output');
+      }
+
+      if (currentLang === 'html') {
+        runHtmlSandbox(code);
+      } else if (currentLang === 'python') {
+        runPythonCode(code);
+      } else if (currentLang === 'cpp') {
+        runCppCode(code);
+      }
+    }
+
+    // --- A. HTML/CSS/JS Live Sandbox ---
+    function runHtmlSandbox(rawHtml) {
+      const iframe = document.getElementById('html-preview-frame');
+      const logsContainer = document.getElementById('html-console-logs');
+      const countBadge = document.getElementById('html-console-count');
+      const statusBadge = document.getElementById('runtime-status-badge');
+
+      logsContainer.innerHTML = '<div class="text-slate-500 italic">Sandbox refreshed. Listening for logs & errors...</div>';
+      let logCount = 0;
+
+      // Inject parent bridge to capture console.log, console.error, and window.onerror inside iframe
+      const bridgeScript = `
+        <script>
+          (function() {
+            const send = (type, msg, line) => {
+              window.parent.postMessage({ source: 'codeforge-sandbox', type, msg: String(msg), line: line || 1 }, '*');
+            };
+            const origLog = console.log;
+            const origErr = console.error;
+            const origWarn = console.warn;
+            console.log = function(...args) { send('log', args.join(' ')); origLog.apply(console, args); };
+            console.warn = function(...args) { send('warn', args.join(' ')); origWarn.apply(console, args); };
+            console.error = function(...args) { send('error', args.join(' ')); origErr.apply(console, args); };
+            window.onerror = function(message, source, lineno) {
+              send('error', message, lineno);
+              return false;
+            };
+            window.addEventListener('unhandledrejection', function(e) {
+              send('error', 'Unhandled Promise Rejection: ' + (e.reason && e.reason.message ? e.reason.message : e.reason));
+            });
+          })();
+        <\/script>
+      `;
+
+      const injectedHtml = /<head[^>]*>/i.test(rawHtml)
+        ? rawHtml.replace(/<head[^>]*>/i, (m) => m + bridgeScript)
+        : bridgeScript + rawHtml;
+
+      iframe.srcdoc = injectedHtml;
+      statusBadge.textContent = 'Rendered';
+      statusBadge.className = 'text-[11px] px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-mono';
+
+      window.onmessage = (event) => {
+        if (!event.data || event.data.source !== 'codeforge-sandbox') return;
+        if (logCount === 0) logsContainer.innerHTML = '';
+        logCount++;
+        countBadge.textContent = `${logCount} log${logCount === 1 ? '' : 's'}`;
+
+        const row = document.createElement('div');
+        if (event.data.type === 'error') {
+          row.className = 'text-rose-400 font-semibold';
+          row.textContent = `[Runtime Error] ${event.data.msg}`;
+          runtimeDiagnostics.push({
+            line: event.data.line || 1,
+            severity: 'error',
+            code: 'HTML_RUNTIME_ERROR',
+            message: event.data.msg,
+            fixable: false
+          });
+          renderDiagnosticsPanel([...analyzeCode('html', editorEl.value), ...runtimeDiagnostics]);
+        } else if (event.data.type === 'warn') {
+          row.className = 'text-amber-300';
+          row.textContent = `[Warn] ${event.data.msg}`;
+        } else {
+          row.className = 'text-cyan-300';
+          row.textContent = `> ${event.data.msg}`;
+        }
+        logsContainer.appendChild(row);
+        logsContainer.scrollTop = logsContainer.scrollHeight;
+      };
+    }
+
+    // --- B. Python 3 Real In-Browser Execution via Pyodide ---
+    async function ensurePyodide() {
+      if (pyodideInstance) return pyodideInstance;
+      if (pyodideLoading) {
+        while (pyodideLoading) {
+          await new Promise(r => setTimeout(r, 150));
+        }
+        return pyodideInstance;
+      }
+
+      pyodideLoading = true;
+      const statusBadge = document.getElementById('runtime-status-badge');
+      const term = document.getElementById('terminal-stream');
+      statusBadge.textContent = 'Loading Python 3...';
+      statusBadge.className = 'text-[11px] px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-mono';
+      term.innerHTML = '<div class="text-amber-300">Initializing WebAssembly Python 3 runtime (first run takes ~2–3 seconds)...</div>';
+
+      try {
+        if (!window.loadPyodide) {
+          await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+          });
+        }
+        pyodideInstance = await window.loadPyodide({
+          indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/'
+        });
+        statusBadge.textContent = 'Python 3.12 Ready';
+        statusBadge.className = 'text-[11px] px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-mono';
+      } catch (err) {
+        statusBadge.textContent = 'Offline / Load Failed';
+        statusBadge.className = 'text-[11px] px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-300 font-mono';
+        throw err;
+      } finally {
+        pyodideLoading = false;
+      }
+      return pyodideInstance;
+    }
+
+    async function runPythonCode(code) {
+      const term = document.getElementById('terminal-stream');
+      const statusBadge = document.getElementById('runtime-status-badge');
+      const stdinVal = document.getElementById('program-stdin').value;
+
+      try {
+        const py = await ensurePyodide();
+        term.innerHTML = '<div class="text-slate-500">$ python3 main.py</div>';
+        statusBadge.textContent = 'Running...';
+
+        // Capture stdout, stderr, and provide simulated input()
+        const stdinLines = JSON.stringify(stdinVal.split(/\s+/).filter(Boolean));
+        await py.runPythonAsync(`
+import sys, io
+_stdin_queue = ${stdinLines}
+def _custom_input(prompt=""):
+    if prompt:
+        print(prompt, end="")
+    return _stdin_queue.pop(0) if _stdin_queue else ""
+__builtins__.input = _custom_input
+sys.stdout = io.StringIO()
+sys.stderr = io.StringIO()
+        `);
+
+        await py.runPythonAsync(code);
+
+        const stdout = await py.runPythonAsync('sys.stdout.getvalue()');
+        const stderr = await py.runPythonAsync('sys.stderr.getvalue()');
+
+        if (stdout) {
+          const outEl = document.createElement('pre');
+          outEl.className = 'text-emerald-300 whitespace-pre-wrap';
+          outEl.textContent = stdout;
+          term.appendChild(outEl);
+        }
+        if (stderr) {
+          const errEl = document.createElement('pre');
+          errEl.className = 'text-rose-400 whitespace-pre-wrap';
+          errEl.textContent = stderr;
+          term.appendChild(errEl);
+        }
+        if (!stdout && !stderr) {
+          term.innerHTML += '<div class="text-slate-400 italic">(Program exited with 0 output)</div>';
+        }
+
+        statusBadge.textContent = 'Exit Code 0';
+        statusBadge.className = 'text-[11px] px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-mono';
+      } catch (err) {
+        const msg = String(err.message || err);
+        const lineMatch = msg.match(/File "<exec>", line (\d+)/);
+        const errLine = lineMatch ? parseInt(lineMatch[1], 10) : 1;
+
+        const errBox = document.createElement('pre');
+        errBox.className = 'text-rose-400 whitespace-pre-wrap bg-rose-950/30 border border-rose-500/30 p-2.5 rounded-lg mt-1';
+        errBox.textContent = msg;
+        term.appendChild(errBox);
+
+        statusBadge.textContent = 'Runtime Error';
+        statusBadge.className = 'text-[11px] px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-300 font-mono';
+
+        runtimeDiagnostics = [{
+          line: errLine,
+          severity: 'error',
+          code: 'PYTHON_TRACEBACK',
+          message: msg.split('\n').filter(Boolean).pop() || 'Python execution error',
+          fixable: true
+        }];
+        const combined = [...analyzeCode('python', code), ...runtimeDiagnostics];
+        renderEditorVisuals(code, combined);
+        renderDiagnosticsPanel(combined);
+      }
+    }
+      // --- C. C++ In-Browser Execution via JSCPP ---
+    function runCppCode(code) {
+      const term = document.getElementById('terminal-stream');
+      const statusBadge = document.getElementById('runtime-status-badge');
+      const stdinVal = document.getElementById('program-stdin').value + '\n';
+
+      term.innerHTML = '<div class="text-slate-500">$ g++ main.cpp -o main && ./main</div>';
+
+      if (typeof JSCPP === 'undefined') {
+        term.innerHTML += '<div class="text-rose-400">JSCPP C++ interpreter library failed to load from CDN. Check internet connection.</div>';
+        return;
+      }
+
+      let outputBuffer = '';
+      try {
+        const exitCode = JSCPP.run(code, stdinVal, {
+          stdio: {
+            write: function(str) {
+              outputBuffer += str;
+            }
+          },
+          maxTimeout: 3000
+        });
+
+        const outEl = document.createElement('pre');
+        outEl.className = 'text-sky-300 whitespace-pre-wrap';
+        outEl.textContent = outputBuffer || '(Program finished with no stdout output)';
+        term.appendChild(outEl);
+
+        const exitEl = document.createElement('div');
+        exitEl.className = 'text-slate-500 text-[11px] mt-2';
+        exitEl.textContent = `Program exited with code ${exitCode}`;
+        term.appendChild(exitEl);
+
+        statusBadge.textContent = `Exit Code ${exitCode}`;
+        statusBadge.className = 'text-[11px] px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-mono';
+      } catch (err) {
+        const errMsg = String(err.message || err);
+        const lineMatch = errMsg.match(/line\s+(\d+)/i);
+        const errLine = lineMatch ? parseInt(lineMatch[1], 10) : 1;
+
+        const errBox = document.createElement('pre');
+        errBox.className = 'text-rose-400 whitespace-pre-wrap bg-rose-950/30 border border-rose-500/30 p-2.5 rounded-lg mt-1';
+        errBox.textContent = 'C++ Compilation / Runtime Error:\n' + errMsg;
+        term.appendChild(errBox);
+
+        statusBadge.textContent = 'Compile Error';
+        statusBadge.className = 'text-[11px] px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-300 font-mono';
+
+        runtimeDiagnostics = [{
+          line: errLine,
+          severity: 'error',
+          code: 'CPP_COMPILE_ERROR',
+          message: errMsg.split('\n')[0],
+          fixable: true
+        }];
+        const combined = [...analyzeCode('cpp', code), ...runtimeDiagnostics];
+        renderEditorVisuals(code, combined);
+        renderDiagnosticsPanel(combined);
+      }
+    }
+
+    function clearOutput() {
+      if (currentLang === 'html') {
+        document.getElementById('html-console-logs').innerHTML = '<div class="text-slate-500 italic">Console cleared.</div>';
+        document.getElementById('html-console-count').textContent = '0 logs';
+      } else {
+        document.getElementById('terminal-stream').innerHTML = '<div class="text-slate-500">Console cleared.</div>';
+      }
+    }
+
+    // =========================================================================
+    // 9. UTILITY ACTIONS (CLIPBOARD, DOWNLOAD, MOBILE VIEW SWITCHER, TOAST)
+    // =========================================================================
+    function copyCode() {
+      editorEl.select();
+      try {
+        document.execCommand('copy');
+        showToast(`Copied ${FILE_NAMES[currentLang]} to clipboard!`);
+      } catch (e) {
+        showToast('Unable to copy code');
+      }
+      window.getSelection().removeAllRanges();
+    }
+
+    function downloadCode() {
+      const blob = new Blob([editorEl.value], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = FILE_NAMES[currentLang];
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast(`Downloaded ${FILE_NAMES[currentLang]}`);
+    }
+
+    function setMobileView(view) {
+      const paneEditor = document.getElementById('pane-editor');
+      const paneRight = document.getElementById('pane-right');
+      const sandboxContainer = document.getElementById('sandbox-container');
+      const doctorContainer = document.getElementById('doctor-container');
+
+      const btnEd = document.getElementById('mobile-view-editor');
+      const btnOut = document.getElementById('mobile-view-output');
+      const btnDoc = document.getElementById('mobile-view-doctor');
+
+      const activeBtnCls = 'flex-1 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-white border border-slate-700';
+      const inactiveBtnCls = 'flex-1 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white';
+
+      btnEd.className = view === 'editor' ? activeBtnCls : inactiveBtnCls;
+      btnOut.className = view === 'output' ? activeBtnCls : inactiveBtnCls;
+      btnDoc.className = (view === 'doctor' ? activeBtnCls : inactiveBtnCls) + ' flex items-center justify-center gap-1.5';
+
+      if (view === 'editor') {
+        paneEditor.classList.remove('hidden');
+        paneRight.classList.add('hidden');
+      } else if (view === 'output') {
+        paneEditor.classList.add('hidden');
+        paneRight.classList.remove('hidden');
+        sandboxContainer.classList.remove('hidden');
+        doctorContainer.classList.add('hidden');
+      } else if (view === 'doctor') {
+        paneEditor.classList.add('hidden');
+        paneRight.classList.remove('hidden');
+        sandboxContainer.classList.add('hidden');
+        doctorContainer.classList.remove('hidden');
+        doctorContainer.classList.add('flex-1');
+      }
+    }
+
+    // Restore responsive panes when rotating/resizing back to desktop
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 1024) {
+        document.getElementById('pane-editor').classList.remove('hidden');
+        document.getElementById('pane-right').classList.remove('hidden');
+        document.getElementById('sandbox-container').classList.remove('hidden');
+        document.getElementById('doctor-container').classList.remove('hidden');
+      }
+    });
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-message').textContent = msg;
+      toast.classList.remove('translate-y-16', 'opacity-0');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        toast.classList.add('translate-y-16', 'opacity-0');
+      }, 2400);
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+  </script>
+</body>
+</html>
